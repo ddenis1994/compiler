@@ -25,6 +25,8 @@ static void comment(void);
 "while"                 { return(WHILE); }
 "bool"                  { return(BOOL); }
 "string"                { return(STRING); }
+"true"                  { return(TRUE); }
+"false"                { return(FALSE); }
 "var"                   { return(VAR); }
 "func"                  { yylval.String=strdup(yytext); return(FUNC); }
 "proc"                  { return(PROC); }
@@ -32,16 +34,16 @@ static void comment(void);
 "Main()"                {return(MAIN); }
 "&&"                    { return(AND_OP); }
 "/"                     { return '/'; }
+"=="                    { return (EQL_OP); }
+">="                    { return (GE_OP); }
+"<="                    { return (SE_OP); }
+"!="                    { return (NE_OP); }
+"||"                    { return (OR_OP); }
 "="                     { return '='; }
 ">"                     { return '>'; }
 "<"                     { return '<'; }
-">="                    { return GE_OP; }
-"<="                    { return SE_OP; }
 "-"                     { return '-'; }
 "!"                     { return '!'; }
-"=="                    { return (EQL_OP); }
-"!="                    { return (NE_OP); }
-"||"                    { return (OR_OP); }
 "+"                     { return '+'; }
 "*"                     { return '*'; }
 "&"                     { return '&'; }
@@ -56,8 +58,6 @@ static void comment(void);
 ")"                     { return ')'; }
 "["                     { return '['; }
 "]"                     { return ']'; }
-
-("true"|"false")        {yylval.String=strdup(yytext); return(BOOL_VALUE); }
 '[a-zA-Z]'              {yylval.String=strdup(yytext); return(CHAR_VALUE); }
 \"[0-9a-zA-Z]*\"        {yylval.String=strdup(yytext); return(STRING_VALUE); }
 (0|[1-9][0-9]*)         {yylval.String=strdup(yytext); return(INT_NUM); }

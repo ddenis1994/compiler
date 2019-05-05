@@ -1,8 +1,10 @@
-proc x1(a,b,c:real; a,b,c:real){
-    	var x,y,z:real;
-	a+0;
-	1==aa;
-	y=b;
-	z=c;
-return z;
+func foo(i, j, k : int) return int{
+	func square(t : int) return int{
+		var temp : int;
+		temp = t*t;
+		return 0;
+	}
+	var total : int;
+	total = 1; 
+	return total;
 }

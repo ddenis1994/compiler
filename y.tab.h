@@ -63,28 +63,30 @@ extern int yydebug;
     IF = 269,
     FOR = 270,
     WHILE = 271,
-    RETURN = 272,
-    MAIN = 273,
-    VAR = 274,
-    FUNC = 275,
-    PROC = 276,
-    NULL_VALUE = 277,
-    AND_OP = 278,
-    GE_OP = 279,
-    SE_OP = 280,
-    NE_OP = 281,
-    OR_OP = 282,
-    EQL_OP = 283,
-    BOOL_VALUE = 284,
-    CHAR_VALUE = 285,
-    STRING_VALUE = 286,
-    INT_NUM = 287,
-    F_NUM = 288,
-    ID = 289,
-    IFX = 290,
-    test = 291,
-    UMINUS = 292,
-    UFUNC = 293
+    TRUE = 272,
+    FALSE = 273,
+    RETURN = 274,
+    MAIN = 275,
+    VAR = 276,
+    FUNC = 277,
+    PROC = 278,
+    NULL_VALUE = 279,
+    AND_OP = 280,
+    GE_OP = 281,
+    SE_OP = 282,
+    NE_OP = 283,
+    OR_OP = 284,
+    EQL_OP = 285,
+    BOOL_VALUE = 286,
+    CHAR_VALUE = 287,
+    STRING_VALUE = 288,
+    INT_NUM = 289,
+    F_NUM = 290,
+    ID = 291,
+    IFX = 292,
+    test = 293,
+    UMINUS = 294,
+    UFUNC = 295
   };
 #endif
 /* Tokens.  */
@@ -102,28 +104,30 @@ extern int yydebug;
 #define IF 269
 #define FOR 270
 #define WHILE 271
-#define RETURN 272
-#define MAIN 273
-#define VAR 274
-#define FUNC 275
-#define PROC 276
-#define NULL_VALUE 277
-#define AND_OP 278
-#define GE_OP 279
-#define SE_OP 280
-#define NE_OP 281
-#define OR_OP 282
-#define EQL_OP 283
-#define BOOL_VALUE 284
-#define CHAR_VALUE 285
-#define STRING_VALUE 286
-#define INT_NUM 287
-#define F_NUM 288
-#define ID 289
-#define IFX 290
-#define test 291
-#define UMINUS 292
-#define UFUNC 293
+#define TRUE 272
+#define FALSE 273
+#define RETURN 274
+#define MAIN 275
+#define VAR 276
+#define FUNC 277
+#define PROC 278
+#define NULL_VALUE 279
+#define AND_OP 280
+#define GE_OP 281
+#define SE_OP 282
+#define NE_OP 283
+#define OR_OP 284
+#define EQL_OP 285
+#define BOOL_VALUE 286
+#define CHAR_VALUE 287
+#define STRING_VALUE 288
+#define INT_NUM 289
+#define F_NUM 290
+#define ID 291
+#define IFX 292
+#define test 293
+#define UMINUS 294
+#define UFUNC 295
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -135,7 +139,7 @@ union YYSTYPE
 	char * String;
 	struct node * Node;
 
-#line 139 "y.tab.h" /* yacc.c:1921  */
+#line 143 "y.tab.h" /* yacc.c:1921  */
 };
 
 typedef union YYSTYPE YYSTYPE;

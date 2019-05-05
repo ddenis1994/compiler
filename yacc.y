@@ -30,6 +30,7 @@ extern int yylex();
 %token <String> CHAR_POINTER REAL_POINTER FLOAT_POINTER INT_POINTER 
 %token ELSE IF
 %token FOR WHILE
+%token TRUE FALSE
 %token RETURN MAIN
 %token <String> VAR FUNC PROC
 %token NULL_VALUE 
@@ -38,25 +39,27 @@ extern int yylex();
 %token <String> ID 
 %type <String> TYPE 
 %type <String> INNER_ARGS 
+%type <String> CONST 
 %type <Node> OUT_ARGES ARGES FUNC_DEF FUNC_BLOCK INNER_COMPUND_STATMENT EXPRASION 
-%type <Node> CONST FUNC_ACTIVE REL_EXPRATION ASSIGNMENT COMPUND_STATMENT
+%type <Node> FUNC_ACTIVE  COMPUND_STATMENT
 %type <Node> STASTMENT_LIST DEC_INNER_BLOCK
 %type<Node> STASTMENT IF_STASTMENT LOOP_STATMENT
 %type<Node> UPDATES VF VAR_DECLARE FUNC_PROC_DEC DEF_A
-%type<Node> CODE PROC_DEF NEW_DECLARE LOG_EXPRATIOSN_LIST UNARY_EXPRATION MAIN
-%type <Node> MAIN_FUNC REL_EXPRATION2 UNARY_EXPRATION2
+%type<Node> CODE PROC_DEF NEW_DECLARE   MAIN
+%type <Node> MAIN_FUNC  
 %type<Node> S RETURN_STATMENT CODE2 ARGES2 OUT_ARGES2
-%type<Node> FUNC_PROC_DEC2
+%type<Node> FUNC_PROC_DEC2 COMPUND_STATMENT_PROC FUNC_ACTIVE_INNER_ARGES
 %nonassoc IFX
 %nonassoc test
 %nonassoc ELSE
-
 %right RETURN  
 %right ';'
-%left '+' '-' OR_OP AND_OP
+%left '+' '-'
 %left '*' '/'
-%left UMINUS
-%left '>' '<' GE_OP SE_OP EQL_OP
+
+%nonassoc OR_OP AND_OP '>' '<' GE_OP SE_OP EQL_OP
+%right '!' '^' '&' 
+%right UMINUS
 %left UFUNC
 
 
@@ -83,7 +86,7 @@ MAIN_FUNC:
 	;
 
 FUNC_PROC_DEC:
-	DEF_A FUNC_PROC_DEC2
+	DEF_A FUNC_PROC_DEC2 {$$=mknode("",$1,$2);}
 	;
 
 FUNC_PROC_DEC2:
@@ -99,7 +102,7 @@ DEF_A:
 
 
 PROC_DEF:
-	PROC ID ARGES COMPUND_STATMENT  {$$=mknode(strcat(strdup("PROC "),$2),$4,NULL);}
+	PROC ID ARGES COMPUND_STATMENT_PROC  {$$=mknode(strcat(strdup("PROC "),$2),$4,NULL);}
 	;
 
 FUNC_DEF:
@@ -152,64 +155,44 @@ FUNC_BLOCK:
 
 
 EXPRASION:
-	LOG_EXPRATIOSN_LIST 
-	|ASSIGNMENT 
-	|FUNC_ACTIVE 
-	|REL_EXPRATION 
-	|UNARY_EXPRATION
-	;
-REL_EXPRATION:
-	CONST REL_EXPRATION2 {$$=mknode("()",$1,$2);}
-	| '(' REL_EXPRATION ')' REL_EXPRATION2 {$$=mknode("()",$2,$4);}
-	;
+	CONST {$$=mkleaf($1);}
+	|'(' EXPRASION ')'  {$$=$2;}
+	|TRUE {$$=mkleaf("TRUE");}
+	|FALSE {$$=mkleaf("FALSE");}
+	|ID {$$=mkleaf($1);}
+	|'^' EXPRASION {$$=$2;}
+	| '&' EXPRASION {$$=$2;}
+	|'-' EXPRASION %prec UMINUS {$$=$2;} 
+	|'!' EXPRASION {$$=$2;}
+	|ID '=' EXPRASION {$$=mknode("=",mkleaf($1),$3);}
+	|EXPRASION NE_OP EXPRASION  {$$=mknode("!=",$1,$3);}
+	|EXPRASION AND_OP EXPRASION  {$$=mknode("&&",$1,$3);}
+	|EXPRASION OR_OP EXPRASION  {$$=mknode("||",$1,$3);}
+	|EXPRASION '+' EXPRASION  {$$=mknode("+",$1,$3);printf("was");}
+	|EXPRASION '-' EXPRASION  {$$=mknode("-",$1,$3);}
+	|EXPRASION '/' EXPRASION  {$$=mknode("/",$1,$3);}
+	|EXPRASION '*' EXPRASION  {$$=mknode("*",$1,$3);}
+	|EXPRASION EQL_OP EXPRASION  {$$=mknode("==",$1,$3);}
+	|EXPRASION GE_OP EXPRASION  {$$=mknode(">=",$1,$3);}
+	|EXPRASION SE_OP EXPRASION  {$$=mknode("<=",$1,$3);}
+	|EXPRASION '>' EXPRASION  {$$=mknode(">",$1,$3);}
+	|EXPRASION '<' EXPRASION  {$$=mknode("<",$1,$3);}
+	|FUNC_ACTIVE
 
-REL_EXPRATION2:
-	{$$=mknode("",NULL,NULL);}
-	|'>' REL_EXPRATION REL_EXPRATION2 {$$=mknode(">=",$2,$3);}
-	|'<' REL_EXPRATION REL_EXPRATION2 {$$=mknode(">=",$2,$3);}
-	|GE_OP REL_EXPRATION REL_EXPRATION2 {$$=mknode(">=",$2,$3);}
-	|SE_OP REL_EXPRATION REL_EXPRATION2 {$$=mknode("<=",$2,$3);}
-	|EQL_OP REL_EXPRATION REL_EXPRATION2 {$$=mknode("==",$2,$3);}
-	;
-
-UNARY_EXPRATION:
-	CONST UNARY_EXPRATION2
-	|'-' UNARY_EXPRATION UNARY_EXPRATION2{$$=mknode("minus",$2,NULL);}
-	|'(' UNARY_EXPRATION ')'   {$$=$2;}
-	;
-
-UNARY_EXPRATION2:
-	{$$=mknode("+",NULL,NULL);}
-	|'+' UNARY_EXPRATION UNARY_EXPRATION2 {$$=mknode("+",$2,$3);}
-	|'-' UNARY_EXPRATION UNARY_EXPRATION2 {$$=mknode("-",$2,$3);}
-	|'*' UNARY_EXPRATION UNARY_EXPRATION2 {$$=mknode("*",$2,$3);}
-	|'/' UNARY_EXPRATION UNARY_EXPRATION2 {$$=mknode("/",$2,$3);}
 	;
 
-LOG_EXPRATIOSN_LIST:
-	CONST 
-	|LOG_EXPRATIOSN_LIST AND_OP LOG_EXPRATIOSN_LIST {$$=mknode("&&",$1,$3);}
-	|LOG_EXPRATIOSN_LIST OR_OP  LOG_EXPRATIOSN_LIST {$$=mknode("||",$1,$3);}
-	;
-
-
-
-ASSIGNMENT:
-	ID '=' EXPRASION {$$=mknode(strcat($1," ="),$3,NULL);}
-    |ID '=' '&' ID {
-        strcat($1," = & ");
-        strcat($1,$4);
-        $$=mknode($1,NULL,NULL);}
-	|ID '=' '^' ID {
-        strcat($1," = ^ ");
-        strcat($1,$4);
-        $$=mknode($1,NULL,NULL);}
-	;
 
 FUNC_ACTIVE:
 	ID '(' ')' {$$=mknode(strcat($1," ACTIVE:"),mknode(strdup("empty arguments"),NULL,NULL),NULL);}
-	|ID '(' INNER_ARGS ')' {$$=mknode(strcat($1," ACTIVE:"),mknode(strdup("ARGS "),mknode($3,NULL,NULL),NULL),NULL);
+	|ID '(' FUNC_ACTIVE_INNER_ARGES ')' {$$=mknode(strcat($1," ACTIVE:"),mknode(strdup("ARGS "),$3,NULL),NULL);
 							}
+	;
+
+FUNC_ACTIVE_INNER_ARGES:
+	ID {$$=mkleaf($1);}
+	|CONST  {$$=mkleaf($1);}
+	|ID ',' FUNC_ACTIVE_INNER_ARGES {$$=mknode("",mkleaf($1),$3);}
+	|CONST ',' FUNC_ACTIVE_INNER_ARGES {$$=mknode("",mkleaf($1),$3);}
 	;
 
 
@@ -229,8 +212,7 @@ IF_STASTMENT:
 	;
 
 STASTMENT:
-    REL_EXPRATION
-	|COMPUND_STATMENT
+	COMPUND_STATMENT
 	|EXPRASION ';' 
 	|IF_STASTMENT
 	|LOOP_STATMENT
@@ -266,12 +248,15 @@ COMPUND_STATMENT:
     |'{'  RETURN_STATMENT '}' { $$=$2; }
 	;
 
+COMPUND_STATMENT_PROC:
+	'{' '}' {$$=mknode("empty statments",NULL,NULL);}
+	|'{' INNER_COMPUND_STATMENT '}' { $$=$2; }
+	;
+
 INNER_COMPUND_STATMENT:
-	STASTMENT_LIST { 
-        $$=mknode("BODY",NULL,$1);}
+	STASTMENT_LIST { $$=mknode("BODY",NULL,$1);}
 	|DEC_INNER_BLOCK {$$=mknode("BODY",$1,NULL);}
-	|DEC_INNER_BLOCK  STASTMENT_LIST {$$=mknode("BODY",$1,$2);
-				 }
+	|DEC_INNER_BLOCK  STASTMENT_LIST {$$=mknode("BODY",$1,$2);}
 	;
 
 
@@ -302,10 +287,8 @@ VF:
 
 
 CONST:
-	INT_NUM {$$=mknode($1,NULL,NULL);}
-	|F_NUM {$$=mknode($1,NULL,NULL);}
-	|FUNC_ACTIVE {$$=$1;}
-	|ID {$$=mknode($1,NULL,NULL);}
+	INT_NUM 
+	|F_NUM 
 	;
 
 
