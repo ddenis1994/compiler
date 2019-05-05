@@ -1,4 +1,4 @@
-proc x1(a,b,c:real){
+proc x1(a,b,c:real; a,b,c:real){
     	var x,y,z:real;
 	a+0;
 	1==aa;
