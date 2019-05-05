@@ -1,0 +1,6 @@
+proc x1(a,b,c:real){
+    	var x,y,z:real;
+	x=a;
+	y=b;
+	z=c;
+}

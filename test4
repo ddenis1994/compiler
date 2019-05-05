@@ -1,0 +1,7 @@
+proc x2(){
+    	var a:int*;
+	var b,c:int*;
+	c=10;
+	a=&c;
+	b=a;
+}

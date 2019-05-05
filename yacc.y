@@ -43,7 +43,7 @@ extern int yylex();
 %type<Node> STASTMENT IF_STASTMENT LOOP_STATMENT
 %type<Node> UPDATES VF VAR_DECLARE FUNC_PROC_DEC DEF_A
 %type<Node> CODE PROC_DEF NEW_DECLARE LOG_EXPRATIOSN_LIST UNARY_EXPRATION MAIN
-%type <Node> MAIN_FUNC
+%type <Node> MAIN_FUNC REL_EXPRATION2 UNARY_EXPRATION2
 %type<Node> S RETURN_STATMENT
 %nonassoc IFX
 %nonassoc test
@@ -136,14 +136,17 @@ FUNC_BLOCK:
 
 
 REL_EXPRATION:
-	CONST 
-	|REL_EXPRATION '>' REL_EXPRATION {$$=mknode(">",$1,$3);}
-	|REL_EXPRATION '<' REL_EXPRATION {$$=mknode("<",$1,$3);}
-	|REL_EXPRATION GE_OP REL_EXPRATION {$$=mknode(">=",$1,$3);}
-	|REL_EXPRATION SE_OP REL_EXPRATION {$$=mknode("<=",$1,$3);}
-	| REL_EXPRATION EQL_OP REL_EXPRATION {$$=mknode("==",$1,$3);}
-	| '(' REL_EXPRATION ')' {$$=$2;}
+	CONST REL_EXPRATION2 {$$=mknode("()",$1,$2);}
+	| '(' REL_EXPRATION ')' REL_EXPRATION2 {$$=mknode("()",$2,$4);}
 	;
+
+REL_EXPRATION2:
+		{$$=mknode("",NULL,NULL);}
+	|'>' REL_EXPRATION REL_EXPRATION2 {$$=mknode(">=",$2,$3);}
+	|'<' REL_EXPRATION REL_EXPRATION2 {$$=mknode(">=",$2,$3);}
+	|GE_OP REL_EXPRATION REL_EXPRATION2 {$$=mknode(">=",$2,$3);}
+	|SE_OP REL_EXPRATION REL_EXPRATION2 {$$=mknode("<=",$2,$3);}
+	|EQL_OP REL_EXPRATION REL_EXPRATION2 {$$=mknode("==",$2,$3);}
 
 
 
@@ -166,7 +169,6 @@ ASSIGNMENT:
 FUNC_ACTIVE:
 	ID '(' ')' {$$=mknode(strcat($1," ACTIVE:"),mknode(strdup("empty arguments"),NULL,NULL),NULL);}
 	|ID '(' INNER_ARGS ')' {$$=mknode(strcat($1," ACTIVE:"),mknode(strdup("ARGS "),mknode($3,NULL,NULL),NULL),NULL);
-							moveDown($$->left->left);
 							}
 	;
 
@@ -263,13 +265,17 @@ LOG_EXPRATIOSN_LIST:
 
 
 UNARY_EXPRATION:
-	CONST 
-	|UNARY_EXPRATION '+' UNARY_EXPRATION {$$=mknode("+",$1,$3);}
-	|UNARY_EXPRATION '-' UNARY_EXPRATION {$$=mknode("-",$1,$3);}
-	|UNARY_EXPRATION '*' UNARY_EXPRATION {$$=mknode("*",$1,$3);}
-	|UNARY_EXPRATION '/' UNARY_EXPRATION {$$=mknode("/",$1,$3);}
-	|'-' UNARY_EXPRATION {$$=mknode("minus",$2,NULL);}
-	|'(' UNARY_EXPRATION ')'  {$$=$2;}
+	CONST UNARY_EXPRATION2
+	|'-' UNARY_EXPRATION UNARY_EXPRATION2{$$=mknode("minus",$2,NULL);}
+	|'(' UNARY_EXPRATION ')'  UNARY_EXPRATION2 {$$=$2;}
+	;
+
+UNARY_EXPRATION2:
+	{$$=mknode("+",NULL,NULL);}
+	|'+' UNARY_EXPRATION UNARY_EXPRATION2 {$$=mknode("+",$2,$3);}
+	|'-' UNARY_EXPRATION UNARY_EXPRATION2 {$$=mknode("-",$2,$3);}
+	|'*' UNARY_EXPRATION UNARY_EXPRATION2 {$$=mknode("*",$2,$3);}
+	|'/' UNARY_EXPRATION UNARY_EXPRATION2 {$$=mknode("/",$2,$3);}
 	;
 
 CONST:
