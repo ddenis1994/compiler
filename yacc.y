@@ -11,9 +11,33 @@ struct node *right;
 } node;
 
 
+typedef struct symbolNode{
+    int isProc; //0 if primitive symbol, 1 if is procedure
+	char* id;
+	char* type;
+	char* data;
+	int scopeID;
+	struct treeNode *params;
+	struct symbolNode *next;
+} symbolNode;
 
+typedef struct scopeNode{
+	char* scopeName;
+	int scopeNum;
+	int scopeLevel;
+	symbolNode *symbolTable;
+	struct scopeNode *next;
+} scopeNode;
+
+symbolNode* head = NULL;
+scopeNode* topStack = NULL;
+int SCOPE_NUM=0;
+
+int startSemantic(node * root);
 node *mknode(char *token, node *left, node *right);
 node *mkleaf(char *token);
+
+
 
 void printtree(node *tree,int space);
 void moveUp(node * );
@@ -38,7 +62,7 @@ extern int yylex();
 %token <String> BOOL_VALUE CHAR_VALUE STRING_VALUE INT_NUM F_NUM
 %token <String> ID 
 %type <String> TYPE 
-%type <String> INNER_ARGS 
+%type <Node> INNER_ARGS 
 %type <String> CONST 
 %type <Node> OUT_ARGES ARGES FUNC_DEF FUNC_BLOCK INNER_COMPUND_STATMENT EXPRASION 
 %type <Node> FUNC_ACTIVE  COMPUND_STATMENT
@@ -68,6 +92,7 @@ S:
 	CODE {
         $$=mknode("CODE",$1,NULL);
         printtree($$,0);
+		startSemantic($$);
         printf("ok\n");
         }
 	;
@@ -117,15 +142,13 @@ ARGES: '(' ARGES2 {$$=$2;}
 	;
 
 ARGES2:
-	')' {$$=mknode(strdup("empty arguments"),NULL,NULL);}
+	')' {$$=mknode("",NULL,NULL);}
 	| OUT_ARGES ')' {$$=mknode(strdup("ARGS "),$1,NULL);}
 	;
 
 OUT_ARGES:
 	INNER_ARGS ':' TYPE OUT_ARGES2{
-						strcat($3,": ");
-						strcat($3,$1);
-						$$=mknode($3,NULL,NULL);
+						$$=mknode($3,$1,NULL);
 						}
 	;
 
@@ -136,10 +159,9 @@ OUT_ARGES2:
 
 
 INNER_ARGS:
-	ID 
+	ID {$$=mkleaf($1);}
 	|ID ',' INNER_ARGS {
-		strcat($1," ");
-		strcat($1,$3);
+		$$=mknode("",mkleaf($1),$3);
 		}
 	;
 
@@ -148,7 +170,7 @@ FUNC_BLOCK:
 	'{' RETURN EXPRASION ';' '}'  {
 								$$=mknode("",NULL,mknode(strdup("RETURN "),$3,NULL));}
 	|'{' INNER_COMPUND_STATMENT RETURN EXPRASION ';' '}'  {
-															$$=mknode("",$2,mknode(strdup("RETURN "),$4,NULL));}
+															$$=mknode("BLOCK",$2,mknode(strdup("RETURN "),$4,NULL));}
 	;
 
 
@@ -255,7 +277,7 @@ COMPUND_STATMENT_PROC:
 
 INNER_COMPUND_STATMENT:
 	STASTMENT_LIST { $$=mknode("BODY",NULL,$1);}
-	|DEC_INNER_BLOCK {$$=mknode("BODY",$1,NULL);}
+	|DEC_INNER_BLOCK {/* hare we start */$$=mknode("BODY",$1,NULL);}
 	|DEC_INNER_BLOCK  STASTMENT_LIST {$$=mknode("BODY",$1,$2);}
 	;
 
@@ -264,7 +286,7 @@ INNER_COMPUND_STATMENT:
 
 DEC_INNER_BLOCK:
 	NEW_DECLARE DEC_INNER_BLOCK {mknode("",$1,$2);}
-	|NEW_DECLARE
+	|NEW_DECLARE 
 	;
 
 NEW_DECLARE:
@@ -273,12 +295,12 @@ NEW_DECLARE:
 	;
 
 VAR_DECLARE:
-	 VF 
+	 VF
 	|VAR_DECLARE VF {$$=mknode("",$1,$2);}
 	;
 
 VF: 
-	VAR INNER_ARGS ':' TYPE  ';' {$$=mknode($4,mknode($2,NULL,NULL),NULL);}
+	VAR INNER_ARGS ':' TYPE  ';' {$$=mknode($4,$2,NULL);}
 	;
 
 
@@ -389,4 +411,14 @@ void moveDown(node * tree){
 		moveDown(tree->right);
 	if(tree->left!=NULL)
 		moveDown(tree->left);
+}
+int startSemantic(node * root){
+	if(strcmp (root->token ,"CODE" ))
+		return 1;
+
+	
+	printf("got tree %s dsa \n",root->token);
+		return 0;
+	
+	
 }

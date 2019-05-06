@@ -1,10 +1,4 @@
 func foo(i, j, k : int) return int{
-	func square(t : int) return int{
-		var temp : int;
-		temp = t*t;
-		return 0;
-	}
-	var total : int;
-	total = 1; 
-	return total;
+	var a,b:int;
+	return a;
 }

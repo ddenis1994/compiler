@@ -254,7 +254,7 @@ OUT_ARGES <Node> (72)
     on left: 17, on right: 16 19
 OUT_ARGES2 <Node> (73)
     on left: 18 19, on right: 17
-INNER_ARGS <String> (74)
+INNER_ARGS <Node> (74)
     on left: 20 21, on right: 17 21 81
 FUNC_BLOCK <Node> (75)
     on left: 22 23, on right: 13
