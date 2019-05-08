@@ -3,34 +3,43 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#define SYMBALTABLESIZE 1000
+#define SYMBALTABLESIZE 100000
 typedef struct node
 {
 char *token;
-int deep;
 struct node *left;
 struct node *right;
 } node;
-
-
-
-
-
-typedef struct symbolNode{
-    int isProc_func; 
+typedef struct deciptopn{
 	char* id;
+	int isProc_func; 
 	char* type;
 	char* data;
 	char * return_value;
-	struct treeNode *params;
-	struct symbolNode *next;
+	int frameBelong;
+	struct treeNode * params;
+	struct deciptopn * next;
+} deciptopn;
+
+typedef struct symbolNode{
+	char* id;
+	char* data;
+	struct deciptopn * sing;
 } symbolNode;
 
+
+
 typedef struct frame{
-	symbolNode *symbolTable;
+	int frameID;
 	struct frame *next;
 } frame;
 
+struct Stack 
+{ 
+    int top; 
+    unsigned capacity; 
+    struct frame ** array; 
+}; 
 
 typedef struct symblaTable{
 	/* the name of the symbl*/
@@ -39,17 +48,24 @@ typedef struct symblaTable{
 	struct symbolNode * symbals;
 } symblaTable;
 
-
+int deep;
 struct symblaTable * hashTableSymbel;
+struct Stack * frameStack;
 
+struct frame * pop() ;
+void push(struct frame * item) ;
+int isEmpty();
+int isFull();
+int createStack() ;
 int creath_hs();
 long long compute_hash(char *  s);
-int insert(symbolNode * symbel);
-
-
+int insert(deciptopn * symbel);
+int CrearhSymbalFrame(node * root);
+struct frame * creathFrame();
 int startSemantic(node * root);
 node *mknode(char *token, node *left, node *right);
 node *mkleaf(char *token);
+node * creathFuncDec(char * id,node * args,char * typeOfReturn,node * block);
 
 
 
@@ -83,8 +99,8 @@ extern int yylex();
 %type<Node> UPDATES VF VAR_DECLARE FUNC_PROC_DEC DEF_A
 %type<Node> CODE PROC_DEF NEW_DECLARE   MAIN
 %type <Node> MAIN_FUNC  
-%type<Node> S RETURN_STATMENT CODE2 ARGES2 OUT_ARGES2
-%type<Node> FUNC_PROC_DEC2 COMPUND_STATMENT_PROC FUNC_ACTIVE_INNER_ARGES
+%type<Node> S RETURN_STATMENT ARGES2 OUT_ARGES2
+%type<Node> COMPUND_STATMENT_PROC FUNC_ACTIVE_INNER_ARGES
 %nonassoc IFX
 %nonassoc test
 %nonassoc ELSE
@@ -102,38 +118,30 @@ extern int yylex();
 %%
 S: 
 	CODE {
-        $$=mknode("CODE",$1,NULL);
-        printtree($$,0);
+        $$=mknode("BLOCK",$1,NULL);
 		startSemantic($$);
         printf("ok\n");
         }
 	;
 CODE:
-	FUNC_PROC_DEC  CODE2 {$$=mknode("",$1,$2);}
-	|MAIN_FUNC 
+	FUNC_PROC_DEC {$$=mknode("DEC",NULL,$1);}
+	|FUNC_PROC_DEC MAIN_FUNC {$$=mknode("DEC&MAIN",$1,$2);}
+	|MAIN_FUNC {$$=mknode("MAIN",NULL,$1);}
 	;
 	
-CODE2:
-	{$$=mknode("",NULL,NULL);}
-	|MAIN_FUNC
-	;
 
 MAIN_FUNC:
-	PROC MAIN COMPUND_STATMENT{$$=mknode("PROC MAIN",$3,NULL);}
+	PROC MAIN COMPUND_STATMENT{$$=mknode("PROCMAIN",$3,NULL);}
 	;
 
 FUNC_PROC_DEC:
-	DEF_A FUNC_PROC_DEC2 {$$=mknode("",$1,$2);}
-	;
-
-FUNC_PROC_DEC2:
-	{$$=mknode("",NULL,NULL);}
-	|DEF_A FUNC_PROC_DEC2 {$$=mknode("",$1,$2);}
+	DEF_A {$$=mknode("",$1,NULL);}
+	|DEF_A FUNC_PROC_DEC {$$=mknode("",$1,$2);}
 	;
 
 DEF_A:
-	FUNC_DEF 
-	|PROC_DEF
+	FUNC_DEF {$$=mknode("NEW_FUNC",$1,NULL);}
+	|PROC_DEF {$$=mknode("NEW_PROC",$1,NULL);}
 	;
 
 
@@ -143,11 +151,8 @@ PROC_DEF:
 	;
 
 FUNC_DEF:
-	FUNC ID  ARGES  RETURN TYPE FUNC_BLOCK {
-											$$=mknode(strcat(strdup("RET "),$5),NULL,NULL);
-											$3=mknode("",$3,$$);
-											$$=mknode(strcat(strdup("FUNC "),$2),$3,$6);
-											}
+	FUNC ID  ARGES  RETURN TYPE FUNC_BLOCK {$$=creathFuncDec($2,$3,$5,$6);
+	}
 	;
 
 ARGES: '(' ARGES2 {$$=$2;}
@@ -179,10 +184,9 @@ INNER_ARGS:
 
 
 FUNC_BLOCK:
-	'{' RETURN EXPRASION ';' '}'  {
-								$$=mknode("",NULL,mknode(strdup("RETURN "),$3,NULL));}
+	'{' RETURN EXPRASION ';' '}'  {$$=mknode("BLOCK",NULL,mknode(strdup("RETURN BLOCK"),$3,NULL));}
 	|'{' INNER_COMPUND_STATMENT RETURN EXPRASION ';' '}'  {
-															$$=mknode("BLOCK",$2,mknode(strdup("RETURN "),$4,NULL));}
+															$$=mknode("BLOCK",$2,mknode(strdup("RETURN BLOCK"),$4,NULL));}
 	;
 
 
@@ -276,29 +280,27 @@ UPDATES:
 
 
 COMPUND_STATMENT:
-	'{' '}' {$$=mknode("empty statments",NULL,NULL);}
-    |'{' INNER_COMPUND_STATMENT '}' { $$=$2; }
-	|'{' INNER_COMPUND_STATMENT RETURN_STATMENT '}' { $$=$2; }
-    |'{'  RETURN_STATMENT '}' { $$=$2; }
+	'{' '}' {$$=mknode("BLOCK",NULL,NULL);}
+    |'{' INNER_COMPUND_STATMENT '}' { $$=mknode("BLOCK",NULL,$2); }
+	|'{' INNER_COMPUND_STATMENT RETURN_STATMENT '}' { $$=mknode("BLOCK",$3,$2); }
+    |'{'  RETURN_STATMENT '}' { $$=mknode("BLOCK",$2,NULL); }
 	;
 
 COMPUND_STATMENT_PROC:
-	'{' '}' {$$=mknode("empty statments",NULL,NULL);}
-	|'{' INNER_COMPUND_STATMENT '}' { $$=$2; }
+	'{' '}' {$$=mknode("BLOCK",NULL,NULL);}
+	|'{' INNER_COMPUND_STATMENT '}' {$$=mknode("BLOCK",NULL,$2);}
 	;
 
 INNER_COMPUND_STATMENT:
-	STASTMENT_LIST { $$=mknode("BLOCK",NULL,$1);}
-	|DEC_INNER_BLOCK {$$=mknode("BLOCK",$1,NULL);}
-	|DEC_INNER_BLOCK  STASTMENT_LIST {$$=mknode("BLOCK",$1,$2);}
+	STASTMENT_LIST { $$=mknode("",NULL,$1);}
+	|DEC_INNER_BLOCK {$$=mknode("",$1,NULL);}
+	|DEC_INNER_BLOCK  STASTMENT_LIST {$$=mknode("",$1,$2);}
 	;
 
 
-
-
 DEC_INNER_BLOCK:
-	NEW_DECLARE DEC_INNER_BLOCK {mknode("",$1,$2);}
-	|NEW_DECLARE 
+	NEW_DECLARE DEC_INNER_BLOCK {mknode("DECLARE",$1,$2);}
+	|NEW_DECLARE {mknode("DECLARE",$1,NULL);}
 	;
 
 NEW_DECLARE:
@@ -315,17 +317,10 @@ VF:
 	VAR INNER_ARGS ':' TYPE  ';' {$$=mknode($4,$2,NULL);}
 	;
 
-
-
-
-
-
 CONST:
 	INT_NUM 
 	|F_NUM 
 	;
-
-
 
 TYPE:	
 	STRING '[' INT_NUM ']'
@@ -343,20 +338,10 @@ void yyerror(char * msg){
 }
 
 int main(){
-	char * h="zz";
-	int l;
-	symbolNode * test1=(symbolNode*)malloc(sizeof(symbolNode));
-	test1->id="hii";
-	l=creath_hs();
-
-	l=insert(test1);
-	printf("%d",l);
-	free(hashTableSymbel);
-    
+	return yyparse();
     return 0;
 }
-void printtree(node * tree,int space)
-{
+void printtree(node * tree,int space){
     int i;
 	if (sizeof(tree->token) > 0){
         for(i=0;i<space;i++)
@@ -392,37 +377,57 @@ void printtree(node * tree,int space)
 	
 }
 
-node *mknode(char *token, node *left, node *right)
-{
-node * newnode=(node*)malloc(sizeof(node));
-char *newstr=(char*)malloc(sizeof(token) + 1);
-strcpy(newstr,token);
-newnode->left=left;
-newnode->right=right;
-newnode->token=newstr;
-return 	newnode;
+node *mknode(char *token, node *left, node *right){
+	node * newnode=(node*)malloc(sizeof(node));
+	char *newstr=(char*)malloc(sizeof(token) + 1);
+	strcpy(newstr,token);
+	newnode->left=left;
+	newnode->right=right;
+	newnode->token=newstr;
+	return 	newnode;
 }
-node *mkleaf(char *token)
-{
-node * newnode=(node*)malloc(sizeof(node));
-char *newstr=(char*)malloc(sizeof(token) + 1);
-strcpy(newstr,token);
-newnode->left=NULL;
-newnode->right=NULL;
-newnode->token=newstr;
-return 	newnode;
+node *mkleaf(char *token){
+	node * newnode=(node*)malloc(sizeof(node));
+	char *newstr=(char*)malloc(sizeof(token) + 1);
+	strcpy(newstr,token);
+	newnode->left=NULL;
+	newnode->right=NULL;
+	newnode->token=newstr;
+	return 	newnode;
 }
 
 
 int startSemantic(node * root){
-	if(strcmp (root->token ,"CODE" ))
+	if(strcmp (root->token ,"BLOCK" ))
 		return 1;
+	//first allocate space for HT
+	if(creath_hs()==1){
+		printf("cannot allocate space for HT exit\n");
+		exit(1);
+		}
+	//secuond allocate space for stack
+	if(createStack()==1){
+		printf("cannot allocate space for STACK exit\n");
+		exit(1);
+		}
+	deep=0;
+	push(creathFrame());
+	CrearhSymbalFrame(root->left);
 
+	free(hashTableSymbel->symbals);
+	free(hashTableSymbel);
+	return 0;
 	
-	printf("got tree %s dsa \n",root->token);
-		return 0;
 	
-	
+}
+
+struct frame *  creathFrame(){
+	struct frame * temp =(struct frame *)malloc(sizeof(struct frame));
+	temp->frameID++;
+	temp->next=NULL;
+	return temp;
+
+
 }
 
 long long compute_hash(char *  s) {
@@ -437,7 +442,7 @@ long long compute_hash(char *  s) {
         p_pow = (p_pow * p) % m;
     }
     return hash_value;
-}
+	}
 
 int creath_hs(){
 	int i;
@@ -449,38 +454,95 @@ int creath_hs(){
 		hashTableSymbel[i].symbals=NULL;
 	}
 	return 0;
-}
+	}
 
 
 
-int insert(symbolNode * symbel){
-	symbolNode * temp_symbal;
-
+int insert(deciptopn * symbel){
+	struct deciptopn * temp_symbal;
+	long sizeHT = SYMBALTABLESIZE;
 	//creath first hush key for the string
-	long long id =compute_hash(symbel->id) % SYMBALTABLESIZE;
+	long long id =compute_hash(symbel->id) % sizeHT;
 	//chack if alrdy has this symbol
-		
-	
 
 	if(strcmp (hashTableSymbel[id].name ,symbel->id )!=0)
 		//if not creah table for the symbel
 		hashTableSymbel[id].name = symbel->id;
 	//copy the pointer fot the symbel data
 
-	temp_symbal=hashTableSymbel[id].symbals;
-
+	temp_symbal=hashTableSymbel[id].symbals->sing;
 	//look for first empty space
-	while(temp_symbal!=NULL)
-		temp_symbal=temp_symbal->next;
+	while(temp_symbal != NULL)
+		temp_symbal=temp_symbal -> next;
 	//insert in the empty space the the table for the symbel
 
 
 	//hare can find out if alredy crather this symbol
 	//to do chack if symbol alerdy exsists
-	if (!NULL)
+	if (NULL)
 		return 1;
+
 	temp_symbal=symbel;
 
+	return 0;
+	}
 
+
+int createStack() { 
+
+	if( ( frameStack = (struct Stack *) malloc(sizeof(struct Stack)) ) == NULL ) 
+		return 1;
+    frameStack->capacity = SYMBALTABLESIZE; 
+    frameStack->top = -1; 
+    frameStack->array = (struct frame **) malloc(frameStack->capacity * sizeof(struct frame **)); 
+	return 0;
+	} 
+
+// Stack is full when top is equal to the last index 
+int isFull() {
+	   return frameStack->top == frameStack->capacity - 1; } 
+  
+// Stack is empty when top is equal to -1 
+int isEmpty() 
+{   return frameStack->top == -1;  } 
+  
+// Function to add an item to stack.  It increases top by 1 
+void push( struct frame * item) { 
+    if (isFull(frameStack)) 
+        return; 
+    frameStack->array[++frameStack->top] = item; 
+	} 
+  
+// Function to remove an item from stack.  It decreases top by 1 
+struct frame * pop() { 
+    if (isEmpty(frameStack)) 
+        return NULL; 
+    return frameStack->array[frameStack->top--]; 
+	} 
+
+node * creathFuncDec(char * id,node * args,char * typeOfReturn,node * block){
+	node * temp=mknode("RETURN ",NULL,mkleaf(typeOfReturn));
+	temp=mknode("ARGS",temp,args);
+	temp=mknode("ID",temp,mkleaf(id));
+	temp=mknode("FUNC",temp,block);
+	return temp;
+
+	}
+
+
+int CrearhSymbalFrame(node * root){
+	//first to to push empty stack
+	if( strcmp (root->token ,strdup("BLOCK"))==0){
+	push(creathFrame());
+
+	printf("found new block\n");
+
+	}
+	if(root->left)
+		CrearhSymbalFrame(root->left);
+	if(root->right)
+		CrearhSymbalFrame(root->right);
 	
+
+
 }

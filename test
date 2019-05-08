@@ -1,4 +1,8 @@
 func foo(i, j, k : int) return int{
-	var a,b:int;
+	{
+		{
+			
+		}
+	}
 	return a;
 }

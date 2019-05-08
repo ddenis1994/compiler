@@ -13,25 +13,24 @@ Terminals unused in grammar
 
 
 State 7 conflicts: 2 shift/reduce
-State 19 conflicts: 2 shift/reduce
-State 60 conflicts: 1 shift/reduce
+State 57 conflicts: 1 shift/reduce
+State 79 conflicts: 1 shift/reduce
+State 80 conflicts: 1 shift/reduce
+State 81 conflicts: 1 shift/reduce
 State 82 conflicts: 1 shift/reduce
-State 83 conflicts: 1 shift/reduce
-State 84 conflicts: 1 shift/reduce
-State 85 conflicts: 1 shift/reduce
-State 123 conflicts: 12 shift/reduce
-State 125 conflicts: 1 shift/reduce
+State 120 conflicts: 12 shift/reduce
+State 122 conflicts: 1 shift/reduce
+State 123 conflicts: 1 shift/reduce
+State 124 conflicts: 1 shift/reduce
+State 125 conflicts: 12 shift/reduce
 State 126 conflicts: 1 shift/reduce
 State 127 conflicts: 1 shift/reduce
-State 128 conflicts: 12 shift/reduce
+State 128 conflicts: 1 shift/reduce
 State 129 conflicts: 1 shift/reduce
 State 130 conflicts: 1 shift/reduce
 State 131 conflicts: 1 shift/reduce
 State 132 conflicts: 1 shift/reduce
 State 133 conflicts: 1 shift/reduce
-State 134 conflicts: 1 shift/reduce
-State 135 conflicts: 1 shift/reduce
-State 136 conflicts: 1 shift/reduce
 
 
 Grammar
@@ -40,184 +39,180 @@ Grammar
 
     1 S: CODE
 
-    2 CODE: FUNC_PROC_DEC CODE2
-    3     | MAIN_FUNC
+    2 CODE: FUNC_PROC_DEC
+    3     | FUNC_PROC_DEC MAIN_FUNC
+    4     | MAIN_FUNC
 
-    4 CODE2: %empty
-    5      | MAIN_FUNC
+    5 MAIN_FUNC: PROC MAIN COMPUND_STATMENT
 
-    6 MAIN_FUNC: PROC MAIN COMPUND_STATMENT
+    6 FUNC_PROC_DEC: DEF_A
+    7              | DEF_A FUNC_PROC_DEC
 
-    7 FUNC_PROC_DEC: DEF_A FUNC_PROC_DEC2
+    8 DEF_A: FUNC_DEF
+    9      | PROC_DEF
 
-    8 FUNC_PROC_DEC2: %empty
-    9               | DEF_A FUNC_PROC_DEC2
+   10 PROC_DEF: PROC ID ARGES COMPUND_STATMENT_PROC
 
-   10 DEF_A: FUNC_DEF
-   11      | PROC_DEF
+   11 FUNC_DEF: FUNC ID ARGES RETURN TYPE FUNC_BLOCK
 
-   12 PROC_DEF: PROC ID ARGES COMPUND_STATMENT_PROC
+   12 ARGES: '(' ARGES2
 
-   13 FUNC_DEF: FUNC ID ARGES RETURN TYPE FUNC_BLOCK
+   13 ARGES2: ')'
+   14       | OUT_ARGES ')'
 
-   14 ARGES: '(' ARGES2
+   15 OUT_ARGES: INNER_ARGS ':' TYPE OUT_ARGES2
 
-   15 ARGES2: ')'
-   16       | OUT_ARGES ')'
+   16 OUT_ARGES2: %empty
+   17           | ';' OUT_ARGES
 
-   17 OUT_ARGES: INNER_ARGS ':' TYPE OUT_ARGES2
+   18 INNER_ARGS: ID
+   19           | ID ',' INNER_ARGS
 
-   18 OUT_ARGES2: %empty
-   19           | ';' OUT_ARGES
+   20 FUNC_BLOCK: '{' RETURN EXPRASION ';' '}'
+   21           | '{' INNER_COMPUND_STATMENT RETURN EXPRASION ';' '}'
 
-   20 INNER_ARGS: ID
-   21           | ID ',' INNER_ARGS
+   22 EXPRASION: CONST
+   23          | '(' EXPRASION ')'
+   24          | TRUE
+   25          | FALSE
+   26          | ID
+   27          | '^' EXPRASION
+   28          | '&' EXPRASION
+   29          | '-' EXPRASION
+   30          | '!' EXPRASION
+   31          | ID '=' EXPRASION
+   32          | EXPRASION NE_OP EXPRASION
+   33          | EXPRASION AND_OP EXPRASION
+   34          | EXPRASION OR_OP EXPRASION
+   35          | EXPRASION '+' EXPRASION
+   36          | EXPRASION '-' EXPRASION
+   37          | EXPRASION '/' EXPRASION
+   38          | EXPRASION '*' EXPRASION
+   39          | EXPRASION EQL_OP EXPRASION
+   40          | EXPRASION GE_OP EXPRASION
+   41          | EXPRASION SE_OP EXPRASION
+   42          | EXPRASION '>' EXPRASION
+   43          | EXPRASION '<' EXPRASION
+   44          | FUNC_ACTIVE
 
-   22 FUNC_BLOCK: '{' RETURN EXPRASION ';' '}'
-   23           | '{' INNER_COMPUND_STATMENT RETURN EXPRASION ';' '}'
+   45 FUNC_ACTIVE: ID '(' ')'
+   46            | ID '(' FUNC_ACTIVE_INNER_ARGES ')'
 
-   24 EXPRASION: CONST
-   25          | '(' EXPRASION ')'
-   26          | TRUE
-   27          | FALSE
-   28          | ID
-   29          | '^' EXPRASION
-   30          | '&' EXPRASION
-   31          | '-' EXPRASION
-   32          | '!' EXPRASION
-   33          | ID '=' EXPRASION
-   34          | EXPRASION NE_OP EXPRASION
-   35          | EXPRASION AND_OP EXPRASION
-   36          | EXPRASION OR_OP EXPRASION
-   37          | EXPRASION '+' EXPRASION
-   38          | EXPRASION '-' EXPRASION
-   39          | EXPRASION '/' EXPRASION
-   40          | EXPRASION '*' EXPRASION
-   41          | EXPRASION EQL_OP EXPRASION
-   42          | EXPRASION GE_OP EXPRASION
-   43          | EXPRASION SE_OP EXPRASION
-   44          | EXPRASION '>' EXPRASION
-   45          | EXPRASION '<' EXPRASION
-   46          | FUNC_ACTIVE
+   47 FUNC_ACTIVE_INNER_ARGES: ID
+   48                        | CONST
+   49                        | ID ',' FUNC_ACTIVE_INNER_ARGES
+   50                        | CONST ',' FUNC_ACTIVE_INNER_ARGES
 
-   47 FUNC_ACTIVE: ID '(' ')'
-   48            | ID '(' FUNC_ACTIVE_INNER_ARGES ')'
+   51 STASTMENT_LIST: STASTMENT_LIST STASTMENT
+   52               | STASTMENT
 
-   49 FUNC_ACTIVE_INNER_ARGES: ID
-   50                        | CONST
-   51                        | ID ',' FUNC_ACTIVE_INNER_ARGES
-   52                        | CONST ',' FUNC_ACTIVE_INNER_ARGES
+   53 IF_STASTMENT: IF '(' EXPRASION ')' STASTMENT ELSE STASTMENT
+   54             | IF '(' EXPRASION ')' STASTMENT
 
-   53 STASTMENT_LIST: STASTMENT_LIST STASTMENT
-   54               | STASTMENT
+   55 STASTMENT: COMPUND_STATMENT
+   56          | EXPRASION ';'
+   57          | IF_STASTMENT
+   58          | LOOP_STATMENT
 
-   55 IF_STASTMENT: IF '(' EXPRASION ')' STASTMENT ELSE STASTMENT
-   56             | IF '(' EXPRASION ')' STASTMENT
+   59 RETURN_STATMENT: RETURN EXPRASION ';'
 
-   57 STASTMENT: COMPUND_STATMENT
-   58          | EXPRASION ';'
-   59          | IF_STASTMENT
-   60          | LOOP_STATMENT
+   60 LOOP_STATMENT: WHILE '(' EXPRASION ')' STASTMENT
+   61              | FOR '(' EXPRASION ';' EXPRASION ';' UPDATES ')' STASTMENT
 
-   61 RETURN_STATMENT: RETURN EXPRASION ';'
+   62 UPDATES: ID '+' '+'
+   63        | ID '-' '-'
 
-   62 LOOP_STATMENT: WHILE '(' EXPRASION ')' STASTMENT
-   63              | FOR '(' EXPRASION ';' EXPRASION ';' UPDATES ')' STASTMENT
+   64 COMPUND_STATMENT: '{' '}'
+   65                 | '{' INNER_COMPUND_STATMENT '}'
+   66                 | '{' INNER_COMPUND_STATMENT RETURN_STATMENT '}'
+   67                 | '{' RETURN_STATMENT '}'
 
-   64 UPDATES: ID '+' '+'
-   65        | ID '-' '-'
+   68 COMPUND_STATMENT_PROC: '{' '}'
+   69                      | '{' INNER_COMPUND_STATMENT '}'
 
-   66 COMPUND_STATMENT: '{' '}'
-   67                 | '{' INNER_COMPUND_STATMENT '}'
-   68                 | '{' INNER_COMPUND_STATMENT RETURN_STATMENT '}'
-   69                 | '{' RETURN_STATMENT '}'
+   70 INNER_COMPUND_STATMENT: STASTMENT_LIST
+   71                       | DEC_INNER_BLOCK
+   72                       | DEC_INNER_BLOCK STASTMENT_LIST
 
-   70 COMPUND_STATMENT_PROC: '{' '}'
-   71                      | '{' INNER_COMPUND_STATMENT '}'
+   73 DEC_INNER_BLOCK: NEW_DECLARE DEC_INNER_BLOCK
+   74                | NEW_DECLARE
 
-   72 INNER_COMPUND_STATMENT: STASTMENT_LIST
-   73                       | DEC_INNER_BLOCK
-   74                       | DEC_INNER_BLOCK STASTMENT_LIST
+   75 NEW_DECLARE: VAR_DECLARE
+   76            | FUNC_PROC_DEC
 
-   75 DEC_INNER_BLOCK: NEW_DECLARE DEC_INNER_BLOCK
-   76                | NEW_DECLARE
+   77 VAR_DECLARE: VF
+   78            | VAR_DECLARE VF
 
-   77 NEW_DECLARE: VAR_DECLARE
-   78            | FUNC_PROC_DEC
+   79 VF: VAR INNER_ARGS ':' TYPE ';'
 
-   79 VAR_DECLARE: VF
-   80            | VAR_DECLARE VF
+   80 CONST: INT_NUM
+   81      | F_NUM
 
-   81 VF: VAR INNER_ARGS ':' TYPE ';'
-
-   82 CONST: INT_NUM
-   83      | F_NUM
-
-   84 TYPE: STRING '[' INT_NUM ']'
-   85     | BOOL
-   86     | INT
-   87     | FLOAT
-   88     | REAL
-   89     | CHAR
+   82 TYPE: STRING '[' INT_NUM ']'
+   83     | BOOL
+   84     | INT
+   85     | FLOAT
+   86     | REAL
+   87     | CHAR
 
 
 Terminals, with rules where they appear
 
 $end (0) 0
-'!' (33) 32
-'&' (38) 30
-'(' (40) 14 25 47 48 55 56 62 63
-')' (41) 15 16 25 47 48 55 56 62 63
-'*' (42) 40
-'+' (43) 37 64
-',' (44) 21 51 52
-'-' (45) 31 38 65
-'/' (47) 39
-':' (58) 17 81
-';' (59) 19 22 23 58 61 63 81
-'<' (60) 45
-'=' (61) 33
-'>' (62) 44
-'[' (91) 84
-']' (93) 84
-'^' (94) 29
-'{' (123) 22 23 66 67 68 69 70 71
-'}' (125) 22 23 66 67 68 69 70 71
+'!' (33) 30
+'&' (38) 28
+'(' (40) 12 23 45 46 53 54 60 61
+')' (41) 13 14 23 45 46 53 54 60 61
+'*' (42) 38
+'+' (43) 35 62
+',' (44) 19 49 50
+'-' (45) 29 36 63
+'/' (47) 37
+':' (58) 15 79
+';' (59) 17 20 21 56 59 61 79
+'<' (60) 43
+'=' (61) 31
+'>' (62) 42
+'[' (91) 82
+']' (93) 82
+'^' (94) 27
+'{' (123) 20 21 64 65 66 67 68 69
+'}' (125) 20 21 64 65 66 67 68 69
 error (256)
-CHAR <String> (258) 89
-REAL <String> (259) 88
-FLOAT <String> (260) 87
-INT <String> (261) 86
-BOOL <String> (262) 85
-STRING <String> (263) 84
+CHAR <String> (258) 87
+REAL <String> (259) 86
+FLOAT <String> (260) 85
+INT <String> (261) 84
+BOOL <String> (262) 83
+STRING <String> (263) 82
 CHAR_POINTER <String> (264)
 REAL_POINTER <String> (265)
 FLOAT_POINTER <String> (266)
 INT_POINTER <String> (267)
-ELSE (268) 55
-IF (269) 55 56
-FOR (270) 63
-WHILE (271) 62
-TRUE (272) 26
-FALSE (273) 27
-RETURN (274) 13 22 23 61
-MAIN <Node> (275) 6
-VAR <String> (276) 81
-FUNC <String> (277) 13
-PROC <String> (278) 6 12
+ELSE (268) 53
+IF (269) 53 54
+FOR (270) 61
+WHILE (271) 60
+TRUE (272) 24
+FALSE (273) 25
+RETURN (274) 11 20 21 59
+MAIN <Node> (275) 5
+VAR <String> (276) 79
+FUNC <String> (277) 11
+PROC <String> (278) 5 10
 NULL_VALUE (279)
-AND_OP (280) 35
-GE_OP (281) 42
-SE_OP (282) 43
-NE_OP (283) 34
-OR_OP (284) 36
-EQL_OP (285) 41
+AND_OP (280) 33
+GE_OP (281) 40
+SE_OP (282) 41
+NE_OP (283) 32
+OR_OP (284) 34
+EQL_OP (285) 39
 BOOL_VALUE <String> (286)
 CHAR_VALUE <String> (287)
 STRING_VALUE <String> (288)
-INT_NUM <String> (289) 82 84
-F_NUM <String> (290) 83
-ID <String> (291) 12 13 20 21 28 33 47 48 49 51 64 65
+INT_NUM <String> (289) 80 82
+F_NUM <String> (290) 81
+ID <String> (291) 10 11 18 19 26 31 45 46 47 49 62 63
 IFX (292)
 test (293)
 UMINUS (294)
@@ -231,71 +226,67 @@ $accept (60)
 S <Node> (61)
     on left: 1, on right: 0
 CODE <Node> (62)
-    on left: 2 3, on right: 1
-CODE2 <Node> (63)
-    on left: 4 5, on right: 2
-MAIN_FUNC <Node> (64)
-    on left: 6, on right: 3 5
-FUNC_PROC_DEC <Node> (65)
-    on left: 7, on right: 2 78
-FUNC_PROC_DEC2 <Node> (66)
-    on left: 8 9, on right: 7 9
-DEF_A <Node> (67)
-    on left: 10 11, on right: 7 9
-PROC_DEF <Node> (68)
-    on left: 12, on right: 11
-FUNC_DEF <Node> (69)
-    on left: 13, on right: 10
-ARGES <Node> (70)
-    on left: 14, on right: 12 13
-ARGES2 <Node> (71)
-    on left: 15 16, on right: 14
-OUT_ARGES <Node> (72)
-    on left: 17, on right: 16 19
-OUT_ARGES2 <Node> (73)
-    on left: 18 19, on right: 17
-INNER_ARGS <Node> (74)
-    on left: 20 21, on right: 17 21 81
-FUNC_BLOCK <Node> (75)
-    on left: 22 23, on right: 13
-EXPRASION <Node> (76)
-    on left: 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41
-    42 43 44 45 46, on right: 22 23 25 29 30 31 32 33 34 35 36 37 38
-    39 40 41 42 43 44 45 55 56 58 61 62 63
-FUNC_ACTIVE <Node> (77)
-    on left: 47 48, on right: 46
-FUNC_ACTIVE_INNER_ARGES <Node> (78)
-    on left: 49 50 51 52, on right: 48 51 52
-STASTMENT_LIST <Node> (79)
-    on left: 53 54, on right: 53 72 74
-IF_STASTMENT <Node> (80)
-    on left: 55 56, on right: 59
-STASTMENT <Node> (81)
-    on left: 57 58 59 60, on right: 53 54 55 56 62 63
-RETURN_STATMENT <Node> (82)
-    on left: 61, on right: 68 69
-LOOP_STATMENT <Node> (83)
-    on left: 62 63, on right: 60
-UPDATES <Node> (84)
-    on left: 64 65, on right: 63
-COMPUND_STATMENT <Node> (85)
-    on left: 66 67 68 69, on right: 6 57
-COMPUND_STATMENT_PROC <Node> (86)
-    on left: 70 71, on right: 12
-INNER_COMPUND_STATMENT <Node> (87)
-    on left: 72 73 74, on right: 23 67 68 71
-DEC_INNER_BLOCK <Node> (88)
-    on left: 75 76, on right: 73 74 75
-NEW_DECLARE <Node> (89)
-    on left: 77 78, on right: 75 76
-VAR_DECLARE <Node> (90)
-    on left: 79 80, on right: 77 80
-VF <Node> (91)
-    on left: 81, on right: 79 80
-CONST <String> (92)
-    on left: 82 83, on right: 24 50 52
-TYPE <String> (93)
-    on left: 84 85 86 87 88 89, on right: 13 17 81
+    on left: 2 3 4, on right: 1
+MAIN_FUNC <Node> (63)
+    on left: 5, on right: 3 4
+FUNC_PROC_DEC <Node> (64)
+    on left: 6 7, on right: 2 3 7 76
+DEF_A <Node> (65)
+    on left: 8 9, on right: 6 7
+PROC_DEF <Node> (66)
+    on left: 10, on right: 9
+FUNC_DEF <Node> (67)
+    on left: 11, on right: 8
+ARGES <Node> (68)
+    on left: 12, on right: 10 11
+ARGES2 <Node> (69)
+    on left: 13 14, on right: 12
+OUT_ARGES <Node> (70)
+    on left: 15, on right: 14 17
+OUT_ARGES2 <Node> (71)
+    on left: 16 17, on right: 15
+INNER_ARGS <Node> (72)
+    on left: 18 19, on right: 15 19 79
+FUNC_BLOCK <Node> (73)
+    on left: 20 21, on right: 11
+EXPRASION <Node> (74)
+    on left: 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39
+    40 41 42 43 44, on right: 20 21 23 27 28 29 30 31 32 33 34 35 36
+    37 38 39 40 41 42 43 53 54 56 59 60 61
+FUNC_ACTIVE <Node> (75)
+    on left: 45 46, on right: 44
+FUNC_ACTIVE_INNER_ARGES <Node> (76)
+    on left: 47 48 49 50, on right: 46 49 50
+STASTMENT_LIST <Node> (77)
+    on left: 51 52, on right: 51 70 72
+IF_STASTMENT <Node> (78)
+    on left: 53 54, on right: 57
+STASTMENT <Node> (79)
+    on left: 55 56 57 58, on right: 51 52 53 54 60 61
+RETURN_STATMENT <Node> (80)
+    on left: 59, on right: 66 67
+LOOP_STATMENT <Node> (81)
+    on left: 60 61, on right: 58
+UPDATES <Node> (82)
+    on left: 62 63, on right: 61
+COMPUND_STATMENT <Node> (83)
+    on left: 64 65 66 67, on right: 5 55
+COMPUND_STATMENT_PROC <Node> (84)
+    on left: 68 69, on right: 10
+INNER_COMPUND_STATMENT <Node> (85)
+    on left: 70 71 72, on right: 21 65 66 69
+DEC_INNER_BLOCK <Node> (86)
+    on left: 73 74, on right: 71 72 73
+NEW_DECLARE <Node> (87)
+    on left: 75 76, on right: 73 74
+VAR_DECLARE <Node> (88)
+    on left: 77 78, on right: 75 78
+VF <Node> (89)
+    on left: 79, on right: 77 78
+CONST <String> (90)
+    on left: 80 81, on right: 22 48 50
+TYPE <String> (91)
+    on left: 82 83 84 85 86 87, on right: 11 15 79
 
 
 State 0
@@ -316,15 +307,15 @@ State 0
 
 State 1
 
-   13 FUNC_DEF: FUNC . ID ARGES RETURN TYPE FUNC_BLOCK
+   11 FUNC_DEF: FUNC . ID ARGES RETURN TYPE FUNC_BLOCK
 
     ID  shift, and go to state 10
 
 
 State 2
 
-    6 MAIN_FUNC: PROC . MAIN COMPUND_STATMENT
-   12 PROC_DEF: PROC . ID ARGES COMPUND_STATMENT_PROC
+    5 MAIN_FUNC: PROC . MAIN COMPUND_STATMENT
+   10 PROC_DEF: PROC . ID ARGES COMPUND_STATMENT_PROC
 
     MAIN  shift, and go to state 11
     ID    shift, and go to state 12
@@ -346,79 +337,80 @@ State 4
 
 State 5
 
-    3 CODE: MAIN_FUNC .
+    4 CODE: MAIN_FUNC .
 
-    $default  reduce using rule 3 (CODE)
+    $default  reduce using rule 4 (CODE)
 
 
 State 6
 
-    2 CODE: FUNC_PROC_DEC . CODE2
+    2 CODE: FUNC_PROC_DEC .
+    3     | FUNC_PROC_DEC . MAIN_FUNC
 
     PROC  shift, and go to state 14
 
-    $default  reduce using rule 4 (CODE2)
+    $default  reduce using rule 2 (CODE)
 
-    CODE2      go to state 15
-    MAIN_FUNC  go to state 16
+    MAIN_FUNC  go to state 15
 
 
 State 7
 
-    7 FUNC_PROC_DEC: DEF_A . FUNC_PROC_DEC2
+    6 FUNC_PROC_DEC: DEF_A .
+    7              | DEF_A . FUNC_PROC_DEC
 
     FUNC  shift, and go to state 1
-    PROC  shift, and go to state 17
+    PROC  shift, and go to state 16
 
-    FUNC      [reduce using rule 8 (FUNC_PROC_DEC2)]
-    PROC      [reduce using rule 8 (FUNC_PROC_DEC2)]
-    $default  reduce using rule 8 (FUNC_PROC_DEC2)
+    FUNC      [reduce using rule 6 (FUNC_PROC_DEC)]
+    PROC      [reduce using rule 6 (FUNC_PROC_DEC)]
+    $default  reduce using rule 6 (FUNC_PROC_DEC)
 
-    FUNC_PROC_DEC2  go to state 18
-    DEF_A           go to state 19
-    PROC_DEF        go to state 8
-    FUNC_DEF        go to state 9
+    FUNC_PROC_DEC  go to state 17
+    DEF_A          go to state 7
+    PROC_DEF       go to state 8
+    FUNC_DEF       go to state 9
 
 
 State 8
 
-   11 DEF_A: PROC_DEF .
+    9 DEF_A: PROC_DEF .
 
-    $default  reduce using rule 11 (DEF_A)
+    $default  reduce using rule 9 (DEF_A)
 
 
 State 9
 
-   10 DEF_A: FUNC_DEF .
+    8 DEF_A: FUNC_DEF .
 
-    $default  reduce using rule 10 (DEF_A)
+    $default  reduce using rule 8 (DEF_A)
 
 
 State 10
 
-   13 FUNC_DEF: FUNC ID . ARGES RETURN TYPE FUNC_BLOCK
+   11 FUNC_DEF: FUNC ID . ARGES RETURN TYPE FUNC_BLOCK
 
-    '('  shift, and go to state 20
+    '('  shift, and go to state 18
 
-    ARGES  go to state 21
+    ARGES  go to state 19
 
 
 State 11
 
-    6 MAIN_FUNC: PROC MAIN . COMPUND_STATMENT
+    5 MAIN_FUNC: PROC MAIN . COMPUND_STATMENT
 
-    '{'  shift, and go to state 22
+    '{'  shift, and go to state 20
 
-    COMPUND_STATMENT  go to state 23
+    COMPUND_STATMENT  go to state 21
 
 
 State 12
 
-   12 PROC_DEF: PROC ID . ARGES COMPUND_STATMENT_PROC
+   10 PROC_DEF: PROC ID . ARGES COMPUND_STATMENT_PROC
 
-    '('  shift, and go to state 20
+    '('  shift, and go to state 18
 
-    ARGES  go to state 24
+    ARGES  go to state 22
 
 
 State 13
@@ -430,1771 +422,1636 @@ State 13
 
 State 14
 
-    6 MAIN_FUNC: PROC . MAIN COMPUND_STATMENT
+    5 MAIN_FUNC: PROC . MAIN COMPUND_STATMENT
 
     MAIN  shift, and go to state 11
 
 
 State 15
 
-    2 CODE: FUNC_PROC_DEC CODE2 .
+    3 CODE: FUNC_PROC_DEC MAIN_FUNC .
 
-    $default  reduce using rule 2 (CODE)
+    $default  reduce using rule 3 (CODE)
 
 
 State 16
 
-    5 CODE2: MAIN_FUNC .
-
-    $default  reduce using rule 5 (CODE2)
-
-
-State 17
-
-   12 PROC_DEF: PROC . ID ARGES COMPUND_STATMENT_PROC
+   10 PROC_DEF: PROC . ID ARGES COMPUND_STATMENT_PROC
 
     ID  shift, and go to state 12
 
 
-State 18
+State 17
 
-    7 FUNC_PROC_DEC: DEF_A FUNC_PROC_DEC2 .
+    7 FUNC_PROC_DEC: DEF_A FUNC_PROC_DEC .
 
     $default  reduce using rule 7 (FUNC_PROC_DEC)
 
 
+State 18
+
+   12 ARGES: '(' . ARGES2
+
+    ID   shift, and go to state 23
+    ')'  shift, and go to state 24
+
+    ARGES2      go to state 25
+    OUT_ARGES   go to state 26
+    INNER_ARGS  go to state 27
+
+
 State 19
 
-    9 FUNC_PROC_DEC2: DEF_A . FUNC_PROC_DEC2
+   11 FUNC_DEF: FUNC ID ARGES . RETURN TYPE FUNC_BLOCK
 
-    FUNC  shift, and go to state 1
-    PROC  shift, and go to state 17
-
-    FUNC      [reduce using rule 8 (FUNC_PROC_DEC2)]
-    PROC      [reduce using rule 8 (FUNC_PROC_DEC2)]
-    $default  reduce using rule 8 (FUNC_PROC_DEC2)
-
-    FUNC_PROC_DEC2  go to state 25
-    DEF_A           go to state 19
-    PROC_DEF        go to state 8
-    FUNC_DEF        go to state 9
+    RETURN  shift, and go to state 28
 
 
 State 20
 
-   14 ARGES: '(' . ARGES2
+   64 COMPUND_STATMENT: '{' . '}'
+   65                 | '{' . INNER_COMPUND_STATMENT '}'
+   66                 | '{' . INNER_COMPUND_STATMENT RETURN_STATMENT '}'
+   67                 | '{' . RETURN_STATMENT '}'
 
-    ID   shift, and go to state 26
-    ')'  shift, and go to state 27
+    IF       shift, and go to state 29
+    FOR      shift, and go to state 30
+    WHILE    shift, and go to state 31
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    RETURN   shift, and go to state 34
+    VAR      shift, and go to state 35
+    FUNC     shift, and go to state 1
+    PROC     shift, and go to state 16
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
+    '{'      shift, and go to state 20
+    '}'      shift, and go to state 44
 
-    ARGES2      go to state 28
-    OUT_ARGES   go to state 29
-    INNER_ARGS  go to state 30
+    FUNC_PROC_DEC           go to state 45
+    DEF_A                   go to state 7
+    PROC_DEF                go to state 8
+    FUNC_DEF                go to state 9
+    EXPRASION               go to state 46
+    FUNC_ACTIVE             go to state 47
+    STASTMENT_LIST          go to state 48
+    IF_STASTMENT            go to state 49
+    STASTMENT               go to state 50
+    RETURN_STATMENT         go to state 51
+    LOOP_STATMENT           go to state 52
+    COMPUND_STATMENT        go to state 53
+    INNER_COMPUND_STATMENT  go to state 54
+    DEC_INNER_BLOCK         go to state 55
+    NEW_DECLARE             go to state 56
+    VAR_DECLARE             go to state 57
+    VF                      go to state 58
+    CONST                   go to state 59
 
 
 State 21
 
-   13 FUNC_DEF: FUNC ID ARGES . RETURN TYPE FUNC_BLOCK
+    5 MAIN_FUNC: PROC MAIN COMPUND_STATMENT .
 
-    RETURN  shift, and go to state 31
+    $default  reduce using rule 5 (MAIN_FUNC)
 
 
 State 22
 
-   66 COMPUND_STATMENT: '{' . '}'
-   67                 | '{' . INNER_COMPUND_STATMENT '}'
-   68                 | '{' . INNER_COMPUND_STATMENT RETURN_STATMENT '}'
-   69                 | '{' . RETURN_STATMENT '}'
+   10 PROC_DEF: PROC ID ARGES . COMPUND_STATMENT_PROC
 
-    IF       shift, and go to state 32
-    FOR      shift, and go to state 33
-    WHILE    shift, and go to state 34
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    RETURN   shift, and go to state 37
-    VAR      shift, and go to state 38
-    FUNC     shift, and go to state 1
-    PROC     shift, and go to state 17
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
-    '{'      shift, and go to state 22
-    '}'      shift, and go to state 47
+    '{'  shift, and go to state 60
 
-    FUNC_PROC_DEC           go to state 48
-    DEF_A                   go to state 7
-    PROC_DEF                go to state 8
-    FUNC_DEF                go to state 9
-    EXPRASION               go to state 49
-    FUNC_ACTIVE             go to state 50
-    STASTMENT_LIST          go to state 51
-    IF_STASTMENT            go to state 52
-    STASTMENT               go to state 53
-    RETURN_STATMENT         go to state 54
-    LOOP_STATMENT           go to state 55
-    COMPUND_STATMENT        go to state 56
-    INNER_COMPUND_STATMENT  go to state 57
-    DEC_INNER_BLOCK         go to state 58
-    NEW_DECLARE             go to state 59
-    VAR_DECLARE             go to state 60
-    VF                      go to state 61
-    CONST                   go to state 62
+    COMPUND_STATMENT_PROC  go to state 61
 
 
 State 23
 
-    6 MAIN_FUNC: PROC MAIN COMPUND_STATMENT .
+   18 INNER_ARGS: ID .
+   19           | ID . ',' INNER_ARGS
 
-    $default  reduce using rule 6 (MAIN_FUNC)
+    ','  shift, and go to state 62
+
+    $default  reduce using rule 18 (INNER_ARGS)
 
 
 State 24
 
-   12 PROC_DEF: PROC ID ARGES . COMPUND_STATMENT_PROC
+   13 ARGES2: ')' .
 
-    '{'  shift, and go to state 63
-
-    COMPUND_STATMENT_PROC  go to state 64
+    $default  reduce using rule 13 (ARGES2)
 
 
 State 25
 
-    9 FUNC_PROC_DEC2: DEF_A FUNC_PROC_DEC2 .
+   12 ARGES: '(' ARGES2 .
 
-    $default  reduce using rule 9 (FUNC_PROC_DEC2)
+    $default  reduce using rule 12 (ARGES)
 
 
 State 26
 
-   20 INNER_ARGS: ID .
-   21           | ID . ',' INNER_ARGS
+   14 ARGES2: OUT_ARGES . ')'
 
-    ','  shift, and go to state 65
-
-    $default  reduce using rule 20 (INNER_ARGS)
+    ')'  shift, and go to state 63
 
 
 State 27
 
-   15 ARGES2: ')' .
+   15 OUT_ARGES: INNER_ARGS . ':' TYPE OUT_ARGES2
 
-    $default  reduce using rule 15 (ARGES2)
+    ':'  shift, and go to state 64
 
 
 State 28
 
-   14 ARGES: '(' ARGES2 .
+   11 FUNC_DEF: FUNC ID ARGES RETURN . TYPE FUNC_BLOCK
 
-    $default  reduce using rule 14 (ARGES)
+    CHAR    shift, and go to state 65
+    REAL    shift, and go to state 66
+    FLOAT   shift, and go to state 67
+    INT     shift, and go to state 68
+    BOOL    shift, and go to state 69
+    STRING  shift, and go to state 70
+
+    TYPE  go to state 71
 
 
 State 29
 
-   16 ARGES2: OUT_ARGES . ')'
+   53 IF_STASTMENT: IF . '(' EXPRASION ')' STASTMENT ELSE STASTMENT
+   54             | IF . '(' EXPRASION ')' STASTMENT
 
-    ')'  shift, and go to state 66
+    '('  shift, and go to state 72
 
 
 State 30
 
-   17 OUT_ARGES: INNER_ARGS . ':' TYPE OUT_ARGES2
+   61 LOOP_STATMENT: FOR . '(' EXPRASION ';' EXPRASION ';' UPDATES ')' STASTMENT
 
-    ':'  shift, and go to state 67
+    '('  shift, and go to state 73
 
 
 State 31
 
-   13 FUNC_DEF: FUNC ID ARGES RETURN . TYPE FUNC_BLOCK
+   60 LOOP_STATMENT: WHILE . '(' EXPRASION ')' STASTMENT
 
-    CHAR    shift, and go to state 68
-    REAL    shift, and go to state 69
-    FLOAT   shift, and go to state 70
-    INT     shift, and go to state 71
-    BOOL    shift, and go to state 72
-    STRING  shift, and go to state 73
-
-    TYPE  go to state 74
+    '('  shift, and go to state 74
 
 
 State 32
 
-   55 IF_STASTMENT: IF . '(' EXPRASION ')' STASTMENT ELSE STASTMENT
-   56             | IF . '(' EXPRASION ')' STASTMENT
-
-    '('  shift, and go to state 75
-
-
-State 33
-
-   63 LOOP_STATMENT: FOR . '(' EXPRASION ';' EXPRASION ';' UPDATES ')' STASTMENT
-
-    '('  shift, and go to state 76
-
-
-State 34
-
-   62 LOOP_STATMENT: WHILE . '(' EXPRASION ')' STASTMENT
-
-    '('  shift, and go to state 77
-
-
-State 35
-
-   26 EXPRASION: TRUE .
-
-    $default  reduce using rule 26 (EXPRASION)
-
-
-State 36
-
-   27 EXPRASION: FALSE .
-
-    $default  reduce using rule 27 (EXPRASION)
-
-
-State 37
-
-   61 RETURN_STATMENT: RETURN . EXPRASION ';'
-
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
-
-    EXPRASION    go to state 78
-    FUNC_ACTIVE  go to state 50
-    CONST        go to state 62
-
-
-State 38
-
-   81 VF: VAR . INNER_ARGS ':' TYPE ';'
-
-    ID  shift, and go to state 26
-
-    INNER_ARGS  go to state 79
-
-
-State 39
-
-   82 CONST: INT_NUM .
-
-    $default  reduce using rule 82 (CONST)
-
-
-State 40
-
-   83 CONST: F_NUM .
-
-    $default  reduce using rule 83 (CONST)
-
-
-State 41
-
-   28 EXPRASION: ID .
-   33          | ID . '=' EXPRASION
-   47 FUNC_ACTIVE: ID . '(' ')'
-   48            | ID . '(' FUNC_ACTIVE_INNER_ARGES ')'
-
-    '('  shift, and go to state 80
-    '='  shift, and go to state 81
-
-    $default  reduce using rule 28 (EXPRASION)
-
-
-State 42
-
-   31 EXPRASION: '-' . EXPRASION
-
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
-
-    EXPRASION    go to state 82
-    FUNC_ACTIVE  go to state 50
-    CONST        go to state 62
-
-
-State 43
-
-   32 EXPRASION: '!' . EXPRASION
-
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
-
-    EXPRASION    go to state 83
-    FUNC_ACTIVE  go to state 50
-    CONST        go to state 62
-
-
-State 44
-
-   29 EXPRASION: '^' . EXPRASION
-
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
-
-    EXPRASION    go to state 84
-    FUNC_ACTIVE  go to state 50
-    CONST        go to state 62
-
-
-State 45
-
-   30 EXPRASION: '&' . EXPRASION
-
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
-
-    EXPRASION    go to state 85
-    FUNC_ACTIVE  go to state 50
-    CONST        go to state 62
-
-
-State 46
-
-   25 EXPRASION: '(' . EXPRASION ')'
-
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
-
-    EXPRASION    go to state 86
-    FUNC_ACTIVE  go to state 50
-    CONST        go to state 62
-
-
-State 47
-
-   66 COMPUND_STATMENT: '{' '}' .
-
-    $default  reduce using rule 66 (COMPUND_STATMENT)
-
-
-State 48
-
-   78 NEW_DECLARE: FUNC_PROC_DEC .
-
-    $default  reduce using rule 78 (NEW_DECLARE)
-
-
-State 49
-
-   34 EXPRASION: EXPRASION . NE_OP EXPRASION
-   35          | EXPRASION . AND_OP EXPRASION
-   36          | EXPRASION . OR_OP EXPRASION
-   37          | EXPRASION . '+' EXPRASION
-   38          | EXPRASION . '-' EXPRASION
-   39          | EXPRASION . '/' EXPRASION
-   40          | EXPRASION . '*' EXPRASION
-   41          | EXPRASION . EQL_OP EXPRASION
-   42          | EXPRASION . GE_OP EXPRASION
-   43          | EXPRASION . SE_OP EXPRASION
-   44          | EXPRASION . '>' EXPRASION
-   45          | EXPRASION . '<' EXPRASION
-   58 STASTMENT: EXPRASION . ';'
-
-    AND_OP  shift, and go to state 87
-    GE_OP   shift, and go to state 88
-    SE_OP   shift, and go to state 89
-    NE_OP   shift, and go to state 90
-    OR_OP   shift, and go to state 91
-    EQL_OP  shift, and go to state 92
-    ';'     shift, and go to state 93
-    '+'     shift, and go to state 94
-    '-'     shift, and go to state 95
-    '*'     shift, and go to state 96
-    '/'     shift, and go to state 97
-    '>'     shift, and go to state 98
-    '<'     shift, and go to state 99
-
-
-State 50
-
-   46 EXPRASION: FUNC_ACTIVE .
-
-    $default  reduce using rule 46 (EXPRASION)
-
-
-State 51
-
-   53 STASTMENT_LIST: STASTMENT_LIST . STASTMENT
-   72 INNER_COMPUND_STATMENT: STASTMENT_LIST .
-
-    IF       shift, and go to state 32
-    FOR      shift, and go to state 33
-    WHILE    shift, and go to state 34
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
-    '{'      shift, and go to state 22
-
-    $default  reduce using rule 72 (INNER_COMPUND_STATMENT)
-
-    EXPRASION         go to state 49
-    FUNC_ACTIVE       go to state 50
-    IF_STASTMENT      go to state 52
-    STASTMENT         go to state 100
-    LOOP_STATMENT     go to state 55
-    COMPUND_STATMENT  go to state 56
-    CONST             go to state 62
-
-
-State 52
-
-   59 STASTMENT: IF_STASTMENT .
-
-    $default  reduce using rule 59 (STASTMENT)
-
-
-State 53
-
-   54 STASTMENT_LIST: STASTMENT .
-
-    $default  reduce using rule 54 (STASTMENT_LIST)
-
-
-State 54
-
-   69 COMPUND_STATMENT: '{' RETURN_STATMENT . '}'
-
-    '}'  shift, and go to state 101
-
-
-State 55
-
-   60 STASTMENT: LOOP_STATMENT .
-
-    $default  reduce using rule 60 (STASTMENT)
-
-
-State 56
-
-   57 STASTMENT: COMPUND_STATMENT .
-
-    $default  reduce using rule 57 (STASTMENT)
-
-
-State 57
-
-   67 COMPUND_STATMENT: '{' INNER_COMPUND_STATMENT . '}'
-   68                 | '{' INNER_COMPUND_STATMENT . RETURN_STATMENT '}'
-
-    RETURN  shift, and go to state 37
-    '}'     shift, and go to state 102
-
-    RETURN_STATMENT  go to state 103
-
-
-State 58
-
-   73 INNER_COMPUND_STATMENT: DEC_INNER_BLOCK .
-   74                       | DEC_INNER_BLOCK . STASTMENT_LIST
-
-    IF       shift, and go to state 32
-    FOR      shift, and go to state 33
-    WHILE    shift, and go to state 34
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
-    '{'      shift, and go to state 22
-
-    $default  reduce using rule 73 (INNER_COMPUND_STATMENT)
-
-    EXPRASION         go to state 49
-    FUNC_ACTIVE       go to state 50
-    STASTMENT_LIST    go to state 104
-    IF_STASTMENT      go to state 52
-    STASTMENT         go to state 53
-    LOOP_STATMENT     go to state 55
-    COMPUND_STATMENT  go to state 56
-    CONST             go to state 62
-
-
-State 59
-
-   75 DEC_INNER_BLOCK: NEW_DECLARE . DEC_INNER_BLOCK
-   76                | NEW_DECLARE .
-
-    VAR   shift, and go to state 38
-    FUNC  shift, and go to state 1
-    PROC  shift, and go to state 17
-
-    $default  reduce using rule 76 (DEC_INNER_BLOCK)
-
-    FUNC_PROC_DEC    go to state 48
-    DEF_A            go to state 7
-    PROC_DEF         go to state 8
-    FUNC_DEF         go to state 9
-    DEC_INNER_BLOCK  go to state 105
-    NEW_DECLARE      go to state 59
-    VAR_DECLARE      go to state 60
-    VF               go to state 61
-
-
-State 60
-
-   77 NEW_DECLARE: VAR_DECLARE .
-   80 VAR_DECLARE: VAR_DECLARE . VF
-
-    VAR  shift, and go to state 38
-
-    VAR       [reduce using rule 77 (NEW_DECLARE)]
-    $default  reduce using rule 77 (NEW_DECLARE)
-
-    VF  go to state 106
-
-
-State 61
-
-   79 VAR_DECLARE: VF .
-
-    $default  reduce using rule 79 (VAR_DECLARE)
-
-
-State 62
-
-   24 EXPRASION: CONST .
+   24 EXPRASION: TRUE .
 
     $default  reduce using rule 24 (EXPRASION)
 
 
-State 63
+State 33
 
-   70 COMPUND_STATMENT_PROC: '{' . '}'
-   71                      | '{' . INNER_COMPUND_STATMENT '}'
+   25 EXPRASION: FALSE .
 
-    IF       shift, and go to state 32
-    FOR      shift, and go to state 33
-    WHILE    shift, and go to state 34
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    VAR      shift, and go to state 38
+    $default  reduce using rule 25 (EXPRASION)
+
+
+State 34
+
+   59 RETURN_STATMENT: RETURN . EXPRASION ';'
+
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
+
+    EXPRASION    go to state 75
+    FUNC_ACTIVE  go to state 47
+    CONST        go to state 59
+
+
+State 35
+
+   79 VF: VAR . INNER_ARGS ':' TYPE ';'
+
+    ID  shift, and go to state 23
+
+    INNER_ARGS  go to state 76
+
+
+State 36
+
+   80 CONST: INT_NUM .
+
+    $default  reduce using rule 80 (CONST)
+
+
+State 37
+
+   81 CONST: F_NUM .
+
+    $default  reduce using rule 81 (CONST)
+
+
+State 38
+
+   26 EXPRASION: ID .
+   31          | ID . '=' EXPRASION
+   45 FUNC_ACTIVE: ID . '(' ')'
+   46            | ID . '(' FUNC_ACTIVE_INNER_ARGES ')'
+
+    '('  shift, and go to state 77
+    '='  shift, and go to state 78
+
+    $default  reduce using rule 26 (EXPRASION)
+
+
+State 39
+
+   29 EXPRASION: '-' . EXPRASION
+
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
+
+    EXPRASION    go to state 79
+    FUNC_ACTIVE  go to state 47
+    CONST        go to state 59
+
+
+State 40
+
+   30 EXPRASION: '!' . EXPRASION
+
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
+
+    EXPRASION    go to state 80
+    FUNC_ACTIVE  go to state 47
+    CONST        go to state 59
+
+
+State 41
+
+   27 EXPRASION: '^' . EXPRASION
+
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
+
+    EXPRASION    go to state 81
+    FUNC_ACTIVE  go to state 47
+    CONST        go to state 59
+
+
+State 42
+
+   28 EXPRASION: '&' . EXPRASION
+
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
+
+    EXPRASION    go to state 82
+    FUNC_ACTIVE  go to state 47
+    CONST        go to state 59
+
+
+State 43
+
+   23 EXPRASION: '(' . EXPRASION ')'
+
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
+
+    EXPRASION    go to state 83
+    FUNC_ACTIVE  go to state 47
+    CONST        go to state 59
+
+
+State 44
+
+   64 COMPUND_STATMENT: '{' '}' .
+
+    $default  reduce using rule 64 (COMPUND_STATMENT)
+
+
+State 45
+
+   76 NEW_DECLARE: FUNC_PROC_DEC .
+
+    $default  reduce using rule 76 (NEW_DECLARE)
+
+
+State 46
+
+   32 EXPRASION: EXPRASION . NE_OP EXPRASION
+   33          | EXPRASION . AND_OP EXPRASION
+   34          | EXPRASION . OR_OP EXPRASION
+   35          | EXPRASION . '+' EXPRASION
+   36          | EXPRASION . '-' EXPRASION
+   37          | EXPRASION . '/' EXPRASION
+   38          | EXPRASION . '*' EXPRASION
+   39          | EXPRASION . EQL_OP EXPRASION
+   40          | EXPRASION . GE_OP EXPRASION
+   41          | EXPRASION . SE_OP EXPRASION
+   42          | EXPRASION . '>' EXPRASION
+   43          | EXPRASION . '<' EXPRASION
+   56 STASTMENT: EXPRASION . ';'
+
+    AND_OP  shift, and go to state 84
+    GE_OP   shift, and go to state 85
+    SE_OP   shift, and go to state 86
+    NE_OP   shift, and go to state 87
+    OR_OP   shift, and go to state 88
+    EQL_OP  shift, and go to state 89
+    ';'     shift, and go to state 90
+    '+'     shift, and go to state 91
+    '-'     shift, and go to state 92
+    '*'     shift, and go to state 93
+    '/'     shift, and go to state 94
+    '>'     shift, and go to state 95
+    '<'     shift, and go to state 96
+
+
+State 47
+
+   44 EXPRASION: FUNC_ACTIVE .
+
+    $default  reduce using rule 44 (EXPRASION)
+
+
+State 48
+
+   51 STASTMENT_LIST: STASTMENT_LIST . STASTMENT
+   70 INNER_COMPUND_STATMENT: STASTMENT_LIST .
+
+    IF       shift, and go to state 29
+    FOR      shift, and go to state 30
+    WHILE    shift, and go to state 31
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
+    '{'      shift, and go to state 20
+
+    $default  reduce using rule 70 (INNER_COMPUND_STATMENT)
+
+    EXPRASION         go to state 46
+    FUNC_ACTIVE       go to state 47
+    IF_STASTMENT      go to state 49
+    STASTMENT         go to state 97
+    LOOP_STATMENT     go to state 52
+    COMPUND_STATMENT  go to state 53
+    CONST             go to state 59
+
+
+State 49
+
+   57 STASTMENT: IF_STASTMENT .
+
+    $default  reduce using rule 57 (STASTMENT)
+
+
+State 50
+
+   52 STASTMENT_LIST: STASTMENT .
+
+    $default  reduce using rule 52 (STASTMENT_LIST)
+
+
+State 51
+
+   67 COMPUND_STATMENT: '{' RETURN_STATMENT . '}'
+
+    '}'  shift, and go to state 98
+
+
+State 52
+
+   58 STASTMENT: LOOP_STATMENT .
+
+    $default  reduce using rule 58 (STASTMENT)
+
+
+State 53
+
+   55 STASTMENT: COMPUND_STATMENT .
+
+    $default  reduce using rule 55 (STASTMENT)
+
+
+State 54
+
+   65 COMPUND_STATMENT: '{' INNER_COMPUND_STATMENT . '}'
+   66                 | '{' INNER_COMPUND_STATMENT . RETURN_STATMENT '}'
+
+    RETURN  shift, and go to state 34
+    '}'     shift, and go to state 99
+
+    RETURN_STATMENT  go to state 100
+
+
+State 55
+
+   71 INNER_COMPUND_STATMENT: DEC_INNER_BLOCK .
+   72                       | DEC_INNER_BLOCK . STASTMENT_LIST
+
+    IF       shift, and go to state 29
+    FOR      shift, and go to state 30
+    WHILE    shift, and go to state 31
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
+    '{'      shift, and go to state 20
+
+    $default  reduce using rule 71 (INNER_COMPUND_STATMENT)
+
+    EXPRASION         go to state 46
+    FUNC_ACTIVE       go to state 47
+    STASTMENT_LIST    go to state 101
+    IF_STASTMENT      go to state 49
+    STASTMENT         go to state 50
+    LOOP_STATMENT     go to state 52
+    COMPUND_STATMENT  go to state 53
+    CONST             go to state 59
+
+
+State 56
+
+   73 DEC_INNER_BLOCK: NEW_DECLARE . DEC_INNER_BLOCK
+   74                | NEW_DECLARE .
+
+    VAR   shift, and go to state 35
+    FUNC  shift, and go to state 1
+    PROC  shift, and go to state 16
+
+    $default  reduce using rule 74 (DEC_INNER_BLOCK)
+
+    FUNC_PROC_DEC    go to state 45
+    DEF_A            go to state 7
+    PROC_DEF         go to state 8
+    FUNC_DEF         go to state 9
+    DEC_INNER_BLOCK  go to state 102
+    NEW_DECLARE      go to state 56
+    VAR_DECLARE      go to state 57
+    VF               go to state 58
+
+
+State 57
+
+   75 NEW_DECLARE: VAR_DECLARE .
+   78 VAR_DECLARE: VAR_DECLARE . VF
+
+    VAR  shift, and go to state 35
+
+    VAR       [reduce using rule 75 (NEW_DECLARE)]
+    $default  reduce using rule 75 (NEW_DECLARE)
+
+    VF  go to state 103
+
+
+State 58
+
+   77 VAR_DECLARE: VF .
+
+    $default  reduce using rule 77 (VAR_DECLARE)
+
+
+State 59
+
+   22 EXPRASION: CONST .
+
+    $default  reduce using rule 22 (EXPRASION)
+
+
+State 60
+
+   68 COMPUND_STATMENT_PROC: '{' . '}'
+   69                      | '{' . INNER_COMPUND_STATMENT '}'
+
+    IF       shift, and go to state 29
+    FOR      shift, and go to state 30
+    WHILE    shift, and go to state 31
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    VAR      shift, and go to state 35
     FUNC     shift, and go to state 1
-    PROC     shift, and go to state 17
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
-    '{'      shift, and go to state 22
-    '}'      shift, and go to state 107
+    PROC     shift, and go to state 16
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
+    '{'      shift, and go to state 20
+    '}'      shift, and go to state 104
 
-    FUNC_PROC_DEC           go to state 48
+    FUNC_PROC_DEC           go to state 45
     DEF_A                   go to state 7
     PROC_DEF                go to state 8
     FUNC_DEF                go to state 9
-    EXPRASION               go to state 49
-    FUNC_ACTIVE             go to state 50
-    STASTMENT_LIST          go to state 51
-    IF_STASTMENT            go to state 52
-    STASTMENT               go to state 53
-    LOOP_STATMENT           go to state 55
-    COMPUND_STATMENT        go to state 56
-    INNER_COMPUND_STATMENT  go to state 108
-    DEC_INNER_BLOCK         go to state 58
-    NEW_DECLARE             go to state 59
-    VAR_DECLARE             go to state 60
-    VF                      go to state 61
-    CONST                   go to state 62
+    EXPRASION               go to state 46
+    FUNC_ACTIVE             go to state 47
+    STASTMENT_LIST          go to state 48
+    IF_STASTMENT            go to state 49
+    STASTMENT               go to state 50
+    LOOP_STATMENT           go to state 52
+    COMPUND_STATMENT        go to state 53
+    INNER_COMPUND_STATMENT  go to state 105
+    DEC_INNER_BLOCK         go to state 55
+    NEW_DECLARE             go to state 56
+    VAR_DECLARE             go to state 57
+    VF                      go to state 58
+    CONST                   go to state 59
+
+
+State 61
+
+   10 PROC_DEF: PROC ID ARGES COMPUND_STATMENT_PROC .
+
+    $default  reduce using rule 10 (PROC_DEF)
+
+
+State 62
+
+   19 INNER_ARGS: ID ',' . INNER_ARGS
+
+    ID  shift, and go to state 23
+
+    INNER_ARGS  go to state 106
+
+
+State 63
+
+   14 ARGES2: OUT_ARGES ')' .
+
+    $default  reduce using rule 14 (ARGES2)
 
 
 State 64
 
-   12 PROC_DEF: PROC ID ARGES COMPUND_STATMENT_PROC .
+   15 OUT_ARGES: INNER_ARGS ':' . TYPE OUT_ARGES2
 
-    $default  reduce using rule 12 (PROC_DEF)
+    CHAR    shift, and go to state 65
+    REAL    shift, and go to state 66
+    FLOAT   shift, and go to state 67
+    INT     shift, and go to state 68
+    BOOL    shift, and go to state 69
+    STRING  shift, and go to state 70
+
+    TYPE  go to state 107
 
 
 State 65
 
-   21 INNER_ARGS: ID ',' . INNER_ARGS
-
-    ID  shift, and go to state 26
-
-    INNER_ARGS  go to state 109
-
-
-State 66
-
-   16 ARGES2: OUT_ARGES ')' .
-
-    $default  reduce using rule 16 (ARGES2)
-
-
-State 67
-
-   17 OUT_ARGES: INNER_ARGS ':' . TYPE OUT_ARGES2
-
-    CHAR    shift, and go to state 68
-    REAL    shift, and go to state 69
-    FLOAT   shift, and go to state 70
-    INT     shift, and go to state 71
-    BOOL    shift, and go to state 72
-    STRING  shift, and go to state 73
-
-    TYPE  go to state 110
-
-
-State 68
-
-   89 TYPE: CHAR .
-
-    $default  reduce using rule 89 (TYPE)
-
-
-State 69
-
-   88 TYPE: REAL .
-
-    $default  reduce using rule 88 (TYPE)
-
-
-State 70
-
-   87 TYPE: FLOAT .
+   87 TYPE: CHAR .
 
     $default  reduce using rule 87 (TYPE)
 
 
-State 71
+State 66
 
-   86 TYPE: INT .
+   86 TYPE: REAL .
 
     $default  reduce using rule 86 (TYPE)
 
 
-State 72
+State 67
 
-   85 TYPE: BOOL .
+   85 TYPE: FLOAT .
 
     $default  reduce using rule 85 (TYPE)
 
 
+State 68
+
+   84 TYPE: INT .
+
+    $default  reduce using rule 84 (TYPE)
+
+
+State 69
+
+   83 TYPE: BOOL .
+
+    $default  reduce using rule 83 (TYPE)
+
+
+State 70
+
+   82 TYPE: STRING . '[' INT_NUM ']'
+
+    '['  shift, and go to state 108
+
+
+State 71
+
+   11 FUNC_DEF: FUNC ID ARGES RETURN TYPE . FUNC_BLOCK
+
+    '{'  shift, and go to state 109
+
+    FUNC_BLOCK  go to state 110
+
+
+State 72
+
+   53 IF_STASTMENT: IF '(' . EXPRASION ')' STASTMENT ELSE STASTMENT
+   54             | IF '(' . EXPRASION ')' STASTMENT
+
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
+
+    EXPRASION    go to state 111
+    FUNC_ACTIVE  go to state 47
+    CONST        go to state 59
+
+
 State 73
 
-   84 TYPE: STRING . '[' INT_NUM ']'
+   61 LOOP_STATMENT: FOR '(' . EXPRASION ';' EXPRASION ';' UPDATES ')' STASTMENT
 
-    '['  shift, and go to state 111
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
+
+    EXPRASION    go to state 112
+    FUNC_ACTIVE  go to state 47
+    CONST        go to state 59
 
 
 State 74
 
-   13 FUNC_DEF: FUNC ID ARGES RETURN TYPE . FUNC_BLOCK
+   60 LOOP_STATMENT: WHILE '(' . EXPRASION ')' STASTMENT
 
-    '{'  shift, and go to state 112
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
 
-    FUNC_BLOCK  go to state 113
+    EXPRASION    go to state 113
+    FUNC_ACTIVE  go to state 47
+    CONST        go to state 59
 
 
 State 75
 
-   55 IF_STASTMENT: IF '(' . EXPRASION ')' STASTMENT ELSE STASTMENT
-   56             | IF '(' . EXPRASION ')' STASTMENT
+   32 EXPRASION: EXPRASION . NE_OP EXPRASION
+   33          | EXPRASION . AND_OP EXPRASION
+   34          | EXPRASION . OR_OP EXPRASION
+   35          | EXPRASION . '+' EXPRASION
+   36          | EXPRASION . '-' EXPRASION
+   37          | EXPRASION . '/' EXPRASION
+   38          | EXPRASION . '*' EXPRASION
+   39          | EXPRASION . EQL_OP EXPRASION
+   40          | EXPRASION . GE_OP EXPRASION
+   41          | EXPRASION . SE_OP EXPRASION
+   42          | EXPRASION . '>' EXPRASION
+   43          | EXPRASION . '<' EXPRASION
+   59 RETURN_STATMENT: RETURN EXPRASION . ';'
 
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
-
-    EXPRASION    go to state 114
-    FUNC_ACTIVE  go to state 50
-    CONST        go to state 62
+    AND_OP  shift, and go to state 84
+    GE_OP   shift, and go to state 85
+    SE_OP   shift, and go to state 86
+    NE_OP   shift, and go to state 87
+    OR_OP   shift, and go to state 88
+    EQL_OP  shift, and go to state 89
+    ';'     shift, and go to state 114
+    '+'     shift, and go to state 91
+    '-'     shift, and go to state 92
+    '*'     shift, and go to state 93
+    '/'     shift, and go to state 94
+    '>'     shift, and go to state 95
+    '<'     shift, and go to state 96
 
 
 State 76
 
-   63 LOOP_STATMENT: FOR '(' . EXPRASION ';' EXPRASION ';' UPDATES ')' STASTMENT
+   79 VF: VAR INNER_ARGS . ':' TYPE ';'
 
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
-
-    EXPRASION    go to state 115
-    FUNC_ACTIVE  go to state 50
-    CONST        go to state 62
+    ':'  shift, and go to state 115
 
 
 State 77
 
-   62 LOOP_STATMENT: WHILE '(' . EXPRASION ')' STASTMENT
+   45 FUNC_ACTIVE: ID '(' . ')'
+   46            | ID '(' . FUNC_ACTIVE_INNER_ARGES ')'
 
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 116
+    ')'      shift, and go to state 117
 
-    EXPRASION    go to state 116
-    FUNC_ACTIVE  go to state 50
-    CONST        go to state 62
+    FUNC_ACTIVE_INNER_ARGES  go to state 118
+    CONST                    go to state 119
 
 
 State 78
 
-   34 EXPRASION: EXPRASION . NE_OP EXPRASION
-   35          | EXPRASION . AND_OP EXPRASION
-   36          | EXPRASION . OR_OP EXPRASION
-   37          | EXPRASION . '+' EXPRASION
-   38          | EXPRASION . '-' EXPRASION
-   39          | EXPRASION . '/' EXPRASION
-   40          | EXPRASION . '*' EXPRASION
-   41          | EXPRASION . EQL_OP EXPRASION
-   42          | EXPRASION . GE_OP EXPRASION
-   43          | EXPRASION . SE_OP EXPRASION
-   44          | EXPRASION . '>' EXPRASION
-   45          | EXPRASION . '<' EXPRASION
-   61 RETURN_STATMENT: RETURN EXPRASION . ';'
+   31 EXPRASION: ID '=' . EXPRASION
 
-    AND_OP  shift, and go to state 87
-    GE_OP   shift, and go to state 88
-    SE_OP   shift, and go to state 89
-    NE_OP   shift, and go to state 90
-    OR_OP   shift, and go to state 91
-    EQL_OP  shift, and go to state 92
-    ';'     shift, and go to state 117
-    '+'     shift, and go to state 94
-    '-'     shift, and go to state 95
-    '*'     shift, and go to state 96
-    '/'     shift, and go to state 97
-    '>'     shift, and go to state 98
-    '<'     shift, and go to state 99
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
+
+    EXPRASION    go to state 120
+    FUNC_ACTIVE  go to state 47
+    CONST        go to state 59
 
 
 State 79
 
-   81 VF: VAR INNER_ARGS . ':' TYPE ';'
+   29 EXPRASION: '-' EXPRASION .
+   32          | EXPRASION . NE_OP EXPRASION
+   33          | EXPRASION . AND_OP EXPRASION
+   34          | EXPRASION . OR_OP EXPRASION
+   35          | EXPRASION . '+' EXPRASION
+   36          | EXPRASION . '-' EXPRASION
+   37          | EXPRASION . '/' EXPRASION
+   38          | EXPRASION . '*' EXPRASION
+   39          | EXPRASION . EQL_OP EXPRASION
+   40          | EXPRASION . GE_OP EXPRASION
+   41          | EXPRASION . SE_OP EXPRASION
+   42          | EXPRASION . '>' EXPRASION
+   43          | EXPRASION . '<' EXPRASION
 
-    ':'  shift, and go to state 118
-
-
-State 80
-
-   47 FUNC_ACTIVE: ID '(' . ')'
-   48            | ID '(' . FUNC_ACTIVE_INNER_ARGES ')'
-
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 119
-    ')'      shift, and go to state 120
-
-    FUNC_ACTIVE_INNER_ARGES  go to state 121
-    CONST                    go to state 122
-
-
-State 81
-
-   33 EXPRASION: ID '=' . EXPRASION
-
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
-
-    EXPRASION    go to state 123
-    FUNC_ACTIVE  go to state 50
-    CONST        go to state 62
-
-
-State 82
-
-   31 EXPRASION: '-' EXPRASION .
-   34          | EXPRASION . NE_OP EXPRASION
-   35          | EXPRASION . AND_OP EXPRASION
-   36          | EXPRASION . OR_OP EXPRASION
-   37          | EXPRASION . '+' EXPRASION
-   38          | EXPRASION . '-' EXPRASION
-   39          | EXPRASION . '/' EXPRASION
-   40          | EXPRASION . '*' EXPRASION
-   41          | EXPRASION . EQL_OP EXPRASION
-   42          | EXPRASION . GE_OP EXPRASION
-   43          | EXPRASION . SE_OP EXPRASION
-   44          | EXPRASION . '>' EXPRASION
-   45          | EXPRASION . '<' EXPRASION
-
-    NE_OP  shift, and go to state 90
-
-    NE_OP     [reduce using rule 31 (EXPRASION)]
-    $default  reduce using rule 31 (EXPRASION)
-
-
-State 83
-
-   32 EXPRASION: '!' EXPRASION .
-   34          | EXPRASION . NE_OP EXPRASION
-   35          | EXPRASION . AND_OP EXPRASION
-   36          | EXPRASION . OR_OP EXPRASION
-   37          | EXPRASION . '+' EXPRASION
-   38          | EXPRASION . '-' EXPRASION
-   39          | EXPRASION . '/' EXPRASION
-   40          | EXPRASION . '*' EXPRASION
-   41          | EXPRASION . EQL_OP EXPRASION
-   42          | EXPRASION . GE_OP EXPRASION
-   43          | EXPRASION . SE_OP EXPRASION
-   44          | EXPRASION . '>' EXPRASION
-   45          | EXPRASION . '<' EXPRASION
-
-    NE_OP  shift, and go to state 90
-
-    NE_OP     [reduce using rule 32 (EXPRASION)]
-    $default  reduce using rule 32 (EXPRASION)
-
-
-State 84
-
-   29 EXPRASION: '^' EXPRASION .
-   34          | EXPRASION . NE_OP EXPRASION
-   35          | EXPRASION . AND_OP EXPRASION
-   36          | EXPRASION . OR_OP EXPRASION
-   37          | EXPRASION . '+' EXPRASION
-   38          | EXPRASION . '-' EXPRASION
-   39          | EXPRASION . '/' EXPRASION
-   40          | EXPRASION . '*' EXPRASION
-   41          | EXPRASION . EQL_OP EXPRASION
-   42          | EXPRASION . GE_OP EXPRASION
-   43          | EXPRASION . SE_OP EXPRASION
-   44          | EXPRASION . '>' EXPRASION
-   45          | EXPRASION . '<' EXPRASION
-
-    NE_OP  shift, and go to state 90
+    NE_OP  shift, and go to state 87
 
     NE_OP     [reduce using rule 29 (EXPRASION)]
     $default  reduce using rule 29 (EXPRASION)
 
 
-State 85
+State 80
 
-   30 EXPRASION: '&' EXPRASION .
-   34          | EXPRASION . NE_OP EXPRASION
-   35          | EXPRASION . AND_OP EXPRASION
-   36          | EXPRASION . OR_OP EXPRASION
-   37          | EXPRASION . '+' EXPRASION
-   38          | EXPRASION . '-' EXPRASION
-   39          | EXPRASION . '/' EXPRASION
-   40          | EXPRASION . '*' EXPRASION
-   41          | EXPRASION . EQL_OP EXPRASION
-   42          | EXPRASION . GE_OP EXPRASION
-   43          | EXPRASION . SE_OP EXPRASION
-   44          | EXPRASION . '>' EXPRASION
-   45          | EXPRASION . '<' EXPRASION
+   30 EXPRASION: '!' EXPRASION .
+   32          | EXPRASION . NE_OP EXPRASION
+   33          | EXPRASION . AND_OP EXPRASION
+   34          | EXPRASION . OR_OP EXPRASION
+   35          | EXPRASION . '+' EXPRASION
+   36          | EXPRASION . '-' EXPRASION
+   37          | EXPRASION . '/' EXPRASION
+   38          | EXPRASION . '*' EXPRASION
+   39          | EXPRASION . EQL_OP EXPRASION
+   40          | EXPRASION . GE_OP EXPRASION
+   41          | EXPRASION . SE_OP EXPRASION
+   42          | EXPRASION . '>' EXPRASION
+   43          | EXPRASION . '<' EXPRASION
 
-    NE_OP  shift, and go to state 90
+    NE_OP  shift, and go to state 87
 
     NE_OP     [reduce using rule 30 (EXPRASION)]
     $default  reduce using rule 30 (EXPRASION)
 
 
+State 81
+
+   27 EXPRASION: '^' EXPRASION .
+   32          | EXPRASION . NE_OP EXPRASION
+   33          | EXPRASION . AND_OP EXPRASION
+   34          | EXPRASION . OR_OP EXPRASION
+   35          | EXPRASION . '+' EXPRASION
+   36          | EXPRASION . '-' EXPRASION
+   37          | EXPRASION . '/' EXPRASION
+   38          | EXPRASION . '*' EXPRASION
+   39          | EXPRASION . EQL_OP EXPRASION
+   40          | EXPRASION . GE_OP EXPRASION
+   41          | EXPRASION . SE_OP EXPRASION
+   42          | EXPRASION . '>' EXPRASION
+   43          | EXPRASION . '<' EXPRASION
+
+    NE_OP  shift, and go to state 87
+
+    NE_OP     [reduce using rule 27 (EXPRASION)]
+    $default  reduce using rule 27 (EXPRASION)
+
+
+State 82
+
+   28 EXPRASION: '&' EXPRASION .
+   32          | EXPRASION . NE_OP EXPRASION
+   33          | EXPRASION . AND_OP EXPRASION
+   34          | EXPRASION . OR_OP EXPRASION
+   35          | EXPRASION . '+' EXPRASION
+   36          | EXPRASION . '-' EXPRASION
+   37          | EXPRASION . '/' EXPRASION
+   38          | EXPRASION . '*' EXPRASION
+   39          | EXPRASION . EQL_OP EXPRASION
+   40          | EXPRASION . GE_OP EXPRASION
+   41          | EXPRASION . SE_OP EXPRASION
+   42          | EXPRASION . '>' EXPRASION
+   43          | EXPRASION . '<' EXPRASION
+
+    NE_OP  shift, and go to state 87
+
+    NE_OP     [reduce using rule 28 (EXPRASION)]
+    $default  reduce using rule 28 (EXPRASION)
+
+
+State 83
+
+   23 EXPRASION: '(' EXPRASION . ')'
+   32          | EXPRASION . NE_OP EXPRASION
+   33          | EXPRASION . AND_OP EXPRASION
+   34          | EXPRASION . OR_OP EXPRASION
+   35          | EXPRASION . '+' EXPRASION
+   36          | EXPRASION . '-' EXPRASION
+   37          | EXPRASION . '/' EXPRASION
+   38          | EXPRASION . '*' EXPRASION
+   39          | EXPRASION . EQL_OP EXPRASION
+   40          | EXPRASION . GE_OP EXPRASION
+   41          | EXPRASION . SE_OP EXPRASION
+   42          | EXPRASION . '>' EXPRASION
+   43          | EXPRASION . '<' EXPRASION
+
+    AND_OP  shift, and go to state 84
+    GE_OP   shift, and go to state 85
+    SE_OP   shift, and go to state 86
+    NE_OP   shift, and go to state 87
+    OR_OP   shift, and go to state 88
+    EQL_OP  shift, and go to state 89
+    '+'     shift, and go to state 91
+    '-'     shift, and go to state 92
+    '*'     shift, and go to state 93
+    '/'     shift, and go to state 94
+    '>'     shift, and go to state 95
+    '<'     shift, and go to state 96
+    ')'     shift, and go to state 121
+
+
+State 84
+
+   33 EXPRASION: EXPRASION AND_OP . EXPRASION
+
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
+
+    EXPRASION    go to state 122
+    FUNC_ACTIVE  go to state 47
+    CONST        go to state 59
+
+
+State 85
+
+   40 EXPRASION: EXPRASION GE_OP . EXPRASION
+
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
+
+    EXPRASION    go to state 123
+    FUNC_ACTIVE  go to state 47
+    CONST        go to state 59
+
+
 State 86
 
-   25 EXPRASION: '(' EXPRASION . ')'
-   34          | EXPRASION . NE_OP EXPRASION
-   35          | EXPRASION . AND_OP EXPRASION
-   36          | EXPRASION . OR_OP EXPRASION
-   37          | EXPRASION . '+' EXPRASION
-   38          | EXPRASION . '-' EXPRASION
-   39          | EXPRASION . '/' EXPRASION
-   40          | EXPRASION . '*' EXPRASION
-   41          | EXPRASION . EQL_OP EXPRASION
-   42          | EXPRASION . GE_OP EXPRASION
-   43          | EXPRASION . SE_OP EXPRASION
-   44          | EXPRASION . '>' EXPRASION
-   45          | EXPRASION . '<' EXPRASION
+   41 EXPRASION: EXPRASION SE_OP . EXPRASION
 
-    AND_OP  shift, and go to state 87
-    GE_OP   shift, and go to state 88
-    SE_OP   shift, and go to state 89
-    NE_OP   shift, and go to state 90
-    OR_OP   shift, and go to state 91
-    EQL_OP  shift, and go to state 92
-    '+'     shift, and go to state 94
-    '-'     shift, and go to state 95
-    '*'     shift, and go to state 96
-    '/'     shift, and go to state 97
-    '>'     shift, and go to state 98
-    '<'     shift, and go to state 99
-    ')'     shift, and go to state 124
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
+
+    EXPRASION    go to state 124
+    FUNC_ACTIVE  go to state 47
+    CONST        go to state 59
 
 
 State 87
 
-   35 EXPRASION: EXPRASION AND_OP . EXPRASION
+   32 EXPRASION: EXPRASION NE_OP . EXPRASION
 
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
 
     EXPRASION    go to state 125
-    FUNC_ACTIVE  go to state 50
-    CONST        go to state 62
+    FUNC_ACTIVE  go to state 47
+    CONST        go to state 59
 
 
 State 88
 
-   42 EXPRASION: EXPRASION GE_OP . EXPRASION
+   34 EXPRASION: EXPRASION OR_OP . EXPRASION
 
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
 
     EXPRASION    go to state 126
-    FUNC_ACTIVE  go to state 50
-    CONST        go to state 62
+    FUNC_ACTIVE  go to state 47
+    CONST        go to state 59
 
 
 State 89
 
-   43 EXPRASION: EXPRASION SE_OP . EXPRASION
+   39 EXPRASION: EXPRASION EQL_OP . EXPRASION
 
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
 
     EXPRASION    go to state 127
-    FUNC_ACTIVE  go to state 50
-    CONST        go to state 62
+    FUNC_ACTIVE  go to state 47
+    CONST        go to state 59
 
 
 State 90
 
-   34 EXPRASION: EXPRASION NE_OP . EXPRASION
+   56 STASTMENT: EXPRASION ';' .
 
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
-
-    EXPRASION    go to state 128
-    FUNC_ACTIVE  go to state 50
-    CONST        go to state 62
+    $default  reduce using rule 56 (STASTMENT)
 
 
 State 91
 
-   36 EXPRASION: EXPRASION OR_OP . EXPRASION
+   35 EXPRASION: EXPRASION '+' . EXPRASION
 
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
 
-    EXPRASION    go to state 129
-    FUNC_ACTIVE  go to state 50
-    CONST        go to state 62
+    EXPRASION    go to state 128
+    FUNC_ACTIVE  go to state 47
+    CONST        go to state 59
 
 
 State 92
 
-   41 EXPRASION: EXPRASION EQL_OP . EXPRASION
+   36 EXPRASION: EXPRASION '-' . EXPRASION
 
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
 
-    EXPRASION    go to state 130
-    FUNC_ACTIVE  go to state 50
-    CONST        go to state 62
+    EXPRASION    go to state 129
+    FUNC_ACTIVE  go to state 47
+    CONST        go to state 59
 
 
 State 93
 
-   58 STASTMENT: EXPRASION ';' .
+   38 EXPRASION: EXPRASION '*' . EXPRASION
 
-    $default  reduce using rule 58 (STASTMENT)
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
+
+    EXPRASION    go to state 130
+    FUNC_ACTIVE  go to state 47
+    CONST        go to state 59
 
 
 State 94
 
-   37 EXPRASION: EXPRASION '+' . EXPRASION
+   37 EXPRASION: EXPRASION '/' . EXPRASION
 
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
 
     EXPRASION    go to state 131
-    FUNC_ACTIVE  go to state 50
-    CONST        go to state 62
+    FUNC_ACTIVE  go to state 47
+    CONST        go to state 59
 
 
 State 95
 
-   38 EXPRASION: EXPRASION '-' . EXPRASION
+   42 EXPRASION: EXPRASION '>' . EXPRASION
 
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
 
     EXPRASION    go to state 132
-    FUNC_ACTIVE  go to state 50
-    CONST        go to state 62
+    FUNC_ACTIVE  go to state 47
+    CONST        go to state 59
 
 
 State 96
 
-   40 EXPRASION: EXPRASION '*' . EXPRASION
+   43 EXPRASION: EXPRASION '<' . EXPRASION
 
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
 
     EXPRASION    go to state 133
-    FUNC_ACTIVE  go to state 50
-    CONST        go to state 62
+    FUNC_ACTIVE  go to state 47
+    CONST        go to state 59
 
 
 State 97
 
-   39 EXPRASION: EXPRASION '/' . EXPRASION
+   51 STASTMENT_LIST: STASTMENT_LIST STASTMENT .
 
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
-
-    EXPRASION    go to state 134
-    FUNC_ACTIVE  go to state 50
-    CONST        go to state 62
+    $default  reduce using rule 51 (STASTMENT_LIST)
 
 
 State 98
 
-   44 EXPRASION: EXPRASION '>' . EXPRASION
-
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
-
-    EXPRASION    go to state 135
-    FUNC_ACTIVE  go to state 50
-    CONST        go to state 62
-
-
-State 99
-
-   45 EXPRASION: EXPRASION '<' . EXPRASION
-
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
-
-    EXPRASION    go to state 136
-    FUNC_ACTIVE  go to state 50
-    CONST        go to state 62
-
-
-State 100
-
-   53 STASTMENT_LIST: STASTMENT_LIST STASTMENT .
-
-    $default  reduce using rule 53 (STASTMENT_LIST)
-
-
-State 101
-
-   69 COMPUND_STATMENT: '{' RETURN_STATMENT '}' .
-
-    $default  reduce using rule 69 (COMPUND_STATMENT)
-
-
-State 102
-
-   67 COMPUND_STATMENT: '{' INNER_COMPUND_STATMENT '}' .
+   67 COMPUND_STATMENT: '{' RETURN_STATMENT '}' .
 
     $default  reduce using rule 67 (COMPUND_STATMENT)
 
 
+State 99
+
+   65 COMPUND_STATMENT: '{' INNER_COMPUND_STATMENT '}' .
+
+    $default  reduce using rule 65 (COMPUND_STATMENT)
+
+
+State 100
+
+   66 COMPUND_STATMENT: '{' INNER_COMPUND_STATMENT RETURN_STATMENT . '}'
+
+    '}'  shift, and go to state 134
+
+
+State 101
+
+   51 STASTMENT_LIST: STASTMENT_LIST . STASTMENT
+   72 INNER_COMPUND_STATMENT: DEC_INNER_BLOCK STASTMENT_LIST .
+
+    IF       shift, and go to state 29
+    FOR      shift, and go to state 30
+    WHILE    shift, and go to state 31
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
+    '{'      shift, and go to state 20
+
+    $default  reduce using rule 72 (INNER_COMPUND_STATMENT)
+
+    EXPRASION         go to state 46
+    FUNC_ACTIVE       go to state 47
+    IF_STASTMENT      go to state 49
+    STASTMENT         go to state 97
+    LOOP_STATMENT     go to state 52
+    COMPUND_STATMENT  go to state 53
+    CONST             go to state 59
+
+
+State 102
+
+   73 DEC_INNER_BLOCK: NEW_DECLARE DEC_INNER_BLOCK .
+
+    $default  reduce using rule 73 (DEC_INNER_BLOCK)
+
+
 State 103
 
-   68 COMPUND_STATMENT: '{' INNER_COMPUND_STATMENT RETURN_STATMENT . '}'
+   78 VAR_DECLARE: VAR_DECLARE VF .
 
-    '}'  shift, and go to state 137
+    $default  reduce using rule 78 (VAR_DECLARE)
 
 
 State 104
 
-   53 STASTMENT_LIST: STASTMENT_LIST . STASTMENT
-   74 INNER_COMPUND_STATMENT: DEC_INNER_BLOCK STASTMENT_LIST .
+   68 COMPUND_STATMENT_PROC: '{' '}' .
 
-    IF       shift, and go to state 32
-    FOR      shift, and go to state 33
-    WHILE    shift, and go to state 34
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
-    '{'      shift, and go to state 22
-
-    $default  reduce using rule 74 (INNER_COMPUND_STATMENT)
-
-    EXPRASION         go to state 49
-    FUNC_ACTIVE       go to state 50
-    IF_STASTMENT      go to state 52
-    STASTMENT         go to state 100
-    LOOP_STATMENT     go to state 55
-    COMPUND_STATMENT  go to state 56
-    CONST             go to state 62
+    $default  reduce using rule 68 (COMPUND_STATMENT_PROC)
 
 
 State 105
 
-   75 DEC_INNER_BLOCK: NEW_DECLARE DEC_INNER_BLOCK .
+   69 COMPUND_STATMENT_PROC: '{' INNER_COMPUND_STATMENT . '}'
 
-    $default  reduce using rule 75 (DEC_INNER_BLOCK)
+    '}'  shift, and go to state 135
 
 
 State 106
 
-   80 VAR_DECLARE: VAR_DECLARE VF .
+   19 INNER_ARGS: ID ',' INNER_ARGS .
 
-    $default  reduce using rule 80 (VAR_DECLARE)
+    $default  reduce using rule 19 (INNER_ARGS)
 
 
 State 107
 
-   70 COMPUND_STATMENT_PROC: '{' '}' .
+   15 OUT_ARGES: INNER_ARGS ':' TYPE . OUT_ARGES2
 
-    $default  reduce using rule 70 (COMPUND_STATMENT_PROC)
+    ';'  shift, and go to state 136
+
+    $default  reduce using rule 16 (OUT_ARGES2)
+
+    OUT_ARGES2  go to state 137
 
 
 State 108
 
-   71 COMPUND_STATMENT_PROC: '{' INNER_COMPUND_STATMENT . '}'
+   82 TYPE: STRING '[' . INT_NUM ']'
 
-    '}'  shift, and go to state 138
+    INT_NUM  shift, and go to state 138
 
 
 State 109
 
-   21 INNER_ARGS: ID ',' INNER_ARGS .
+   20 FUNC_BLOCK: '{' . RETURN EXPRASION ';' '}'
+   21           | '{' . INNER_COMPUND_STATMENT RETURN EXPRASION ';' '}'
 
-    $default  reduce using rule 21 (INNER_ARGS)
+    IF       shift, and go to state 29
+    FOR      shift, and go to state 30
+    WHILE    shift, and go to state 31
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    RETURN   shift, and go to state 139
+    VAR      shift, and go to state 35
+    FUNC     shift, and go to state 1
+    PROC     shift, and go to state 16
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
+    '{'      shift, and go to state 20
+
+    FUNC_PROC_DEC           go to state 45
+    DEF_A                   go to state 7
+    PROC_DEF                go to state 8
+    FUNC_DEF                go to state 9
+    EXPRASION               go to state 46
+    FUNC_ACTIVE             go to state 47
+    STASTMENT_LIST          go to state 48
+    IF_STASTMENT            go to state 49
+    STASTMENT               go to state 50
+    LOOP_STATMENT           go to state 52
+    COMPUND_STATMENT        go to state 53
+    INNER_COMPUND_STATMENT  go to state 140
+    DEC_INNER_BLOCK         go to state 55
+    NEW_DECLARE             go to state 56
+    VAR_DECLARE             go to state 57
+    VF                      go to state 58
+    CONST                   go to state 59
 
 
 State 110
 
-   17 OUT_ARGES: INNER_ARGS ':' TYPE . OUT_ARGES2
+   11 FUNC_DEF: FUNC ID ARGES RETURN TYPE FUNC_BLOCK .
 
-    ';'  shift, and go to state 139
-
-    $default  reduce using rule 18 (OUT_ARGES2)
-
-    OUT_ARGES2  go to state 140
+    $default  reduce using rule 11 (FUNC_DEF)
 
 
 State 111
 
-   84 TYPE: STRING '[' . INT_NUM ']'
+   32 EXPRASION: EXPRASION . NE_OP EXPRASION
+   33          | EXPRASION . AND_OP EXPRASION
+   34          | EXPRASION . OR_OP EXPRASION
+   35          | EXPRASION . '+' EXPRASION
+   36          | EXPRASION . '-' EXPRASION
+   37          | EXPRASION . '/' EXPRASION
+   38          | EXPRASION . '*' EXPRASION
+   39          | EXPRASION . EQL_OP EXPRASION
+   40          | EXPRASION . GE_OP EXPRASION
+   41          | EXPRASION . SE_OP EXPRASION
+   42          | EXPRASION . '>' EXPRASION
+   43          | EXPRASION . '<' EXPRASION
+   53 IF_STASTMENT: IF '(' EXPRASION . ')' STASTMENT ELSE STASTMENT
+   54             | IF '(' EXPRASION . ')' STASTMENT
 
-    INT_NUM  shift, and go to state 141
+    AND_OP  shift, and go to state 84
+    GE_OP   shift, and go to state 85
+    SE_OP   shift, and go to state 86
+    NE_OP   shift, and go to state 87
+    OR_OP   shift, and go to state 88
+    EQL_OP  shift, and go to state 89
+    '+'     shift, and go to state 91
+    '-'     shift, and go to state 92
+    '*'     shift, and go to state 93
+    '/'     shift, and go to state 94
+    '>'     shift, and go to state 95
+    '<'     shift, and go to state 96
+    ')'     shift, and go to state 141
 
 
 State 112
 
-   22 FUNC_BLOCK: '{' . RETURN EXPRASION ';' '}'
-   23           | '{' . INNER_COMPUND_STATMENT RETURN EXPRASION ';' '}'
+   32 EXPRASION: EXPRASION . NE_OP EXPRASION
+   33          | EXPRASION . AND_OP EXPRASION
+   34          | EXPRASION . OR_OP EXPRASION
+   35          | EXPRASION . '+' EXPRASION
+   36          | EXPRASION . '-' EXPRASION
+   37          | EXPRASION . '/' EXPRASION
+   38          | EXPRASION . '*' EXPRASION
+   39          | EXPRASION . EQL_OP EXPRASION
+   40          | EXPRASION . GE_OP EXPRASION
+   41          | EXPRASION . SE_OP EXPRASION
+   42          | EXPRASION . '>' EXPRASION
+   43          | EXPRASION . '<' EXPRASION
+   61 LOOP_STATMENT: FOR '(' EXPRASION . ';' EXPRASION ';' UPDATES ')' STASTMENT
 
-    IF       shift, and go to state 32
-    FOR      shift, and go to state 33
-    WHILE    shift, and go to state 34
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    RETURN   shift, and go to state 142
-    VAR      shift, and go to state 38
-    FUNC     shift, and go to state 1
-    PROC     shift, and go to state 17
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
-    '{'      shift, and go to state 22
-
-    FUNC_PROC_DEC           go to state 48
-    DEF_A                   go to state 7
-    PROC_DEF                go to state 8
-    FUNC_DEF                go to state 9
-    EXPRASION               go to state 49
-    FUNC_ACTIVE             go to state 50
-    STASTMENT_LIST          go to state 51
-    IF_STASTMENT            go to state 52
-    STASTMENT               go to state 53
-    LOOP_STATMENT           go to state 55
-    COMPUND_STATMENT        go to state 56
-    INNER_COMPUND_STATMENT  go to state 143
-    DEC_INNER_BLOCK         go to state 58
-    NEW_DECLARE             go to state 59
-    VAR_DECLARE             go to state 60
-    VF                      go to state 61
-    CONST                   go to state 62
+    AND_OP  shift, and go to state 84
+    GE_OP   shift, and go to state 85
+    SE_OP   shift, and go to state 86
+    NE_OP   shift, and go to state 87
+    OR_OP   shift, and go to state 88
+    EQL_OP  shift, and go to state 89
+    ';'     shift, and go to state 142
+    '+'     shift, and go to state 91
+    '-'     shift, and go to state 92
+    '*'     shift, and go to state 93
+    '/'     shift, and go to state 94
+    '>'     shift, and go to state 95
+    '<'     shift, and go to state 96
 
 
 State 113
 
-   13 FUNC_DEF: FUNC ID ARGES RETURN TYPE FUNC_BLOCK .
+   32 EXPRASION: EXPRASION . NE_OP EXPRASION
+   33          | EXPRASION . AND_OP EXPRASION
+   34          | EXPRASION . OR_OP EXPRASION
+   35          | EXPRASION . '+' EXPRASION
+   36          | EXPRASION . '-' EXPRASION
+   37          | EXPRASION . '/' EXPRASION
+   38          | EXPRASION . '*' EXPRASION
+   39          | EXPRASION . EQL_OP EXPRASION
+   40          | EXPRASION . GE_OP EXPRASION
+   41          | EXPRASION . SE_OP EXPRASION
+   42          | EXPRASION . '>' EXPRASION
+   43          | EXPRASION . '<' EXPRASION
+   60 LOOP_STATMENT: WHILE '(' EXPRASION . ')' STASTMENT
 
-    $default  reduce using rule 13 (FUNC_DEF)
+    AND_OP  shift, and go to state 84
+    GE_OP   shift, and go to state 85
+    SE_OP   shift, and go to state 86
+    NE_OP   shift, and go to state 87
+    OR_OP   shift, and go to state 88
+    EQL_OP  shift, and go to state 89
+    '+'     shift, and go to state 91
+    '-'     shift, and go to state 92
+    '*'     shift, and go to state 93
+    '/'     shift, and go to state 94
+    '>'     shift, and go to state 95
+    '<'     shift, and go to state 96
+    ')'     shift, and go to state 143
 
 
 State 114
 
-   34 EXPRASION: EXPRASION . NE_OP EXPRASION
-   35          | EXPRASION . AND_OP EXPRASION
-   36          | EXPRASION . OR_OP EXPRASION
-   37          | EXPRASION . '+' EXPRASION
-   38          | EXPRASION . '-' EXPRASION
-   39          | EXPRASION . '/' EXPRASION
-   40          | EXPRASION . '*' EXPRASION
-   41          | EXPRASION . EQL_OP EXPRASION
-   42          | EXPRASION . GE_OP EXPRASION
-   43          | EXPRASION . SE_OP EXPRASION
-   44          | EXPRASION . '>' EXPRASION
-   45          | EXPRASION . '<' EXPRASION
-   55 IF_STASTMENT: IF '(' EXPRASION . ')' STASTMENT ELSE STASTMENT
-   56             | IF '(' EXPRASION . ')' STASTMENT
+   59 RETURN_STATMENT: RETURN EXPRASION ';' .
 
-    AND_OP  shift, and go to state 87
-    GE_OP   shift, and go to state 88
-    SE_OP   shift, and go to state 89
-    NE_OP   shift, and go to state 90
-    OR_OP   shift, and go to state 91
-    EQL_OP  shift, and go to state 92
-    '+'     shift, and go to state 94
-    '-'     shift, and go to state 95
-    '*'     shift, and go to state 96
-    '/'     shift, and go to state 97
-    '>'     shift, and go to state 98
-    '<'     shift, and go to state 99
-    ')'     shift, and go to state 144
+    $default  reduce using rule 59 (RETURN_STATMENT)
 
 
 State 115
 
-   34 EXPRASION: EXPRASION . NE_OP EXPRASION
-   35          | EXPRASION . AND_OP EXPRASION
-   36          | EXPRASION . OR_OP EXPRASION
-   37          | EXPRASION . '+' EXPRASION
-   38          | EXPRASION . '-' EXPRASION
-   39          | EXPRASION . '/' EXPRASION
-   40          | EXPRASION . '*' EXPRASION
-   41          | EXPRASION . EQL_OP EXPRASION
-   42          | EXPRASION . GE_OP EXPRASION
-   43          | EXPRASION . SE_OP EXPRASION
-   44          | EXPRASION . '>' EXPRASION
-   45          | EXPRASION . '<' EXPRASION
-   63 LOOP_STATMENT: FOR '(' EXPRASION . ';' EXPRASION ';' UPDATES ')' STASTMENT
+   79 VF: VAR INNER_ARGS ':' . TYPE ';'
 
-    AND_OP  shift, and go to state 87
-    GE_OP   shift, and go to state 88
-    SE_OP   shift, and go to state 89
-    NE_OP   shift, and go to state 90
-    OR_OP   shift, and go to state 91
-    EQL_OP  shift, and go to state 92
-    ';'     shift, and go to state 145
-    '+'     shift, and go to state 94
-    '-'     shift, and go to state 95
-    '*'     shift, and go to state 96
-    '/'     shift, and go to state 97
-    '>'     shift, and go to state 98
-    '<'     shift, and go to state 99
+    CHAR    shift, and go to state 65
+    REAL    shift, and go to state 66
+    FLOAT   shift, and go to state 67
+    INT     shift, and go to state 68
+    BOOL    shift, and go to state 69
+    STRING  shift, and go to state 70
+
+    TYPE  go to state 144
 
 
 State 116
 
-   34 EXPRASION: EXPRASION . NE_OP EXPRASION
-   35          | EXPRASION . AND_OP EXPRASION
-   36          | EXPRASION . OR_OP EXPRASION
-   37          | EXPRASION . '+' EXPRASION
-   38          | EXPRASION . '-' EXPRASION
-   39          | EXPRASION . '/' EXPRASION
-   40          | EXPRASION . '*' EXPRASION
-   41          | EXPRASION . EQL_OP EXPRASION
-   42          | EXPRASION . GE_OP EXPRASION
-   43          | EXPRASION . SE_OP EXPRASION
-   44          | EXPRASION . '>' EXPRASION
-   45          | EXPRASION . '<' EXPRASION
-   62 LOOP_STATMENT: WHILE '(' EXPRASION . ')' STASTMENT
+   47 FUNC_ACTIVE_INNER_ARGES: ID .
+   49                        | ID . ',' FUNC_ACTIVE_INNER_ARGES
 
-    AND_OP  shift, and go to state 87
-    GE_OP   shift, and go to state 88
-    SE_OP   shift, and go to state 89
-    NE_OP   shift, and go to state 90
-    OR_OP   shift, and go to state 91
-    EQL_OP  shift, and go to state 92
-    '+'     shift, and go to state 94
-    '-'     shift, and go to state 95
-    '*'     shift, and go to state 96
-    '/'     shift, and go to state 97
-    '>'     shift, and go to state 98
-    '<'     shift, and go to state 99
-    ')'     shift, and go to state 146
+    ','  shift, and go to state 145
+
+    $default  reduce using rule 47 (FUNC_ACTIVE_INNER_ARGES)
 
 
 State 117
 
-   61 RETURN_STATMENT: RETURN EXPRASION ';' .
+   45 FUNC_ACTIVE: ID '(' ')' .
 
-    $default  reduce using rule 61 (RETURN_STATMENT)
+    $default  reduce using rule 45 (FUNC_ACTIVE)
 
 
 State 118
 
-   81 VF: VAR INNER_ARGS ':' . TYPE ';'
+   46 FUNC_ACTIVE: ID '(' FUNC_ACTIVE_INNER_ARGES . ')'
 
-    CHAR    shift, and go to state 68
-    REAL    shift, and go to state 69
-    FLOAT   shift, and go to state 70
-    INT     shift, and go to state 71
-    BOOL    shift, and go to state 72
-    STRING  shift, and go to state 73
-
-    TYPE  go to state 147
+    ')'  shift, and go to state 146
 
 
 State 119
 
-   49 FUNC_ACTIVE_INNER_ARGES: ID .
-   51                        | ID . ',' FUNC_ACTIVE_INNER_ARGES
+   48 FUNC_ACTIVE_INNER_ARGES: CONST .
+   50                        | CONST . ',' FUNC_ACTIVE_INNER_ARGES
 
-    ','  shift, and go to state 148
+    ','  shift, and go to state 147
 
-    $default  reduce using rule 49 (FUNC_ACTIVE_INNER_ARGES)
+    $default  reduce using rule 48 (FUNC_ACTIVE_INNER_ARGES)
 
 
 State 120
 
-   47 FUNC_ACTIVE: ID '(' ')' .
+   31 EXPRASION: ID '=' EXPRASION .
+   32          | EXPRASION . NE_OP EXPRASION
+   33          | EXPRASION . AND_OP EXPRASION
+   34          | EXPRASION . OR_OP EXPRASION
+   35          | EXPRASION . '+' EXPRASION
+   36          | EXPRASION . '-' EXPRASION
+   37          | EXPRASION . '/' EXPRASION
+   38          | EXPRASION . '*' EXPRASION
+   39          | EXPRASION . EQL_OP EXPRASION
+   40          | EXPRASION . GE_OP EXPRASION
+   41          | EXPRASION . SE_OP EXPRASION
+   42          | EXPRASION . '>' EXPRASION
+   43          | EXPRASION . '<' EXPRASION
 
-    $default  reduce using rule 47 (FUNC_ACTIVE)
+    AND_OP  shift, and go to state 84
+    GE_OP   shift, and go to state 85
+    SE_OP   shift, and go to state 86
+    NE_OP   shift, and go to state 87
+    OR_OP   shift, and go to state 88
+    EQL_OP  shift, and go to state 89
+    '+'     shift, and go to state 91
+    '-'     shift, and go to state 92
+    '*'     shift, and go to state 93
+    '/'     shift, and go to state 94
+    '>'     shift, and go to state 95
+    '<'     shift, and go to state 96
+
+    AND_OP    [reduce using rule 31 (EXPRASION)]
+    GE_OP     [reduce using rule 31 (EXPRASION)]
+    SE_OP     [reduce using rule 31 (EXPRASION)]
+    NE_OP     [reduce using rule 31 (EXPRASION)]
+    OR_OP     [reduce using rule 31 (EXPRASION)]
+    EQL_OP    [reduce using rule 31 (EXPRASION)]
+    '+'       [reduce using rule 31 (EXPRASION)]
+    '-'       [reduce using rule 31 (EXPRASION)]
+    '*'       [reduce using rule 31 (EXPRASION)]
+    '/'       [reduce using rule 31 (EXPRASION)]
+    '>'       [reduce using rule 31 (EXPRASION)]
+    '<'       [reduce using rule 31 (EXPRASION)]
+    $default  reduce using rule 31 (EXPRASION)
 
 
 State 121
 
-   48 FUNC_ACTIVE: ID '(' FUNC_ACTIVE_INNER_ARGES . ')'
+   23 EXPRASION: '(' EXPRASION ')' .
 
-    ')'  shift, and go to state 149
+    $default  reduce using rule 23 (EXPRASION)
 
 
 State 122
 
-   50 FUNC_ACTIVE_INNER_ARGES: CONST .
-   52                        | CONST . ',' FUNC_ACTIVE_INNER_ARGES
+   32 EXPRASION: EXPRASION . NE_OP EXPRASION
+   33          | EXPRASION . AND_OP EXPRASION
+   33          | EXPRASION AND_OP EXPRASION .
+   34          | EXPRASION . OR_OP EXPRASION
+   35          | EXPRASION . '+' EXPRASION
+   36          | EXPRASION . '-' EXPRASION
+   37          | EXPRASION . '/' EXPRASION
+   38          | EXPRASION . '*' EXPRASION
+   39          | EXPRASION . EQL_OP EXPRASION
+   40          | EXPRASION . GE_OP EXPRASION
+   41          | EXPRASION . SE_OP EXPRASION
+   42          | EXPRASION . '>' EXPRASION
+   43          | EXPRASION . '<' EXPRASION
 
-    ','  shift, and go to state 150
+    NE_OP  shift, and go to state 87
 
-    $default  reduce using rule 50 (FUNC_ACTIVE_INNER_ARGES)
+    AND_OP  error (nonassociative)
+    GE_OP   error (nonassociative)
+    SE_OP   error (nonassociative)
+    OR_OP   error (nonassociative)
+    EQL_OP  error (nonassociative)
+    '>'     error (nonassociative)
+    '<'     error (nonassociative)
+
+    NE_OP     [reduce using rule 33 (EXPRASION)]
+    $default  reduce using rule 33 (EXPRASION)
 
 
 State 123
 
-   33 EXPRASION: ID '=' EXPRASION .
-   34          | EXPRASION . NE_OP EXPRASION
-   35          | EXPRASION . AND_OP EXPRASION
-   36          | EXPRASION . OR_OP EXPRASION
-   37          | EXPRASION . '+' EXPRASION
-   38          | EXPRASION . '-' EXPRASION
-   39          | EXPRASION . '/' EXPRASION
-   40          | EXPRASION . '*' EXPRASION
-   41          | EXPRASION . EQL_OP EXPRASION
-   42          | EXPRASION . GE_OP EXPRASION
-   43          | EXPRASION . SE_OP EXPRASION
-   44          | EXPRASION . '>' EXPRASION
-   45          | EXPRASION . '<' EXPRASION
+   32 EXPRASION: EXPRASION . NE_OP EXPRASION
+   33          | EXPRASION . AND_OP EXPRASION
+   34          | EXPRASION . OR_OP EXPRASION
+   35          | EXPRASION . '+' EXPRASION
+   36          | EXPRASION . '-' EXPRASION
+   37          | EXPRASION . '/' EXPRASION
+   38          | EXPRASION . '*' EXPRASION
+   39          | EXPRASION . EQL_OP EXPRASION
+   40          | EXPRASION . GE_OP EXPRASION
+   40          | EXPRASION GE_OP EXPRASION .
+   41          | EXPRASION . SE_OP EXPRASION
+   42          | EXPRASION . '>' EXPRASION
+   43          | EXPRASION . '<' EXPRASION
 
-    AND_OP  shift, and go to state 87
-    GE_OP   shift, and go to state 88
-    SE_OP   shift, and go to state 89
-    NE_OP   shift, and go to state 90
-    OR_OP   shift, and go to state 91
-    EQL_OP  shift, and go to state 92
-    '+'     shift, and go to state 94
-    '-'     shift, and go to state 95
-    '*'     shift, and go to state 96
-    '/'     shift, and go to state 97
-    '>'     shift, and go to state 98
-    '<'     shift, and go to state 99
+    NE_OP  shift, and go to state 87
 
-    AND_OP    [reduce using rule 33 (EXPRASION)]
-    GE_OP     [reduce using rule 33 (EXPRASION)]
-    SE_OP     [reduce using rule 33 (EXPRASION)]
-    NE_OP     [reduce using rule 33 (EXPRASION)]
-    OR_OP     [reduce using rule 33 (EXPRASION)]
-    EQL_OP    [reduce using rule 33 (EXPRASION)]
-    '+'       [reduce using rule 33 (EXPRASION)]
-    '-'       [reduce using rule 33 (EXPRASION)]
-    '*'       [reduce using rule 33 (EXPRASION)]
-    '/'       [reduce using rule 33 (EXPRASION)]
-    '>'       [reduce using rule 33 (EXPRASION)]
-    '<'       [reduce using rule 33 (EXPRASION)]
-    $default  reduce using rule 33 (EXPRASION)
+    AND_OP  error (nonassociative)
+    GE_OP   error (nonassociative)
+    SE_OP   error (nonassociative)
+    OR_OP   error (nonassociative)
+    EQL_OP  error (nonassociative)
+    '>'     error (nonassociative)
+    '<'     error (nonassociative)
+
+    NE_OP     [reduce using rule 40 (EXPRASION)]
+    $default  reduce using rule 40 (EXPRASION)
 
 
 State 124
 
-   25 EXPRASION: '(' EXPRASION ')' .
+   32 EXPRASION: EXPRASION . NE_OP EXPRASION
+   33          | EXPRASION . AND_OP EXPRASION
+   34          | EXPRASION . OR_OP EXPRASION
+   35          | EXPRASION . '+' EXPRASION
+   36          | EXPRASION . '-' EXPRASION
+   37          | EXPRASION . '/' EXPRASION
+   38          | EXPRASION . '*' EXPRASION
+   39          | EXPRASION . EQL_OP EXPRASION
+   40          | EXPRASION . GE_OP EXPRASION
+   41          | EXPRASION . SE_OP EXPRASION
+   41          | EXPRASION SE_OP EXPRASION .
+   42          | EXPRASION . '>' EXPRASION
+   43          | EXPRASION . '<' EXPRASION
 
-    $default  reduce using rule 25 (EXPRASION)
-
-
-State 125
-
-   34 EXPRASION: EXPRASION . NE_OP EXPRASION
-   35          | EXPRASION . AND_OP EXPRASION
-   35          | EXPRASION AND_OP EXPRASION .
-   36          | EXPRASION . OR_OP EXPRASION
-   37          | EXPRASION . '+' EXPRASION
-   38          | EXPRASION . '-' EXPRASION
-   39          | EXPRASION . '/' EXPRASION
-   40          | EXPRASION . '*' EXPRASION
-   41          | EXPRASION . EQL_OP EXPRASION
-   42          | EXPRASION . GE_OP EXPRASION
-   43          | EXPRASION . SE_OP EXPRASION
-   44          | EXPRASION . '>' EXPRASION
-   45          | EXPRASION . '<' EXPRASION
-
-    NE_OP  shift, and go to state 90
-
-    AND_OP  error (nonassociative)
-    GE_OP   error (nonassociative)
-    SE_OP   error (nonassociative)
-    OR_OP   error (nonassociative)
-    EQL_OP  error (nonassociative)
-    '>'     error (nonassociative)
-    '<'     error (nonassociative)
-
-    NE_OP     [reduce using rule 35 (EXPRASION)]
-    $default  reduce using rule 35 (EXPRASION)
-
-
-State 126
-
-   34 EXPRASION: EXPRASION . NE_OP EXPRASION
-   35          | EXPRASION . AND_OP EXPRASION
-   36          | EXPRASION . OR_OP EXPRASION
-   37          | EXPRASION . '+' EXPRASION
-   38          | EXPRASION . '-' EXPRASION
-   39          | EXPRASION . '/' EXPRASION
-   40          | EXPRASION . '*' EXPRASION
-   41          | EXPRASION . EQL_OP EXPRASION
-   42          | EXPRASION . GE_OP EXPRASION
-   42          | EXPRASION GE_OP EXPRASION .
-   43          | EXPRASION . SE_OP EXPRASION
-   44          | EXPRASION . '>' EXPRASION
-   45          | EXPRASION . '<' EXPRASION
-
-    NE_OP  shift, and go to state 90
-
-    AND_OP  error (nonassociative)
-    GE_OP   error (nonassociative)
-    SE_OP   error (nonassociative)
-    OR_OP   error (nonassociative)
-    EQL_OP  error (nonassociative)
-    '>'     error (nonassociative)
-    '<'     error (nonassociative)
-
-    NE_OP     [reduce using rule 42 (EXPRASION)]
-    $default  reduce using rule 42 (EXPRASION)
-
-
-State 127
-
-   34 EXPRASION: EXPRASION . NE_OP EXPRASION
-   35          | EXPRASION . AND_OP EXPRASION
-   36          | EXPRASION . OR_OP EXPRASION
-   37          | EXPRASION . '+' EXPRASION
-   38          | EXPRASION . '-' EXPRASION
-   39          | EXPRASION . '/' EXPRASION
-   40          | EXPRASION . '*' EXPRASION
-   41          | EXPRASION . EQL_OP EXPRASION
-   42          | EXPRASION . GE_OP EXPRASION
-   43          | EXPRASION . SE_OP EXPRASION
-   43          | EXPRASION SE_OP EXPRASION .
-   44          | EXPRASION . '>' EXPRASION
-   45          | EXPRASION . '<' EXPRASION
-
-    NE_OP  shift, and go to state 90
-
-    AND_OP  error (nonassociative)
-    GE_OP   error (nonassociative)
-    SE_OP   error (nonassociative)
-    OR_OP   error (nonassociative)
-    EQL_OP  error (nonassociative)
-    '>'     error (nonassociative)
-    '<'     error (nonassociative)
-
-    NE_OP     [reduce using rule 43 (EXPRASION)]
-    $default  reduce using rule 43 (EXPRASION)
-
-
-State 128
-
-   34 EXPRASION: EXPRASION . NE_OP EXPRASION
-   34          | EXPRASION NE_OP EXPRASION .
-   35          | EXPRASION . AND_OP EXPRASION
-   36          | EXPRASION . OR_OP EXPRASION
-   37          | EXPRASION . '+' EXPRASION
-   38          | EXPRASION . '-' EXPRASION
-   39          | EXPRASION . '/' EXPRASION
-   40          | EXPRASION . '*' EXPRASION
-   41          | EXPRASION . EQL_OP EXPRASION
-   42          | EXPRASION . GE_OP EXPRASION
-   43          | EXPRASION . SE_OP EXPRASION
-   44          | EXPRASION . '>' EXPRASION
-   45          | EXPRASION . '<' EXPRASION
-
-    AND_OP  shift, and go to state 87
-    GE_OP   shift, and go to state 88
-    SE_OP   shift, and go to state 89
-    NE_OP   shift, and go to state 90
-    OR_OP   shift, and go to state 91
-    EQL_OP  shift, and go to state 92
-    '+'     shift, and go to state 94
-    '-'     shift, and go to state 95
-    '*'     shift, and go to state 96
-    '/'     shift, and go to state 97
-    '>'     shift, and go to state 98
-    '<'     shift, and go to state 99
-
-    AND_OP    [reduce using rule 34 (EXPRASION)]
-    GE_OP     [reduce using rule 34 (EXPRASION)]
-    SE_OP     [reduce using rule 34 (EXPRASION)]
-    NE_OP     [reduce using rule 34 (EXPRASION)]
-    OR_OP     [reduce using rule 34 (EXPRASION)]
-    EQL_OP    [reduce using rule 34 (EXPRASION)]
-    '+'       [reduce using rule 34 (EXPRASION)]
-    '-'       [reduce using rule 34 (EXPRASION)]
-    '*'       [reduce using rule 34 (EXPRASION)]
-    '/'       [reduce using rule 34 (EXPRASION)]
-    '>'       [reduce using rule 34 (EXPRASION)]
-    '<'       [reduce using rule 34 (EXPRASION)]
-    $default  reduce using rule 34 (EXPRASION)
-
-
-State 129
-
-   34 EXPRASION: EXPRASION . NE_OP EXPRASION
-   35          | EXPRASION . AND_OP EXPRASION
-   36          | EXPRASION . OR_OP EXPRASION
-   36          | EXPRASION OR_OP EXPRASION .
-   37          | EXPRASION . '+' EXPRASION
-   38          | EXPRASION . '-' EXPRASION
-   39          | EXPRASION . '/' EXPRASION
-   40          | EXPRASION . '*' EXPRASION
-   41          | EXPRASION . EQL_OP EXPRASION
-   42          | EXPRASION . GE_OP EXPRASION
-   43          | EXPRASION . SE_OP EXPRASION
-   44          | EXPRASION . '>' EXPRASION
-   45          | EXPRASION . '<' EXPRASION
-
-    NE_OP  shift, and go to state 90
-
-    AND_OP  error (nonassociative)
-    GE_OP   error (nonassociative)
-    SE_OP   error (nonassociative)
-    OR_OP   error (nonassociative)
-    EQL_OP  error (nonassociative)
-    '>'     error (nonassociative)
-    '<'     error (nonassociative)
-
-    NE_OP     [reduce using rule 36 (EXPRASION)]
-    $default  reduce using rule 36 (EXPRASION)
-
-
-State 130
-
-   34 EXPRASION: EXPRASION . NE_OP EXPRASION
-   35          | EXPRASION . AND_OP EXPRASION
-   36          | EXPRASION . OR_OP EXPRASION
-   37          | EXPRASION . '+' EXPRASION
-   38          | EXPRASION . '-' EXPRASION
-   39          | EXPRASION . '/' EXPRASION
-   40          | EXPRASION . '*' EXPRASION
-   41          | EXPRASION . EQL_OP EXPRASION
-   41          | EXPRASION EQL_OP EXPRASION .
-   42          | EXPRASION . GE_OP EXPRASION
-   43          | EXPRASION . SE_OP EXPRASION
-   44          | EXPRASION . '>' EXPRASION
-   45          | EXPRASION . '<' EXPRASION
-
-    NE_OP  shift, and go to state 90
+    NE_OP  shift, and go to state 87
 
     AND_OP  error (nonassociative)
     GE_OP   error (nonassociative)
@@ -2208,32 +2065,225 @@ State 130
     $default  reduce using rule 41 (EXPRASION)
 
 
+State 125
+
+   32 EXPRASION: EXPRASION . NE_OP EXPRASION
+   32          | EXPRASION NE_OP EXPRASION .
+   33          | EXPRASION . AND_OP EXPRASION
+   34          | EXPRASION . OR_OP EXPRASION
+   35          | EXPRASION . '+' EXPRASION
+   36          | EXPRASION . '-' EXPRASION
+   37          | EXPRASION . '/' EXPRASION
+   38          | EXPRASION . '*' EXPRASION
+   39          | EXPRASION . EQL_OP EXPRASION
+   40          | EXPRASION . GE_OP EXPRASION
+   41          | EXPRASION . SE_OP EXPRASION
+   42          | EXPRASION . '>' EXPRASION
+   43          | EXPRASION . '<' EXPRASION
+
+    AND_OP  shift, and go to state 84
+    GE_OP   shift, and go to state 85
+    SE_OP   shift, and go to state 86
+    NE_OP   shift, and go to state 87
+    OR_OP   shift, and go to state 88
+    EQL_OP  shift, and go to state 89
+    '+'     shift, and go to state 91
+    '-'     shift, and go to state 92
+    '*'     shift, and go to state 93
+    '/'     shift, and go to state 94
+    '>'     shift, and go to state 95
+    '<'     shift, and go to state 96
+
+    AND_OP    [reduce using rule 32 (EXPRASION)]
+    GE_OP     [reduce using rule 32 (EXPRASION)]
+    SE_OP     [reduce using rule 32 (EXPRASION)]
+    NE_OP     [reduce using rule 32 (EXPRASION)]
+    OR_OP     [reduce using rule 32 (EXPRASION)]
+    EQL_OP    [reduce using rule 32 (EXPRASION)]
+    '+'       [reduce using rule 32 (EXPRASION)]
+    '-'       [reduce using rule 32 (EXPRASION)]
+    '*'       [reduce using rule 32 (EXPRASION)]
+    '/'       [reduce using rule 32 (EXPRASION)]
+    '>'       [reduce using rule 32 (EXPRASION)]
+    '<'       [reduce using rule 32 (EXPRASION)]
+    $default  reduce using rule 32 (EXPRASION)
+
+
+State 126
+
+   32 EXPRASION: EXPRASION . NE_OP EXPRASION
+   33          | EXPRASION . AND_OP EXPRASION
+   34          | EXPRASION . OR_OP EXPRASION
+   34          | EXPRASION OR_OP EXPRASION .
+   35          | EXPRASION . '+' EXPRASION
+   36          | EXPRASION . '-' EXPRASION
+   37          | EXPRASION . '/' EXPRASION
+   38          | EXPRASION . '*' EXPRASION
+   39          | EXPRASION . EQL_OP EXPRASION
+   40          | EXPRASION . GE_OP EXPRASION
+   41          | EXPRASION . SE_OP EXPRASION
+   42          | EXPRASION . '>' EXPRASION
+   43          | EXPRASION . '<' EXPRASION
+
+    NE_OP  shift, and go to state 87
+
+    AND_OP  error (nonassociative)
+    GE_OP   error (nonassociative)
+    SE_OP   error (nonassociative)
+    OR_OP   error (nonassociative)
+    EQL_OP  error (nonassociative)
+    '>'     error (nonassociative)
+    '<'     error (nonassociative)
+
+    NE_OP     [reduce using rule 34 (EXPRASION)]
+    $default  reduce using rule 34 (EXPRASION)
+
+
+State 127
+
+   32 EXPRASION: EXPRASION . NE_OP EXPRASION
+   33          | EXPRASION . AND_OP EXPRASION
+   34          | EXPRASION . OR_OP EXPRASION
+   35          | EXPRASION . '+' EXPRASION
+   36          | EXPRASION . '-' EXPRASION
+   37          | EXPRASION . '/' EXPRASION
+   38          | EXPRASION . '*' EXPRASION
+   39          | EXPRASION . EQL_OP EXPRASION
+   39          | EXPRASION EQL_OP EXPRASION .
+   40          | EXPRASION . GE_OP EXPRASION
+   41          | EXPRASION . SE_OP EXPRASION
+   42          | EXPRASION . '>' EXPRASION
+   43          | EXPRASION . '<' EXPRASION
+
+    NE_OP  shift, and go to state 87
+
+    AND_OP  error (nonassociative)
+    GE_OP   error (nonassociative)
+    SE_OP   error (nonassociative)
+    OR_OP   error (nonassociative)
+    EQL_OP  error (nonassociative)
+    '>'     error (nonassociative)
+    '<'     error (nonassociative)
+
+    NE_OP     [reduce using rule 39 (EXPRASION)]
+    $default  reduce using rule 39 (EXPRASION)
+
+
+State 128
+
+   32 EXPRASION: EXPRASION . NE_OP EXPRASION
+   33          | EXPRASION . AND_OP EXPRASION
+   34          | EXPRASION . OR_OP EXPRASION
+   35          | EXPRASION . '+' EXPRASION
+   35          | EXPRASION '+' EXPRASION .
+   36          | EXPRASION . '-' EXPRASION
+   37          | EXPRASION . '/' EXPRASION
+   38          | EXPRASION . '*' EXPRASION
+   39          | EXPRASION . EQL_OP EXPRASION
+   40          | EXPRASION . GE_OP EXPRASION
+   41          | EXPRASION . SE_OP EXPRASION
+   42          | EXPRASION . '>' EXPRASION
+   43          | EXPRASION . '<' EXPRASION
+
+    AND_OP  shift, and go to state 84
+    GE_OP   shift, and go to state 85
+    SE_OP   shift, and go to state 86
+    NE_OP   shift, and go to state 87
+    OR_OP   shift, and go to state 88
+    EQL_OP  shift, and go to state 89
+    '*'     shift, and go to state 93
+    '/'     shift, and go to state 94
+    '>'     shift, and go to state 95
+    '<'     shift, and go to state 96
+
+    NE_OP     [reduce using rule 35 (EXPRASION)]
+    $default  reduce using rule 35 (EXPRASION)
+
+
+State 129
+
+   32 EXPRASION: EXPRASION . NE_OP EXPRASION
+   33          | EXPRASION . AND_OP EXPRASION
+   34          | EXPRASION . OR_OP EXPRASION
+   35          | EXPRASION . '+' EXPRASION
+   36          | EXPRASION . '-' EXPRASION
+   36          | EXPRASION '-' EXPRASION .
+   37          | EXPRASION . '/' EXPRASION
+   38          | EXPRASION . '*' EXPRASION
+   39          | EXPRASION . EQL_OP EXPRASION
+   40          | EXPRASION . GE_OP EXPRASION
+   41          | EXPRASION . SE_OP EXPRASION
+   42          | EXPRASION . '>' EXPRASION
+   43          | EXPRASION . '<' EXPRASION
+
+    AND_OP  shift, and go to state 84
+    GE_OP   shift, and go to state 85
+    SE_OP   shift, and go to state 86
+    NE_OP   shift, and go to state 87
+    OR_OP   shift, and go to state 88
+    EQL_OP  shift, and go to state 89
+    '*'     shift, and go to state 93
+    '/'     shift, and go to state 94
+    '>'     shift, and go to state 95
+    '<'     shift, and go to state 96
+
+    NE_OP     [reduce using rule 36 (EXPRASION)]
+    $default  reduce using rule 36 (EXPRASION)
+
+
+State 130
+
+   32 EXPRASION: EXPRASION . NE_OP EXPRASION
+   33          | EXPRASION . AND_OP EXPRASION
+   34          | EXPRASION . OR_OP EXPRASION
+   35          | EXPRASION . '+' EXPRASION
+   36          | EXPRASION . '-' EXPRASION
+   37          | EXPRASION . '/' EXPRASION
+   38          | EXPRASION . '*' EXPRASION
+   38          | EXPRASION '*' EXPRASION .
+   39          | EXPRASION . EQL_OP EXPRASION
+   40          | EXPRASION . GE_OP EXPRASION
+   41          | EXPRASION . SE_OP EXPRASION
+   42          | EXPRASION . '>' EXPRASION
+   43          | EXPRASION . '<' EXPRASION
+
+    AND_OP  shift, and go to state 84
+    GE_OP   shift, and go to state 85
+    SE_OP   shift, and go to state 86
+    NE_OP   shift, and go to state 87
+    OR_OP   shift, and go to state 88
+    EQL_OP  shift, and go to state 89
+    '>'     shift, and go to state 95
+    '<'     shift, and go to state 96
+
+    NE_OP     [reduce using rule 38 (EXPRASION)]
+    $default  reduce using rule 38 (EXPRASION)
+
+
 State 131
 
-   34 EXPRASION: EXPRASION . NE_OP EXPRASION
-   35          | EXPRASION . AND_OP EXPRASION
-   36          | EXPRASION . OR_OP EXPRASION
-   37          | EXPRASION . '+' EXPRASION
-   37          | EXPRASION '+' EXPRASION .
-   38          | EXPRASION . '-' EXPRASION
-   39          | EXPRASION . '/' EXPRASION
-   40          | EXPRASION . '*' EXPRASION
-   41          | EXPRASION . EQL_OP EXPRASION
-   42          | EXPRASION . GE_OP EXPRASION
-   43          | EXPRASION . SE_OP EXPRASION
-   44          | EXPRASION . '>' EXPRASION
-   45          | EXPRASION . '<' EXPRASION
+   32 EXPRASION: EXPRASION . NE_OP EXPRASION
+   33          | EXPRASION . AND_OP EXPRASION
+   34          | EXPRASION . OR_OP EXPRASION
+   35          | EXPRASION . '+' EXPRASION
+   36          | EXPRASION . '-' EXPRASION
+   37          | EXPRASION . '/' EXPRASION
+   37          | EXPRASION '/' EXPRASION .
+   38          | EXPRASION . '*' EXPRASION
+   39          | EXPRASION . EQL_OP EXPRASION
+   40          | EXPRASION . GE_OP EXPRASION
+   41          | EXPRASION . SE_OP EXPRASION
+   42          | EXPRASION . '>' EXPRASION
+   43          | EXPRASION . '<' EXPRASION
 
-    AND_OP  shift, and go to state 87
-    GE_OP   shift, and go to state 88
-    SE_OP   shift, and go to state 89
-    NE_OP   shift, and go to state 90
-    OR_OP   shift, and go to state 91
-    EQL_OP  shift, and go to state 92
-    '*'     shift, and go to state 96
-    '/'     shift, and go to state 97
-    '>'     shift, and go to state 98
-    '<'     shift, and go to state 99
+    AND_OP  shift, and go to state 84
+    GE_OP   shift, and go to state 85
+    SE_OP   shift, and go to state 86
+    NE_OP   shift, and go to state 87
+    OR_OP   shift, and go to state 88
+    EQL_OP  shift, and go to state 89
+    '>'     shift, and go to state 95
+    '<'     shift, and go to state 96
 
     NE_OP     [reduce using rule 37 (EXPRASION)]
     $default  reduce using rule 37 (EXPRASION)
@@ -2241,644 +2291,555 @@ State 131
 
 State 132
 
-   34 EXPRASION: EXPRASION . NE_OP EXPRASION
-   35          | EXPRASION . AND_OP EXPRASION
-   36          | EXPRASION . OR_OP EXPRASION
-   37          | EXPRASION . '+' EXPRASION
-   38          | EXPRASION . '-' EXPRASION
-   38          | EXPRASION '-' EXPRASION .
-   39          | EXPRASION . '/' EXPRASION
-   40          | EXPRASION . '*' EXPRASION
-   41          | EXPRASION . EQL_OP EXPRASION
-   42          | EXPRASION . GE_OP EXPRASION
-   43          | EXPRASION . SE_OP EXPRASION
-   44          | EXPRASION . '>' EXPRASION
-   45          | EXPRASION . '<' EXPRASION
+   32 EXPRASION: EXPRASION . NE_OP EXPRASION
+   33          | EXPRASION . AND_OP EXPRASION
+   34          | EXPRASION . OR_OP EXPRASION
+   35          | EXPRASION . '+' EXPRASION
+   36          | EXPRASION . '-' EXPRASION
+   37          | EXPRASION . '/' EXPRASION
+   38          | EXPRASION . '*' EXPRASION
+   39          | EXPRASION . EQL_OP EXPRASION
+   40          | EXPRASION . GE_OP EXPRASION
+   41          | EXPRASION . SE_OP EXPRASION
+   42          | EXPRASION . '>' EXPRASION
+   42          | EXPRASION '>' EXPRASION .
+   43          | EXPRASION . '<' EXPRASION
 
-    AND_OP  shift, and go to state 87
-    GE_OP   shift, and go to state 88
-    SE_OP   shift, and go to state 89
-    NE_OP   shift, and go to state 90
-    OR_OP   shift, and go to state 91
-    EQL_OP  shift, and go to state 92
-    '*'     shift, and go to state 96
-    '/'     shift, and go to state 97
-    '>'     shift, and go to state 98
-    '<'     shift, and go to state 99
+    NE_OP  shift, and go to state 87
 
-    NE_OP     [reduce using rule 38 (EXPRASION)]
-    $default  reduce using rule 38 (EXPRASION)
+    AND_OP  error (nonassociative)
+    GE_OP   error (nonassociative)
+    SE_OP   error (nonassociative)
+    OR_OP   error (nonassociative)
+    EQL_OP  error (nonassociative)
+    '>'     error (nonassociative)
+    '<'     error (nonassociative)
+
+    NE_OP     [reduce using rule 42 (EXPRASION)]
+    $default  reduce using rule 42 (EXPRASION)
 
 
 State 133
 
-   34 EXPRASION: EXPRASION . NE_OP EXPRASION
-   35          | EXPRASION . AND_OP EXPRASION
-   36          | EXPRASION . OR_OP EXPRASION
-   37          | EXPRASION . '+' EXPRASION
-   38          | EXPRASION . '-' EXPRASION
-   39          | EXPRASION . '/' EXPRASION
-   40          | EXPRASION . '*' EXPRASION
-   40          | EXPRASION '*' EXPRASION .
-   41          | EXPRASION . EQL_OP EXPRASION
-   42          | EXPRASION . GE_OP EXPRASION
-   43          | EXPRASION . SE_OP EXPRASION
-   44          | EXPRASION . '>' EXPRASION
-   45          | EXPRASION . '<' EXPRASION
+   32 EXPRASION: EXPRASION . NE_OP EXPRASION
+   33          | EXPRASION . AND_OP EXPRASION
+   34          | EXPRASION . OR_OP EXPRASION
+   35          | EXPRASION . '+' EXPRASION
+   36          | EXPRASION . '-' EXPRASION
+   37          | EXPRASION . '/' EXPRASION
+   38          | EXPRASION . '*' EXPRASION
+   39          | EXPRASION . EQL_OP EXPRASION
+   40          | EXPRASION . GE_OP EXPRASION
+   41          | EXPRASION . SE_OP EXPRASION
+   42          | EXPRASION . '>' EXPRASION
+   43          | EXPRASION . '<' EXPRASION
+   43          | EXPRASION '<' EXPRASION .
 
-    AND_OP  shift, and go to state 87
-    GE_OP   shift, and go to state 88
-    SE_OP   shift, and go to state 89
-    NE_OP   shift, and go to state 90
-    OR_OP   shift, and go to state 91
-    EQL_OP  shift, and go to state 92
-    '>'     shift, and go to state 98
-    '<'     shift, and go to state 99
+    NE_OP  shift, and go to state 87
 
-    NE_OP     [reduce using rule 40 (EXPRASION)]
-    $default  reduce using rule 40 (EXPRASION)
+    AND_OP  error (nonassociative)
+    GE_OP   error (nonassociative)
+    SE_OP   error (nonassociative)
+    OR_OP   error (nonassociative)
+    EQL_OP  error (nonassociative)
+    '>'     error (nonassociative)
+    '<'     error (nonassociative)
+
+    NE_OP     [reduce using rule 43 (EXPRASION)]
+    $default  reduce using rule 43 (EXPRASION)
 
 
 State 134
 
-   34 EXPRASION: EXPRASION . NE_OP EXPRASION
-   35          | EXPRASION . AND_OP EXPRASION
-   36          | EXPRASION . OR_OP EXPRASION
-   37          | EXPRASION . '+' EXPRASION
-   38          | EXPRASION . '-' EXPRASION
-   39          | EXPRASION . '/' EXPRASION
-   39          | EXPRASION '/' EXPRASION .
-   40          | EXPRASION . '*' EXPRASION
-   41          | EXPRASION . EQL_OP EXPRASION
-   42          | EXPRASION . GE_OP EXPRASION
-   43          | EXPRASION . SE_OP EXPRASION
-   44          | EXPRASION . '>' EXPRASION
-   45          | EXPRASION . '<' EXPRASION
+   66 COMPUND_STATMENT: '{' INNER_COMPUND_STATMENT RETURN_STATMENT '}' .
 
-    AND_OP  shift, and go to state 87
-    GE_OP   shift, and go to state 88
-    SE_OP   shift, and go to state 89
-    NE_OP   shift, and go to state 90
-    OR_OP   shift, and go to state 91
-    EQL_OP  shift, and go to state 92
-    '>'     shift, and go to state 98
-    '<'     shift, and go to state 99
-
-    NE_OP     [reduce using rule 39 (EXPRASION)]
-    $default  reduce using rule 39 (EXPRASION)
+    $default  reduce using rule 66 (COMPUND_STATMENT)
 
 
 State 135
 
-   34 EXPRASION: EXPRASION . NE_OP EXPRASION
-   35          | EXPRASION . AND_OP EXPRASION
-   36          | EXPRASION . OR_OP EXPRASION
-   37          | EXPRASION . '+' EXPRASION
-   38          | EXPRASION . '-' EXPRASION
-   39          | EXPRASION . '/' EXPRASION
-   40          | EXPRASION . '*' EXPRASION
-   41          | EXPRASION . EQL_OP EXPRASION
-   42          | EXPRASION . GE_OP EXPRASION
-   43          | EXPRASION . SE_OP EXPRASION
-   44          | EXPRASION . '>' EXPRASION
-   44          | EXPRASION '>' EXPRASION .
-   45          | EXPRASION . '<' EXPRASION
+   69 COMPUND_STATMENT_PROC: '{' INNER_COMPUND_STATMENT '}' .
 
-    NE_OP  shift, and go to state 90
-
-    AND_OP  error (nonassociative)
-    GE_OP   error (nonassociative)
-    SE_OP   error (nonassociative)
-    OR_OP   error (nonassociative)
-    EQL_OP  error (nonassociative)
-    '>'     error (nonassociative)
-    '<'     error (nonassociative)
-
-    NE_OP     [reduce using rule 44 (EXPRASION)]
-    $default  reduce using rule 44 (EXPRASION)
+    $default  reduce using rule 69 (COMPUND_STATMENT_PROC)
 
 
 State 136
 
-   34 EXPRASION: EXPRASION . NE_OP EXPRASION
-   35          | EXPRASION . AND_OP EXPRASION
-   36          | EXPRASION . OR_OP EXPRASION
-   37          | EXPRASION . '+' EXPRASION
-   38          | EXPRASION . '-' EXPRASION
-   39          | EXPRASION . '/' EXPRASION
-   40          | EXPRASION . '*' EXPRASION
-   41          | EXPRASION . EQL_OP EXPRASION
-   42          | EXPRASION . GE_OP EXPRASION
-   43          | EXPRASION . SE_OP EXPRASION
-   44          | EXPRASION . '>' EXPRASION
-   45          | EXPRASION . '<' EXPRASION
-   45          | EXPRASION '<' EXPRASION .
+   17 OUT_ARGES2: ';' . OUT_ARGES
 
-    NE_OP  shift, and go to state 90
+    ID  shift, and go to state 23
 
-    AND_OP  error (nonassociative)
-    GE_OP   error (nonassociative)
-    SE_OP   error (nonassociative)
-    OR_OP   error (nonassociative)
-    EQL_OP  error (nonassociative)
-    '>'     error (nonassociative)
-    '<'     error (nonassociative)
-
-    NE_OP     [reduce using rule 45 (EXPRASION)]
-    $default  reduce using rule 45 (EXPRASION)
+    OUT_ARGES   go to state 148
+    INNER_ARGS  go to state 27
 
 
 State 137
 
-   68 COMPUND_STATMENT: '{' INNER_COMPUND_STATMENT RETURN_STATMENT '}' .
+   15 OUT_ARGES: INNER_ARGS ':' TYPE OUT_ARGES2 .
 
-    $default  reduce using rule 68 (COMPUND_STATMENT)
+    $default  reduce using rule 15 (OUT_ARGES)
 
 
 State 138
 
-   71 COMPUND_STATMENT_PROC: '{' INNER_COMPUND_STATMENT '}' .
+   82 TYPE: STRING '[' INT_NUM . ']'
 
-    $default  reduce using rule 71 (COMPUND_STATMENT_PROC)
+    ']'  shift, and go to state 149
 
 
 State 139
 
-   19 OUT_ARGES2: ';' . OUT_ARGES
+   20 FUNC_BLOCK: '{' RETURN . EXPRASION ';' '}'
 
-    ID  shift, and go to state 26
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
 
-    OUT_ARGES   go to state 151
-    INNER_ARGS  go to state 30
+    EXPRASION    go to state 150
+    FUNC_ACTIVE  go to state 47
+    CONST        go to state 59
 
 
 State 140
 
-   17 OUT_ARGES: INNER_ARGS ':' TYPE OUT_ARGES2 .
+   21 FUNC_BLOCK: '{' INNER_COMPUND_STATMENT . RETURN EXPRASION ';' '}'
 
-    $default  reduce using rule 17 (OUT_ARGES)
+    RETURN  shift, and go to state 151
 
 
 State 141
 
-   84 TYPE: STRING '[' INT_NUM . ']'
+   53 IF_STASTMENT: IF '(' EXPRASION ')' . STASTMENT ELSE STASTMENT
+   54             | IF '(' EXPRASION ')' . STASTMENT
 
-    ']'  shift, and go to state 152
+    IF       shift, and go to state 29
+    FOR      shift, and go to state 30
+    WHILE    shift, and go to state 31
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
+    '{'      shift, and go to state 20
+
+    EXPRASION         go to state 46
+    FUNC_ACTIVE       go to state 47
+    IF_STASTMENT      go to state 49
+    STASTMENT         go to state 152
+    LOOP_STATMENT     go to state 52
+    COMPUND_STATMENT  go to state 53
+    CONST             go to state 59
 
 
 State 142
 
-   22 FUNC_BLOCK: '{' RETURN . EXPRASION ';' '}'
+   61 LOOP_STATMENT: FOR '(' EXPRASION ';' . EXPRASION ';' UPDATES ')' STASTMENT
 
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
 
     EXPRASION    go to state 153
-    FUNC_ACTIVE  go to state 50
-    CONST        go to state 62
+    FUNC_ACTIVE  go to state 47
+    CONST        go to state 59
 
 
 State 143
 
-   23 FUNC_BLOCK: '{' INNER_COMPUND_STATMENT . RETURN EXPRASION ';' '}'
+   60 LOOP_STATMENT: WHILE '(' EXPRASION ')' . STASTMENT
 
-    RETURN  shift, and go to state 154
+    IF       shift, and go to state 29
+    FOR      shift, and go to state 30
+    WHILE    shift, and go to state 31
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
+    '{'      shift, and go to state 20
+
+    EXPRASION         go to state 46
+    FUNC_ACTIVE       go to state 47
+    IF_STASTMENT      go to state 49
+    STASTMENT         go to state 154
+    LOOP_STATMENT     go to state 52
+    COMPUND_STATMENT  go to state 53
+    CONST             go to state 59
 
 
 State 144
 
-   55 IF_STASTMENT: IF '(' EXPRASION ')' . STASTMENT ELSE STASTMENT
-   56             | IF '(' EXPRASION ')' . STASTMENT
+   79 VF: VAR INNER_ARGS ':' TYPE . ';'
 
-    IF       shift, and go to state 32
-    FOR      shift, and go to state 33
-    WHILE    shift, and go to state 34
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
-    '{'      shift, and go to state 22
-
-    EXPRASION         go to state 49
-    FUNC_ACTIVE       go to state 50
-    IF_STASTMENT      go to state 52
-    STASTMENT         go to state 155
-    LOOP_STATMENT     go to state 55
-    COMPUND_STATMENT  go to state 56
-    CONST             go to state 62
+    ';'  shift, and go to state 155
 
 
 State 145
 
-   63 LOOP_STATMENT: FOR '(' EXPRASION ';' . EXPRASION ';' UPDATES ')' STASTMENT
+   49 FUNC_ACTIVE_INNER_ARGES: ID ',' . FUNC_ACTIVE_INNER_ARGES
 
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 116
 
-    EXPRASION    go to state 156
-    FUNC_ACTIVE  go to state 50
-    CONST        go to state 62
+    FUNC_ACTIVE_INNER_ARGES  go to state 156
+    CONST                    go to state 119
 
 
 State 146
 
-   62 LOOP_STATMENT: WHILE '(' EXPRASION ')' . STASTMENT
+   46 FUNC_ACTIVE: ID '(' FUNC_ACTIVE_INNER_ARGES ')' .
 
-    IF       shift, and go to state 32
-    FOR      shift, and go to state 33
-    WHILE    shift, and go to state 34
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
-    '{'      shift, and go to state 22
-
-    EXPRASION         go to state 49
-    FUNC_ACTIVE       go to state 50
-    IF_STASTMENT      go to state 52
-    STASTMENT         go to state 157
-    LOOP_STATMENT     go to state 55
-    COMPUND_STATMENT  go to state 56
-    CONST             go to state 62
+    $default  reduce using rule 46 (FUNC_ACTIVE)
 
 
 State 147
 
-   81 VF: VAR INNER_ARGS ':' TYPE . ';'
+   50 FUNC_ACTIVE_INNER_ARGES: CONST ',' . FUNC_ACTIVE_INNER_ARGES
 
-    ';'  shift, and go to state 158
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 116
+
+    FUNC_ACTIVE_INNER_ARGES  go to state 157
+    CONST                    go to state 119
 
 
 State 148
 
-   51 FUNC_ACTIVE_INNER_ARGES: ID ',' . FUNC_ACTIVE_INNER_ARGES
+   17 OUT_ARGES2: ';' OUT_ARGES .
 
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 119
-
-    FUNC_ACTIVE_INNER_ARGES  go to state 159
-    CONST                    go to state 122
+    $default  reduce using rule 17 (OUT_ARGES2)
 
 
 State 149
 
-   48 FUNC_ACTIVE: ID '(' FUNC_ACTIVE_INNER_ARGES ')' .
+   82 TYPE: STRING '[' INT_NUM ']' .
 
-    $default  reduce using rule 48 (FUNC_ACTIVE)
+    $default  reduce using rule 82 (TYPE)
 
 
 State 150
 
-   52 FUNC_ACTIVE_INNER_ARGES: CONST ',' . FUNC_ACTIVE_INNER_ARGES
+   20 FUNC_BLOCK: '{' RETURN EXPRASION . ';' '}'
+   32 EXPRASION: EXPRASION . NE_OP EXPRASION
+   33          | EXPRASION . AND_OP EXPRASION
+   34          | EXPRASION . OR_OP EXPRASION
+   35          | EXPRASION . '+' EXPRASION
+   36          | EXPRASION . '-' EXPRASION
+   37          | EXPRASION . '/' EXPRASION
+   38          | EXPRASION . '*' EXPRASION
+   39          | EXPRASION . EQL_OP EXPRASION
+   40          | EXPRASION . GE_OP EXPRASION
+   41          | EXPRASION . SE_OP EXPRASION
+   42          | EXPRASION . '>' EXPRASION
+   43          | EXPRASION . '<' EXPRASION
 
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 119
-
-    FUNC_ACTIVE_INNER_ARGES  go to state 160
-    CONST                    go to state 122
+    AND_OP  shift, and go to state 84
+    GE_OP   shift, and go to state 85
+    SE_OP   shift, and go to state 86
+    NE_OP   shift, and go to state 87
+    OR_OP   shift, and go to state 88
+    EQL_OP  shift, and go to state 89
+    ';'     shift, and go to state 158
+    '+'     shift, and go to state 91
+    '-'     shift, and go to state 92
+    '*'     shift, and go to state 93
+    '/'     shift, and go to state 94
+    '>'     shift, and go to state 95
+    '<'     shift, and go to state 96
 
 
 State 151
 
-   19 OUT_ARGES2: ';' OUT_ARGES .
+   21 FUNC_BLOCK: '{' INNER_COMPUND_STATMENT RETURN . EXPRASION ';' '}'
 
-    $default  reduce using rule 19 (OUT_ARGES2)
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
+
+    EXPRASION    go to state 159
+    FUNC_ACTIVE  go to state 47
+    CONST        go to state 59
 
 
 State 152
 
-   84 TYPE: STRING '[' INT_NUM ']' .
+   53 IF_STASTMENT: IF '(' EXPRASION ')' STASTMENT . ELSE STASTMENT
+   54             | IF '(' EXPRASION ')' STASTMENT .
 
-    $default  reduce using rule 84 (TYPE)
+    ELSE  shift, and go to state 160
+
+    $default  reduce using rule 54 (IF_STASTMENT)
 
 
 State 153
 
-   22 FUNC_BLOCK: '{' RETURN EXPRASION . ';' '}'
-   34 EXPRASION: EXPRASION . NE_OP EXPRASION
-   35          | EXPRASION . AND_OP EXPRASION
-   36          | EXPRASION . OR_OP EXPRASION
-   37          | EXPRASION . '+' EXPRASION
-   38          | EXPRASION . '-' EXPRASION
-   39          | EXPRASION . '/' EXPRASION
-   40          | EXPRASION . '*' EXPRASION
-   41          | EXPRASION . EQL_OP EXPRASION
-   42          | EXPRASION . GE_OP EXPRASION
-   43          | EXPRASION . SE_OP EXPRASION
-   44          | EXPRASION . '>' EXPRASION
-   45          | EXPRASION . '<' EXPRASION
+   32 EXPRASION: EXPRASION . NE_OP EXPRASION
+   33          | EXPRASION . AND_OP EXPRASION
+   34          | EXPRASION . OR_OP EXPRASION
+   35          | EXPRASION . '+' EXPRASION
+   36          | EXPRASION . '-' EXPRASION
+   37          | EXPRASION . '/' EXPRASION
+   38          | EXPRASION . '*' EXPRASION
+   39          | EXPRASION . EQL_OP EXPRASION
+   40          | EXPRASION . GE_OP EXPRASION
+   41          | EXPRASION . SE_OP EXPRASION
+   42          | EXPRASION . '>' EXPRASION
+   43          | EXPRASION . '<' EXPRASION
+   61 LOOP_STATMENT: FOR '(' EXPRASION ';' EXPRASION . ';' UPDATES ')' STASTMENT
 
-    AND_OP  shift, and go to state 87
-    GE_OP   shift, and go to state 88
-    SE_OP   shift, and go to state 89
-    NE_OP   shift, and go to state 90
-    OR_OP   shift, and go to state 91
-    EQL_OP  shift, and go to state 92
+    AND_OP  shift, and go to state 84
+    GE_OP   shift, and go to state 85
+    SE_OP   shift, and go to state 86
+    NE_OP   shift, and go to state 87
+    OR_OP   shift, and go to state 88
+    EQL_OP  shift, and go to state 89
     ';'     shift, and go to state 161
-    '+'     shift, and go to state 94
-    '-'     shift, and go to state 95
-    '*'     shift, and go to state 96
-    '/'     shift, and go to state 97
-    '>'     shift, and go to state 98
-    '<'     shift, and go to state 99
+    '+'     shift, and go to state 91
+    '-'     shift, and go to state 92
+    '*'     shift, and go to state 93
+    '/'     shift, and go to state 94
+    '>'     shift, and go to state 95
+    '<'     shift, and go to state 96
 
 
 State 154
 
-   23 FUNC_BLOCK: '{' INNER_COMPUND_STATMENT RETURN . EXPRASION ';' '}'
+   60 LOOP_STATMENT: WHILE '(' EXPRASION ')' STASTMENT .
 
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
-
-    EXPRASION    go to state 162
-    FUNC_ACTIVE  go to state 50
-    CONST        go to state 62
+    $default  reduce using rule 60 (LOOP_STATMENT)
 
 
 State 155
 
-   55 IF_STASTMENT: IF '(' EXPRASION ')' STASTMENT . ELSE STASTMENT
-   56             | IF '(' EXPRASION ')' STASTMENT .
+   79 VF: VAR INNER_ARGS ':' TYPE ';' .
 
-    ELSE  shift, and go to state 163
-
-    $default  reduce using rule 56 (IF_STASTMENT)
+    $default  reduce using rule 79 (VF)
 
 
 State 156
 
-   34 EXPRASION: EXPRASION . NE_OP EXPRASION
-   35          | EXPRASION . AND_OP EXPRASION
-   36          | EXPRASION . OR_OP EXPRASION
-   37          | EXPRASION . '+' EXPRASION
-   38          | EXPRASION . '-' EXPRASION
-   39          | EXPRASION . '/' EXPRASION
-   40          | EXPRASION . '*' EXPRASION
-   41          | EXPRASION . EQL_OP EXPRASION
-   42          | EXPRASION . GE_OP EXPRASION
-   43          | EXPRASION . SE_OP EXPRASION
-   44          | EXPRASION . '>' EXPRASION
-   45          | EXPRASION . '<' EXPRASION
-   63 LOOP_STATMENT: FOR '(' EXPRASION ';' EXPRASION . ';' UPDATES ')' STASTMENT
+   49 FUNC_ACTIVE_INNER_ARGES: ID ',' FUNC_ACTIVE_INNER_ARGES .
 
-    AND_OP  shift, and go to state 87
-    GE_OP   shift, and go to state 88
-    SE_OP   shift, and go to state 89
-    NE_OP   shift, and go to state 90
-    OR_OP   shift, and go to state 91
-    EQL_OP  shift, and go to state 92
-    ';'     shift, and go to state 164
-    '+'     shift, and go to state 94
-    '-'     shift, and go to state 95
-    '*'     shift, and go to state 96
-    '/'     shift, and go to state 97
-    '>'     shift, and go to state 98
-    '<'     shift, and go to state 99
+    $default  reduce using rule 49 (FUNC_ACTIVE_INNER_ARGES)
 
 
 State 157
 
-   62 LOOP_STATMENT: WHILE '(' EXPRASION ')' STASTMENT .
+   50 FUNC_ACTIVE_INNER_ARGES: CONST ',' FUNC_ACTIVE_INNER_ARGES .
 
-    $default  reduce using rule 62 (LOOP_STATMENT)
+    $default  reduce using rule 50 (FUNC_ACTIVE_INNER_ARGES)
 
 
 State 158
 
-   81 VF: VAR INNER_ARGS ':' TYPE ';' .
+   20 FUNC_BLOCK: '{' RETURN EXPRASION ';' . '}'
 
-    $default  reduce using rule 81 (VF)
+    '}'  shift, and go to state 162
 
 
 State 159
 
-   51 FUNC_ACTIVE_INNER_ARGES: ID ',' FUNC_ACTIVE_INNER_ARGES .
+   21 FUNC_BLOCK: '{' INNER_COMPUND_STATMENT RETURN EXPRASION . ';' '}'
+   32 EXPRASION: EXPRASION . NE_OP EXPRASION
+   33          | EXPRASION . AND_OP EXPRASION
+   34          | EXPRASION . OR_OP EXPRASION
+   35          | EXPRASION . '+' EXPRASION
+   36          | EXPRASION . '-' EXPRASION
+   37          | EXPRASION . '/' EXPRASION
+   38          | EXPRASION . '*' EXPRASION
+   39          | EXPRASION . EQL_OP EXPRASION
+   40          | EXPRASION . GE_OP EXPRASION
+   41          | EXPRASION . SE_OP EXPRASION
+   42          | EXPRASION . '>' EXPRASION
+   43          | EXPRASION . '<' EXPRASION
 
-    $default  reduce using rule 51 (FUNC_ACTIVE_INNER_ARGES)
+    AND_OP  shift, and go to state 84
+    GE_OP   shift, and go to state 85
+    SE_OP   shift, and go to state 86
+    NE_OP   shift, and go to state 87
+    OR_OP   shift, and go to state 88
+    EQL_OP  shift, and go to state 89
+    ';'     shift, and go to state 163
+    '+'     shift, and go to state 91
+    '-'     shift, and go to state 92
+    '*'     shift, and go to state 93
+    '/'     shift, and go to state 94
+    '>'     shift, and go to state 95
+    '<'     shift, and go to state 96
 
 
 State 160
 
-   52 FUNC_ACTIVE_INNER_ARGES: CONST ',' FUNC_ACTIVE_INNER_ARGES .
+   53 IF_STASTMENT: IF '(' EXPRASION ')' STASTMENT ELSE . STASTMENT
 
-    $default  reduce using rule 52 (FUNC_ACTIVE_INNER_ARGES)
+    IF       shift, and go to state 29
+    FOR      shift, and go to state 30
+    WHILE    shift, and go to state 31
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
+    '{'      shift, and go to state 20
+
+    EXPRASION         go to state 46
+    FUNC_ACTIVE       go to state 47
+    IF_STASTMENT      go to state 49
+    STASTMENT         go to state 164
+    LOOP_STATMENT     go to state 52
+    COMPUND_STATMENT  go to state 53
+    CONST             go to state 59
 
 
 State 161
 
-   22 FUNC_BLOCK: '{' RETURN EXPRASION ';' . '}'
+   61 LOOP_STATMENT: FOR '(' EXPRASION ';' EXPRASION ';' . UPDATES ')' STASTMENT
 
-    '}'  shift, and go to state 165
+    ID  shift, and go to state 165
+
+    UPDATES  go to state 166
 
 
 State 162
 
-   23 FUNC_BLOCK: '{' INNER_COMPUND_STATMENT RETURN EXPRASION . ';' '}'
-   34 EXPRASION: EXPRASION . NE_OP EXPRASION
-   35          | EXPRASION . AND_OP EXPRASION
-   36          | EXPRASION . OR_OP EXPRASION
-   37          | EXPRASION . '+' EXPRASION
-   38          | EXPRASION . '-' EXPRASION
-   39          | EXPRASION . '/' EXPRASION
-   40          | EXPRASION . '*' EXPRASION
-   41          | EXPRASION . EQL_OP EXPRASION
-   42          | EXPRASION . GE_OP EXPRASION
-   43          | EXPRASION . SE_OP EXPRASION
-   44          | EXPRASION . '>' EXPRASION
-   45          | EXPRASION . '<' EXPRASION
+   20 FUNC_BLOCK: '{' RETURN EXPRASION ';' '}' .
 
-    AND_OP  shift, and go to state 87
-    GE_OP   shift, and go to state 88
-    SE_OP   shift, and go to state 89
-    NE_OP   shift, and go to state 90
-    OR_OP   shift, and go to state 91
-    EQL_OP  shift, and go to state 92
-    ';'     shift, and go to state 166
-    '+'     shift, and go to state 94
-    '-'     shift, and go to state 95
-    '*'     shift, and go to state 96
-    '/'     shift, and go to state 97
-    '>'     shift, and go to state 98
-    '<'     shift, and go to state 99
+    $default  reduce using rule 20 (FUNC_BLOCK)
 
 
 State 163
 
-   55 IF_STASTMENT: IF '(' EXPRASION ')' STASTMENT ELSE . STASTMENT
+   21 FUNC_BLOCK: '{' INNER_COMPUND_STATMENT RETURN EXPRASION ';' . '}'
 
-    IF       shift, and go to state 32
-    FOR      shift, and go to state 33
-    WHILE    shift, and go to state 34
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
-    '{'      shift, and go to state 22
-
-    EXPRASION         go to state 49
-    FUNC_ACTIVE       go to state 50
-    IF_STASTMENT      go to state 52
-    STASTMENT         go to state 167
-    LOOP_STATMENT     go to state 55
-    COMPUND_STATMENT  go to state 56
-    CONST             go to state 62
+    '}'  shift, and go to state 167
 
 
 State 164
 
-   63 LOOP_STATMENT: FOR '(' EXPRASION ';' EXPRASION ';' . UPDATES ')' STASTMENT
+   53 IF_STASTMENT: IF '(' EXPRASION ')' STASTMENT ELSE STASTMENT .
 
-    ID  shift, and go to state 168
-
-    UPDATES  go to state 169
+    $default  reduce using rule 53 (IF_STASTMENT)
 
 
 State 165
 
-   22 FUNC_BLOCK: '{' RETURN EXPRASION ';' '}' .
+   62 UPDATES: ID . '+' '+'
+   63        | ID . '-' '-'
 
-    $default  reduce using rule 22 (FUNC_BLOCK)
+    '+'  shift, and go to state 168
+    '-'  shift, and go to state 169
 
 
 State 166
 
-   23 FUNC_BLOCK: '{' INNER_COMPUND_STATMENT RETURN EXPRASION ';' . '}'
+   61 LOOP_STATMENT: FOR '(' EXPRASION ';' EXPRASION ';' UPDATES . ')' STASTMENT
 
-    '}'  shift, and go to state 170
+    ')'  shift, and go to state 170
 
 
 State 167
 
-   55 IF_STASTMENT: IF '(' EXPRASION ')' STASTMENT ELSE STASTMENT .
+   21 FUNC_BLOCK: '{' INNER_COMPUND_STATMENT RETURN EXPRASION ';' '}' .
 
-    $default  reduce using rule 55 (IF_STASTMENT)
+    $default  reduce using rule 21 (FUNC_BLOCK)
 
 
 State 168
 
-   64 UPDATES: ID . '+' '+'
-   65        | ID . '-' '-'
+   62 UPDATES: ID '+' . '+'
 
     '+'  shift, and go to state 171
-    '-'  shift, and go to state 172
 
 
 State 169
 
-   63 LOOP_STATMENT: FOR '(' EXPRASION ';' EXPRASION ';' UPDATES . ')' STASTMENT
+   63 UPDATES: ID '-' . '-'
 
-    ')'  shift, and go to state 173
+    '-'  shift, and go to state 172
 
 
 State 170
 
-   23 FUNC_BLOCK: '{' INNER_COMPUND_STATMENT RETURN EXPRASION ';' '}' .
+   61 LOOP_STATMENT: FOR '(' EXPRASION ';' EXPRASION ';' UPDATES ')' . STASTMENT
 
-    $default  reduce using rule 23 (FUNC_BLOCK)
+    IF       shift, and go to state 29
+    FOR      shift, and go to state 30
+    WHILE    shift, and go to state 31
+    TRUE     shift, and go to state 32
+    FALSE    shift, and go to state 33
+    INT_NUM  shift, and go to state 36
+    F_NUM    shift, and go to state 37
+    ID       shift, and go to state 38
+    '-'      shift, and go to state 39
+    '!'      shift, and go to state 40
+    '^'      shift, and go to state 41
+    '&'      shift, and go to state 42
+    '('      shift, and go to state 43
+    '{'      shift, and go to state 20
+
+    EXPRASION         go to state 46
+    FUNC_ACTIVE       go to state 47
+    IF_STASTMENT      go to state 49
+    STASTMENT         go to state 173
+    LOOP_STATMENT     go to state 52
+    COMPUND_STATMENT  go to state 53
+    CONST             go to state 59
 
 
 State 171
 
-   64 UPDATES: ID '+' . '+'
+   62 UPDATES: ID '+' '+' .
 
-    '+'  shift, and go to state 174
+    $default  reduce using rule 62 (UPDATES)
 
 
 State 172
 
-   65 UPDATES: ID '-' . '-'
+   63 UPDATES: ID '-' '-' .
 
-    '-'  shift, and go to state 175
+    $default  reduce using rule 63 (UPDATES)
 
 
 State 173
 
-   63 LOOP_STATMENT: FOR '(' EXPRASION ';' EXPRASION ';' UPDATES ')' . STASTMENT
+   61 LOOP_STATMENT: FOR '(' EXPRASION ';' EXPRASION ';' UPDATES ')' STASTMENT .
 
-    IF       shift, and go to state 32
-    FOR      shift, and go to state 33
-    WHILE    shift, and go to state 34
-    TRUE     shift, and go to state 35
-    FALSE    shift, and go to state 36
-    INT_NUM  shift, and go to state 39
-    F_NUM    shift, and go to state 40
-    ID       shift, and go to state 41
-    '-'      shift, and go to state 42
-    '!'      shift, and go to state 43
-    '^'      shift, and go to state 44
-    '&'      shift, and go to state 45
-    '('      shift, and go to state 46
-    '{'      shift, and go to state 22
-
-    EXPRASION         go to state 49
-    FUNC_ACTIVE       go to state 50
-    IF_STASTMENT      go to state 52
-    STASTMENT         go to state 176
-    LOOP_STATMENT     go to state 55
-    COMPUND_STATMENT  go to state 56
-    CONST             go to state 62
-
-
-State 174
-
-   64 UPDATES: ID '+' '+' .
-
-    $default  reduce using rule 64 (UPDATES)
-
-
-State 175
-
-   65 UPDATES: ID '-' '-' .
-
-    $default  reduce using rule 65 (UPDATES)
-
-
-State 176
-
-   63 LOOP_STATMENT: FOR '(' EXPRASION ';' EXPRASION ';' UPDATES ')' STASTMENT .
-
-    $default  reduce using rule 63 (LOOP_STATMENT)
+    $default  reduce using rule 61 (LOOP_STATMENT)
