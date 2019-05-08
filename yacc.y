@@ -1,7 +1,9 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
+#define SYMBALTABLESIZE 1000
 typedef struct node
 {
 char *token;
@@ -11,27 +13,39 @@ struct node *right;
 } node;
 
 
+
+
+
 typedef struct symbolNode{
-    int isProc; //0 if primitive symbol, 1 if is procedure
+    int isProc_func; 
 	char* id;
 	char* type;
 	char* data;
-	int scopeID;
+	char * return_value;
 	struct treeNode *params;
 	struct symbolNode *next;
 } symbolNode;
 
-typedef struct scopeNode{
-	char* scopeName;
-	int scopeNum;
-	int scopeLevel;
+typedef struct frame{
 	symbolNode *symbolTable;
-	struct scopeNode *next;
-} scopeNode;
+	struct frame *next;
+} frame;
 
-symbolNode* head = NULL;
-scopeNode* topStack = NULL;
-int SCOPE_NUM=0;
+
+typedef struct symblaTable{
+	/* the name of the symbl*/
+	char *  name;
+	/* pointer for the symblas */
+	struct symbolNode * symbals;
+} symblaTable;
+
+
+struct symblaTable * hashTableSymbel;
+
+int creath_hs();
+long long compute_hash(char *  s);
+int insert(symbolNode * symbel);
+
 
 int startSemantic(node * root);
 node *mknode(char *token, node *left, node *right);
@@ -40,8 +54,6 @@ node *mkleaf(char *token);
 
 
 void printtree(node *tree,int space);
-void moveUp(node * );
-void moveDown(node *);
 void yyerror(char *);
 extern int yylex();
 %}
@@ -219,7 +231,7 @@ FUNC_ACTIVE_INNER_ARGES:
 
 
 STASTMENT_LIST:
-	STASTMENT_LIST STASTMENT {$$=mknode("",$1,$2);moveDown($2);}
+	STASTMENT_LIST STASTMENT {$$=mknode("",$1,$2);}
 	|STASTMENT 
 	;
 
@@ -276,9 +288,9 @@ COMPUND_STATMENT_PROC:
 	;
 
 INNER_COMPUND_STATMENT:
-	STASTMENT_LIST { $$=mknode("BODY",NULL,$1);}
-	|DEC_INNER_BLOCK {/* hare we start */$$=mknode("BODY",$1,NULL);}
-	|DEC_INNER_BLOCK  STASTMENT_LIST {$$=mknode("BODY",$1,$2);}
+	STASTMENT_LIST { $$=mknode("BLOCK",NULL,$1);}
+	|DEC_INNER_BLOCK {$$=mknode("BLOCK",$1,NULL);}
+	|DEC_INNER_BLOCK  STASTMENT_LIST {$$=mknode("BLOCK",$1,$2);}
 	;
 
 
@@ -331,7 +343,16 @@ void yyerror(char * msg){
 }
 
 int main(){
-    yyparse();
+	char * h="zz";
+	int l;
+	symbolNode * test1=(symbolNode*)malloc(sizeof(symbolNode));
+	test1->id="hii";
+	l=creath_hs();
+
+	l=insert(test1);
+	printf("%d",l);
+	free(hashTableSymbel);
+    
     return 0;
 }
 void printtree(node * tree,int space)
@@ -379,7 +400,6 @@ strcpy(newstr,token);
 newnode->left=left;
 newnode->right=right;
 newnode->token=newstr;
-newnode->deep=0;
 return 	newnode;
 }
 node *mkleaf(char *token)
@@ -390,28 +410,10 @@ strcpy(newstr,token);
 newnode->left=NULL;
 newnode->right=NULL;
 newnode->token=newstr;
-newnode->deep=0;
 return 	newnode;
 }
 
 
-
-void moveUp(node * tree){
-	tree->deep=tree->deep+1;
-	if(tree->right)
-		moveUp(tree->right);
-	if(tree->left)
-		moveUp(tree->left);
-}
-
-void moveDown(node * tree){
-	if(tree->deep > 0)
-		(tree->deep)=(tree->deep)-1;
-	if(tree->right!=NULL)
-		moveDown(tree->right);
-	if(tree->left!=NULL)
-		moveDown(tree->left);
-}
 int startSemantic(node * root){
 	if(strcmp (root->token ,"CODE" ))
 		return 1;
@@ -420,5 +422,65 @@ int startSemantic(node * root){
 	printf("got tree %s dsa \n",root->token);
 		return 0;
 	
+	
+}
+
+long long compute_hash(char *  s) {
+    const int p = 52;
+    const int m = 1e9 + 9;
+    long long hash_value = 0;
+    long long p_pow = 1;
+	int i,size;
+	size = strlen(s);
+    for (i=0;i<size;i++) {
+        hash_value = (hash_value + (s[i] - 'a' + 1) * p_pow) % m;
+        p_pow = (p_pow * p) % m;
+    }
+    return hash_value;
+}
+
+int creath_hs(){
+	int i;
+	if( ( hashTableSymbel = (symblaTable*)malloc(sizeof(symblaTable)*SYMBALTABLESIZE) ) == NULL ) 
+		return 1;
+	
+	for(i=0;i<SYMBALTABLESIZE;i++){
+		hashTableSymbel[i].name="";
+		hashTableSymbel[i].symbals=NULL;
+	}
+	return 0;
+}
+
+
+
+int insert(symbolNode * symbel){
+	symbolNode * temp_symbal;
+
+	//creath first hush key for the string
+	long long id =compute_hash(symbel->id) % SYMBALTABLESIZE;
+	//chack if alrdy has this symbol
+		
+	
+
+	if(strcmp (hashTableSymbel[id].name ,symbel->id )!=0)
+		//if not creah table for the symbel
+		hashTableSymbel[id].name = symbel->id;
+	//copy the pointer fot the symbel data
+
+	temp_symbal=hashTableSymbel[id].symbals;
+
+	//look for first empty space
+	while(temp_symbal!=NULL)
+		temp_symbal=temp_symbal->next;
+	//insert in the empty space the the table for the symbel
+
+
+	//hare can find out if alredy crather this symbol
+	//to do chack if symbol alerdy exsists
+	if (!NULL)
+		return 1;
+	temp_symbal=symbel;
+
+
 	
 }
