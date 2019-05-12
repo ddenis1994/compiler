@@ -1,8 +1,12 @@
 func foo(i, j, k : int) return int{
 	{
-		{
-			
-		}
+		func tt(i, j, k : int) return int{
+			return a;
 	}
+	{
+
+	}
+}
 	return a;
 }
+

@@ -12,20 +12,13 @@ struct node *right;
 } node;
 typedef struct deciptopn{
 	char* id;
-	int isProc_func; 
+	int isProc_func; // if 1 is func 0 is proc 
 	char* type;
 	char* data;
 	char * return_value;
 	int frameBelong;
-	struct treeNode * params;
 	struct deciptopn * next;
 } deciptopn;
-
-typedef struct symbolNode{
-	char* id;
-	char* data;
-	struct deciptopn * sing;
-} symbolNode;
 
 
 
@@ -45,12 +38,12 @@ typedef struct symblaTable{
 	/* the name of the symbl*/
 	char *  name;
 	/* pointer for the symblas */
-	struct symbolNode * symbals;
+	struct deciptopn * symbals;
 } symblaTable;
 
-int deep;
-struct symblaTable * hashTableSymbel;
-struct Stack * frameStack;
+static int deep=0;
+static struct symblaTable * hashTableSymbel;
+static struct Stack * frameStack;
 
 struct frame * pop() ;
 void push(struct frame * item) ;
@@ -59,13 +52,15 @@ int isFull();
 int createStack() ;
 int creath_hs();
 long long compute_hash(char *  s);
-int insert(deciptopn * symbel);
+int insert_to_ht(deciptopn * symbel);
+int insert_symbel(char * id,int is_func_proc,char * type,char * data, char * return_value,int frameBelong);
 int CrearhSymbalFrame(node * root);
 struct frame * creathFrame();
 int startSemantic(node * root);
 node *mknode(char *token, node *left, node *right);
 node *mkleaf(char *token);
 node * creathFuncDec(char * id,node * args,char * typeOfReturn,node * block);
+int insert_to_stack(deciptopn * symbel);
 
 
 
@@ -147,7 +142,11 @@ DEF_A:
 
 
 PROC_DEF:
-	PROC ID ARGES COMPUND_STATMENT_PROC  {$$=mknode(strcat(strdup("PROC "),$2),$4,NULL);}
+	PROC ID ARGES COMPUND_STATMENT_PROC  {
+		$$=mknode("ARGS",NULL,$3);
+		$$=mknode("ID",$$,mkleaf($2));
+		$$=mknode("PROC",$$,$4);
+		}
 	;
 
 FUNC_DEF:
@@ -184,9 +183,9 @@ INNER_ARGS:
 
 
 FUNC_BLOCK:
-	'{' RETURN EXPRASION ';' '}'  {$$=mknode("BLOCK",NULL,mknode(strdup("RETURN BLOCK"),$3,NULL));}
+	'{' RETURN EXPRASION ';' '}'  {$$=mknode("BLOCK_FUNC",NULL,mknode(strdup("RETURN BLOCK"),$3,NULL));}
 	|'{' INNER_COMPUND_STATMENT RETURN EXPRASION ';' '}'  {
-															$$=mknode("BLOCK",$2,mknode(strdup("RETURN BLOCK"),$4,NULL));}
+															$$=mknode("BLOCK_FUNC",$2,mknode(strdup("RETURN BLOCK"),$4,NULL));}
 	;
 
 
@@ -241,12 +240,15 @@ STASTMENT_LIST:
 
 
 IF_STASTMENT:
-	IF '(' EXPRASION ')' STASTMENT ELSE STASTMENT {$$=mknode("IF_ELSE",mknode("EXPRASION",$3,$5),mknode("ELSE_STATEMENT",$7,NULL));
-																												//moveDown($$->right);
-																												}
-	|IF '(' EXPRASION ')'  STASTMENT %prec IFX {
-        
-        $$=mknode("IF",$3,$5);}
+	IF '(' EXPRASION ')' STASTMENT ELSE STASTMENT {
+		$$=mknode("IF_ELSE",
+		mknode("EXPRASION_IF",NULL,$3),
+		mknode("BODY_IF",mknode("ELSE",NULL,$7),$5)
+		);
+		}		
+																										
+	|IF '(' EXPRASION ')'  STASTMENT %prec IFX {  
+        $$=mknode("IF",mknode("EXPRASION_IF",NULL,$3),mknode("BODY_IF",NULL,$5));}
 	;
 
 STASTMENT:
@@ -263,14 +265,14 @@ RETURN_STATMENT:
     ;
 
 LOOP_STATMENT:
-	WHILE '(' EXPRASION ')' STASTMENT {$$=mknode("WHILE LOOP",mknode("EXPRESSION",$3,NULL),$5);}
+	WHILE '(' EXPRASION ')' STASTMENT {
+		$$=mknode("WHILE",mknode("EXPRESSION",NULL,$3),mknode("BODY",NULL,$5));
+		}
 	|FOR '(' EXPRASION ';' EXPRASION ';' UPDATES ')' STASTMENT
 		
 	{	
-		$3=mknode("",$3,NULL);
-        $5=mknode("",$5,$3);
-		$7=mknode("",$7,$5);
-		$$=mknode("FOR LOOP",mknode("EXPRESSION",$7,NULL),$9);}
+		$$=mknode("FOR",mknode("INIT",mknode("EXPRESSION_FOR",mknode("UPDATE",NULL,$7),$5),$3),mknode("BODY",NULL,$9));
+	}
 	;
 
 UPDATES:
@@ -397,34 +399,13 @@ node *mkleaf(char *token){
 }
 
 
-int startSemantic(node * root){
-	if(strcmp (root->token ,"BLOCK" ))
-		return 1;
-	//first allocate space for HT
-	if(creath_hs()==1){
-		printf("cannot allocate space for HT exit\n");
-		exit(1);
-		}
-	//secuond allocate space for stack
-	if(createStack()==1){
-		printf("cannot allocate space for STACK exit\n");
-		exit(1);
-		}
-	deep=0;
-	push(creathFrame());
-	CrearhSymbalFrame(root->left);
 
-	free(hashTableSymbel->symbals);
-	free(hashTableSymbel);
-	return 0;
-	
-	
-}
 
 struct frame *  creathFrame(){
 	struct frame * temp =(struct frame *)malloc(sizeof(struct frame));
 	temp->frameID++;
 	temp->next=NULL;
+	deep++;
 	return temp;
 
 
@@ -458,9 +439,10 @@ int creath_hs(){
 
 
 
-int insert(deciptopn * symbel){
+int insert_to_ht(deciptopn * symbel){
 	struct deciptopn * temp_symbal;
 	long sizeHT = SYMBALTABLESIZE;
+
 	//creath first hush key for the string
 	long long id =compute_hash(symbel->id) % sizeHT;
 	//chack if alrdy has this symbol
@@ -468,9 +450,12 @@ int insert(deciptopn * symbel){
 	if(strcmp (hashTableSymbel[id].name ,symbel->id )!=0)
 		//if not creah table for the symbel
 		hashTableSymbel[id].name = symbel->id;
+		
+
 	//copy the pointer fot the symbel data
 
-	temp_symbal=hashTableSymbel[id].symbals->sing;
+	temp_symbal=hashTableSymbel[id].symbals;
+
 	//look for first empty space
 	while(temp_symbal != NULL)
 		temp_symbal=temp_symbal -> next;
@@ -504,7 +489,7 @@ int isFull() {
   
 // Stack is empty when top is equal to -1 
 int isEmpty() 
-{   return frameStack->top == -1;  } 
+	{   return frameStack->top == -1;  } 
   
 // Function to add an item to stack.  It increases top by 1 
 void push( struct frame * item) { 
@@ -517,7 +502,9 @@ void push( struct frame * item) {
 struct frame * pop() { 
     if (isEmpty(frameStack)) 
         return NULL; 
+		deep--;
     return frameStack->array[frameStack->top--]; 
+
 	} 
 
 node * creathFuncDec(char * id,node * args,char * typeOfReturn,node * block){
@@ -525,6 +512,7 @@ node * creathFuncDec(char * id,node * args,char * typeOfReturn,node * block){
 	temp=mknode("ARGS",temp,args);
 	temp=mknode("ID",temp,mkleaf(id));
 	temp=mknode("FUNC",temp,block);
+
 	return temp;
 
 	}
@@ -532,12 +520,111 @@ node * creathFuncDec(char * id,node * args,char * typeOfReturn,node * block){
 
 int CrearhSymbalFrame(node * root){
 	//first to to push empty stack
-	if( strcmp (root->token ,strdup("BLOCK"))==0){
-	push(creathFrame());
 
-	printf("found new block\n");
+	if( !strcmp (root->token ,"BLOCK")){
+
+		push(creathFrame());
+		printf("found new block %d\n",deep);
+		if(root->right)
+			CrearhSymbalFrame(root->right);
+
+		printf("finish block %d\n",deep);
+		pop();
+		return 0;
+	}
+		
+	if( !strcmp (root->token ,"FUNC")){
+
+		push(creathFrame());
+		printf("found new block %d\n",deep);
+
+
+		insert_symbel(
+						root->left->right->token,
+						1,
+						"func_declare",
+						NULL,
+						root->left->left->left->right->token,
+						deep);
+		if(root->right->left)
+			CrearhSymbalFrame(root->right->left);
+
+		printf("finish block %d\n",deep);
+		
+		//TODO find away to detrmate the func return type
+
+		pop();
+	
+		return 0;
 
 	}
+
+	if( !strcmp (root->token ,"PROC")){
+
+		push(creathFrame());
+		printf("found new block %d\n",deep);
+
+		//TODO start build table from proc
+
+		CrearhSymbalFrame(root->right);
+
+		pop();
+		return 0;
+	}
+
+	if( !strcmp (root->token ,"IF")){
+		printf("found new block %d\n",deep);
+		push(creathFrame());
+
+		//TODO take data from left son 
+
+		CrearhSymbalFrame(root->right);
+
+		pop();
+		return 0;
+
+	}
+	if( !strcmp (root->token ,"IF_ELSE")){
+		printf("found new block %d\n",deep);
+		push(creathFrame());
+
+
+
+		//TODO crate new method for chaking the else!!
+
+		CrearhSymbalFrame(root->right);
+
+		pop();
+		return 0;
+	}
+
+
+	if( !strcmp (root->token ,"WHILE")){
+		printf("found new block %d\n",deep);
+		push(creathFrame());
+
+		//TODO take data from left son 
+
+		CrearhSymbalFrame(root->right);
+
+		pop();
+		return 0;
+	}
+
+	if( !strcmp (root->token ,"FOR")){
+		printf("found new block %d\n",deep);
+		push(creathFrame());
+
+		//TODO take data from left son 
+
+		CrearhSymbalFrame(root->right);
+
+		pop();
+		return 0;
+	}
+
+
+
 	if(root->left)
 		CrearhSymbalFrame(root->left);
 	if(root->right)
@@ -545,4 +632,59 @@ int CrearhSymbalFrame(node * root){
 	
 
 
+}
+
+
+
+int startSemantic(node * root){
+
+	if(strcmp (root->token ,"BLOCK" ))
+		return 1;
+	//first allocate space for HT
+	if(creath_hs()==1){
+		printf("cannot allocate space for HT exit\n");
+		exit(1);
+	}
+	//secuond allocate space for stack
+	if(createStack()==1){
+		printf("cannot allocate space for STACK exit\n");
+		exit(1);
+	}
+
+
+	CrearhSymbalFrame(root->left);
+
+
+
+	//start to clear data
+	free(hashTableSymbel->symbals);
+	free(hashTableSymbel);
+	return 0;
+	
+	
+}
+
+int insert_symbel(char * id,int is_func_proc,char * type,char * data, char * return_value,int frameBelong){
+	struct deciptopn * temp=(struct deciptopn *)malloc(sizeof(deciptopn));
+
+	temp->id=id;
+	temp->isProc_func=is_func_proc;
+
+	if(temp->isProc_func)
+		temp->return_value=return_value;
+	else
+		temp->return_value=NULL;
+	temp->type=type;
+	temp->data=data;
+	temp->frameBelong=frameBelong;
+	temp->next=NULL;
+	insert_to_ht(temp);
+
+	//TODO add insert to stack
+
+}
+
+int insert_to_stack(deciptopn * symbel){
+
+	return 0;
 }
