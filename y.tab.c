@@ -2278,9 +2278,8 @@ node *mkleaf(char *token){
 
 struct frame *  creathFrame(){
 	struct frame * temp =(struct frame *)malloc(sizeof(struct frame));
-	temp->frameID++;
+	temp->frameID=++deep;
 	temp->next=NULL;
-	deep++;
 	return temp;
 
 
@@ -2381,6 +2380,8 @@ struct frame * pop() {
     return frameStack->array[frameStack->top--]; 
 
 	} 
+
+
 
 node * creathFuncDec(char * id,node * args,char * typeOfReturn,node * block){
 	node * temp=mknode("RETURN ",NULL,mkleaf(typeOfReturn));
@@ -2554,7 +2555,8 @@ int insert_symbel(char * id,int is_func_proc,char * type,char * data, char * ret
 	temp->frameBelong=frameBelong;
 	temp->next=NULL;
 	insert_to_ht(temp);
-
+	insert_to_stack(temp);
+	printf("%d\n",frameStack->array[frameStack->top]->frameID);
 	//TODO add insert to stack
 
 }
