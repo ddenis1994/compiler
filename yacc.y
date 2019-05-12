@@ -24,8 +24,14 @@ typedef struct deciptopn{
 
 typedef struct frame{
 	int frameID;
-	struct frame *next;
+	struct stack_Data * symbels;
 } frame;
+
+typedef struct stack_Data{
+	char * name;
+	struct stack_Data *next;
+} stack_Data;
+
 
 struct Stack 
 { 
@@ -404,7 +410,7 @@ node *mkleaf(char *token){
 struct frame *  creathFrame(){
 	struct frame * temp =(struct frame *)malloc(sizeof(struct frame));
 	temp->frameID=++deep;
-	temp->next=NULL;
+	temp->symbels=NULL;
 	return temp;
 
 
@@ -555,6 +561,7 @@ int CrearhSymbalFrame(node * root){
 		//TODO find away to detrmate the func return type
 
 		pop();
+
 	
 		return 0;
 
@@ -667,7 +674,6 @@ int startSemantic(node * root){
 
 int insert_symbel(char * id,int is_func_proc,char * type,char * data, char * return_value,int frameBelong){
 	struct deciptopn * temp=(struct deciptopn *)malloc(sizeof(deciptopn));
-
 	temp->id=id;
 	temp->isProc_func=is_func_proc;
 
@@ -681,12 +687,28 @@ int insert_symbel(char * id,int is_func_proc,char * type,char * data, char * ret
 	temp->next=NULL;
 	insert_to_ht(temp);
 	insert_to_stack(temp);
-	printf("%d\n",frameStack->array[frameStack->top]->frameID);
-	//TODO add insert to stack
-
+	
 }
 
 int insert_to_stack(deciptopn * symbel){
+
+	struct frame * top_frame= frameStack->array[frameStack->top];
+
+	struct stack_Data * temp =(stack_Data *)malloc(sizeof(stack_Data));
+
+	struct stack_Data * symbals_top_frame = top_frame->symbels;
+
+	temp->name=symbel->id;
+	temp->next=NULL;
+	while(symbals_top_frame!=NULL){
+		if(!strcmp(symbals_top_frame->name,symbel->id)){
+			printf("double declarasion %s\n",symbel->id);
+			exit(1);
+		}
+		symbals_top_frame=symbals_top_frame->next;
+	}
+	printf("added the symbel %s\n",temp->name);
+	symbals_top_frame=temp;
 
 	return 0;
 }
