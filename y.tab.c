@@ -98,7 +98,7 @@ typedef struct frame{
 
 typedef struct stack_Data{
 	char * name;
-	struct stack_Data *next;
+	struct stack_Data * next;
 } stack_Data;
 
 
@@ -119,8 +119,8 @@ typedef struct symblaTable{
 static int deep=0;
 static struct symblaTable * hashTableSymbel;
 static struct Stack * frameStack;
-
-struct frame * pop() ;
+void print_stack();
+void pop() ;
 void push(struct frame * item) ;
 int isEmpty();
 int isFull();
@@ -2284,8 +2284,8 @@ node *mkleaf(char *token){
 
 struct frame *  creathFrame(){
 	struct frame * temp =(struct frame *)malloc(sizeof(struct frame));
-	temp->frameID=++deep;
-	temp->symbels=NULL;
+	temp->frameID = ++deep;
+	temp->symbels = NULL;
 	return temp;
 
 
@@ -2373,17 +2373,19 @@ int isEmpty()
   
 // Function to add an item to stack.  It increases top by 1 
 void push( struct frame * item) { 
-    if (isFull(frameStack)) 
+    if (isFull(frameStack)) {
+		printf("the stack is fulll \n");
         return; 
-    frameStack->array[++frameStack->top] = item; 
+	}
+    frameStack->array[++(frameStack->top)] = item; 
 	} 
   
 // Function to remove an item from stack.  It decreases top by 1 
-struct frame * pop() { 
+void pop() { 
     if (isEmpty(frameStack)) 
-        return NULL; 
-		deep--;
-    return frameStack->array[frameStack->top--]; 
+        return ; 
+	struct frame * temp=frameStack->array[(frameStack->top)--];
+    free(temp);
 
 	} 
 
@@ -2416,11 +2418,7 @@ int CrearhSymbalFrame(node * root){
 	}
 		
 	if( !strcmp (root->token ,"FUNC")){
-
-		push(creathFrame());
-		printf("found new block %d\n",deep);
-
-
+		
 		insert_symbel(
 						root->left->right->token,
 						1,
@@ -2428,6 +2426,14 @@ int CrearhSymbalFrame(node * root){
 						NULL,
 						root->left->left->left->right->token,
 						deep);
+						
+
+
+		push(creathFrame());
+		printf("found new block %d\n",deep);
+
+
+		
 		if(root->right->left)
 			CrearhSymbalFrame(root->right->left);
 
@@ -2534,7 +2540,7 @@ int startSemantic(node * root){
 		exit(1);
 	}
 
-
+	push(creathFrame());
 	CrearhSymbalFrame(root->left);
 
 
@@ -2567,24 +2573,50 @@ int insert_symbel(char * id,int is_func_proc,char * type,char * data, char * ret
 
 int insert_to_stack(deciptopn * symbel){
 
-	struct frame * top_frame= frameStack->array[frameStack->top];
+	struct stack_Data * temp_symbal =(stack_Data *)malloc(sizeof(stack_Data));
 
-	struct stack_Data * temp =(stack_Data *)malloc(sizeof(stack_Data));
+	struct stack_Data * temp = (frameStack->array[(frameStack->top)])->symbels;
 
-	struct stack_Data * symbals_top_frame = top_frame->symbels;
+	temp_symbal->name=symbel->id;
+	temp_symbal->next=NULL;
 
-	temp->name=symbel->id;
-	temp->next=NULL;
-	while(symbals_top_frame!=NULL){
-		if(!strcmp(symbals_top_frame->name,symbel->id)){
-			printf("double declarasion %s\n",symbel->id);
-			exit(1);
+	if(temp!=NULL){
+		if(!strcmp(temp->name,symbel->id)){
+				printf("double declarasion %s\n",symbel->id);
+				exit(1);
+			}
+
+		while(temp->next != NULL){
+			if(!strcmp(temp->name,symbel->id)){
+				printf("double declarasion %s\n",symbel->id);
+				exit(1);
+			}
+			temp=temp->next;
 		}
-		symbals_top_frame=symbals_top_frame->next;
+		temp->next=temp_symbal;
 	}
-	printf("added the symbel %s\n",temp->name);
-	symbals_top_frame=temp;
+	else
+		(frameStack->array[(frameStack->top)])->symbels=temp_symbal;
 
+
+	//print_stack();
+
+	
 
 	return 0;
+}
+
+void print_stack(){
+	int i ;
+	struct stack_Data * symbals_top_frame;
+
+	for (i=frameStack->top;i>-1;i--){
+		printf("level %d  symbals :",i);
+		symbals_top_frame=frameStack->array[i]->symbels;
+		while(symbals_top_frame!=NULL){
+			printf("%s ,",symbals_top_frame->name );
+			symbals_top_frame=symbals_top_frame->next;
+		}
+		printf("\n");
+	}
 }

@@ -2,8 +2,11 @@ func foo(i, j, k : int) return int{
 	{
 		func tt(i, j, k : int) return int{
 			return a;}
-		func tt(i, j, k : int) return int{
+		func tts(i, j, k : int) return int{
 			return a;}
+			func tt(i, j, k : int) return int{
+			return a;}
+			
 	{
 
 	}
