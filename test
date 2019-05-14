@@ -1,16 +1,21 @@
 func foo(i, j, k : int) return int{
-	{
+
 		func tt(i, j, k : int) return int{
 			return a;}
 		func tts(i, j, k : int) return int{
 			return a;}
-			func tt(i, j, k : int) return int{
+		{
+		func tt(i, j, k : int) return int{
 			return a;}
+		}
 			
 	{
 
 	}
-}
+
 	return a;
 }
 
+proc foo12(i, j, k : int){
+
+}

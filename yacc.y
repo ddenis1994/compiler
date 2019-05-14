@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <math.h>
+#include <fenv.h>
 #define SYMBALTABLESIZE 100000
 typedef struct node
 {
@@ -446,15 +448,16 @@ int creath_hs(){
 
 int insert_to_ht(deciptopn * symbel){
 	struct deciptopn * temp_symbal;
-	long sizeHT = SYMBALTABLESIZE;
-
+	unsigned long long int  sizeHT = SYMBALTABLESIZE;
 	//creath first hush key for the string
-	long long id =compute_hash(symbel->id) % sizeHT;
+	unsigned long long int idtemp = compute_hash(symbel->id)  ;
+	unsigned long long int id=idtemp-idtemp/sizeHT*sizeHT;
 	//chack if alrdy has this symbol
 
-	if(strcmp (hashTableSymbel[id].name ,symbel->id )!=0)
-		//if not creah table for the symbel
-		hashTableSymbel[id].name = symbel->id;
+	if(hashTableSymbel[id].name!="")
+		if(!strcmp (hashTableSymbel[id].name ,symbel->id ))
+			//if not creah table for the symbel
+			hashTableSymbel[id].name = symbel->id;
 		
 
 	//copy the pointer fot the symbel data
@@ -509,11 +512,25 @@ void push( struct frame * item) {
 void pop() { 
     if (isEmpty(frameStack)) 
         return ; 
+	deep--;
 	struct frame * temp=frameStack->array[(frameStack->top)--];
     free(temp);
 
 	} 
+void print_stack(){
+	int i ;
+	struct stack_Data * symbals_top_frame;
 
+	for (i=frameStack->top;i>-1;i--){
+		printf("level %d  symbals :",i);
+		symbals_top_frame=frameStack->array[i]->symbels;
+		while(symbals_top_frame!=NULL){
+			printf("%s ,",symbals_top_frame->name );
+			symbals_top_frame=symbals_top_frame->next;
+		}
+		printf("\n");
+	}
+}
 
 
 node * creathFuncDec(char * id,node * args,char * typeOfReturn,node * block){
@@ -564,7 +581,6 @@ int CrearhSymbalFrame(node * root){
 
 		printf("finish block %d\n",deep);
 		
-		//TODO find away to detrmate the func return type
 
 		pop();
 
@@ -575,12 +591,21 @@ int CrearhSymbalFrame(node * root){
 
 	if( !strcmp (root->token ,"PROC")){
 
+
+		insert_symbel(
+						root->left->right->token,
+						1,
+						"proc_declare",
+						NULL,
+						NULL,
+						deep);
+
 		push(creathFrame());
 		printf("found new block %d\n",deep);
 
-		//TODO start build table from proc
+		if(root->right->left)
+			CrearhSymbalFrame(root->right->left);
 
-		CrearhSymbalFrame(root->right);
 
 		pop();
 		return 0;
@@ -709,8 +734,7 @@ int insert_to_stack(deciptopn * symbel){
 		if(!strcmp(temp->name,symbel->id)){
 				printf("double declarasion %s\n",symbel->id);
 				exit(1);
-			}
-
+		}
 		while(temp->next != NULL){
 			if(!strcmp(temp->name,symbel->id)){
 				printf("double declarasion %s\n",symbel->id);
@@ -724,24 +748,6 @@ int insert_to_stack(deciptopn * symbel){
 		(frameStack->array[(frameStack->top)])->symbels=temp_symbal;
 
 
-	//print_stack();
-
-	
-
 	return 0;
 }
 
-void print_stack(){
-	int i ;
-	struct stack_Data * symbals_top_frame;
-
-	for (i=frameStack->top;i>-1;i--){
-		printf("level %d  symbals :",i);
-		symbals_top_frame=frameStack->array[i]->symbels;
-		while(symbals_top_frame!=NULL){
-			printf("%s ,",symbals_top_frame->name );
-			symbals_top_frame=symbals_top_frame->next;
-		}
-		printf("\n");
-	}
-}
