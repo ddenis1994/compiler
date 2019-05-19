@@ -1,21 +1,49 @@
-func foo(i, j, k : int) return int{
+func g1(i, j, k : int) return int{
 
-		func tt(i, j, k : int) return int{
-			return a;}
-		func tts(i, j, k : int) return int{
-			return a;}
-		{
-		func tt(i, j, k : int) return int{
-			return a;}
-		}
-			
-	{
+	func foo(i, j, k : int) return int{
 
-	}
+	 func gt(i, j, k : int) return int{
+
+	 var a:int;
 
 	return a;
 }
 
-proc foo12(i, j, k : int){
-
+	return a;
 }
+	return a;
+}
+
+func g1(i, j, k : int) return int{
+
+	func foo(i, j, k : int) return int{
+
+	 func gt(i, j, k : int) return int{
+
+	 var a:int;
+
+	return a;
+}
+
+	return a;
+}
+	return a;
+}
+
+
+proc Main(){
+
+	func foo(i, j, k : int) return int{
+
+	 var a:int;
+	 func foo(i, j, k : int) return int{
+
+	 var a:int;
+
+	return a;
+}
+
+	return a;
+}
+
+	}

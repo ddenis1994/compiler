@@ -100,9 +100,8 @@ extern int yylex();
 %type <Node> STASTMENT_LIST DEC_INNER_BLOCK
 %type<Node> STASTMENT IF_STASTMENT LOOP_STATMENT
 %type<Node> UPDATES VF VAR_DECLARE FUNC_PROC_DEC DEF_A
-%type<Node> CODE PROC_DEF NEW_DECLARE   MAIN
-%type <Node> MAIN_FUNC  
-%type<Node> S RETURN_STATMENT ARGES2 OUT_ARGES2
+%type<Node> PROC_DEF NEW_DECLARE   MAIN
+%type<Node> S RETURN_STATMENT OUT_ARGES2
 %type<Node> COMPUND_STATMENT_PROC FUNC_ACTIVE_INNER_ARGES
 %nonassoc IFX
 %nonassoc test
@@ -116,26 +115,18 @@ extern int yylex();
 %right '!' '^' '&' 
 %right UMINUS
 %left UFUNC
+%right MAIN 
 
 
 %%
 S: 
-	CODE {
+	FUNC_PROC_DEC {
         $$=mknode("BLOCK",$1,NULL);
 		startSemantic($$);
         printf("ok\n");
         }
 	;
-CODE:
-	FUNC_PROC_DEC {$$=mknode("DEC",NULL,$1);}
-	|FUNC_PROC_DEC MAIN_FUNC {$$=mknode("DEC&MAIN",$1,$2);}
-	|MAIN_FUNC {$$=mknode("MAIN",NULL,$1);}
-	;
-	
 
-MAIN_FUNC:
-	PROC MAIN COMPUND_STATMENT{$$=mknode("PROCMAIN",$3,NULL);}
-	;
 
 FUNC_PROC_DEC:
 	DEF_A {$$=mknode("",$1,NULL);}
@@ -143,7 +134,7 @@ FUNC_PROC_DEC:
 	;
 
 DEF_A:
-	FUNC_DEF {$$=mknode("NEW_FUNC",$1,NULL);}
+	FUNC_DEF {	$$=mknode("NEW_FUNC",$1,NULL);}
 	|PROC_DEF {$$=mknode("NEW_PROC",$1,NULL);}
 	;
 
@@ -162,13 +153,11 @@ FUNC_DEF:
 	}
 	;
 
-ARGES: '(' ARGES2 {$$=$2;}
+ARGES: '(' ')' {$$=mknode("",NULL,NULL);}
+	| '(' OUT_ARGES ')' {$$=mknode(strdup("ARGS "),$2,NULL);}
 	;
 
-ARGES2:
-	')' {$$=mknode("",NULL,NULL);}
-	| OUT_ARGES ')' {$$=mknode(strdup("ARGS "),$1,NULL);}
-	;
+
 
 OUT_ARGES:
 	INNER_ARGS ':' TYPE OUT_ARGES2{
@@ -544,6 +533,7 @@ node * creathFuncDec(char * id,node * args,char * typeOfReturn,node * block){
 	}
 
 
+
 int CrearhSymbalFrame(node * root){
 	//first to to push empty stack
 
@@ -718,6 +708,7 @@ int insert_symbel(char * id,int is_func_proc,char * type,char * data, char * ret
 	temp->next=NULL;
 	insert_to_ht(temp);
 	insert_to_stack(temp);
+	
 	
 }
 

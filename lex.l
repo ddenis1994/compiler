@@ -31,7 +31,6 @@ static void comment(void);
 "func"                  { yylval.String=strdup(yytext); return(FUNC); }
 "proc"                  { return(PROC); }
 "null"                  { return(NULL_VALUE); }
-"Main()"                {return(MAIN); }
 "&&"                    { return(AND_OP); }
 "/"                     { return '/'; }
 "=="                    { return (EQL_OP); }
