@@ -69,6 +69,7 @@ node *mknode(char *token, node *left, node *right);
 node *mkleaf(char *token);
 node * creathFuncDec(char * id,node * args,char * typeOfReturn,node * block);
 int insert_to_stack(deciptopn * symbel);
+void find_var_names(char * type,node * root);
 
 
 
@@ -172,9 +173,9 @@ OUT_ARGES2:
 
 
 INNER_ARGS:
-	ID {$$=mkleaf($1);}
+	ID {$$=mknode("ID",NULL,mkleaf($1));}
 	|ID ',' INNER_ARGS {
-		$$=mknode("",mkleaf($1),$3);
+		$$=mknode("ID",$3,mkleaf($1));
 		}
 	;
 
@@ -298,8 +299,10 @@ INNER_COMPUND_STATMENT:
 
 
 DEC_INNER_BLOCK:
-	NEW_DECLARE DEC_INNER_BLOCK {mknode("DECLARE",$1,$2);}
-	|NEW_DECLARE {mknode("DECLARE",$1,NULL);}
+	NEW_DECLARE DEC_INNER_BLOCK {$$=mknode("DECLARE",$1,$2);
+	}
+	|NEW_DECLARE {$$=mknode("DECLARE",$1,NULL);
+}
 	;
 
 NEW_DECLARE:
@@ -308,12 +311,12 @@ NEW_DECLARE:
 	;
 
 VAR_DECLARE:
-	 VF
-	|VAR_DECLARE VF {$$=mknode("",$1,$2);}
+	 VF {$$=mknode("VAR_DECLARE",$1,NULL);}
+	|VAR_DECLARE VF {$$=mknode("VAR_DECLARE",$1,$2);}
 	;
 
 VF: 
-	VAR INNER_ARGS ':' TYPE  ';' {$$=mknode($4,$2,NULL);}
+	VAR INNER_ARGS ':' TYPE  ';' {$$=mknode("TYPE",$2,mkleaf($4));}
 	;
 
 CONST:
@@ -652,6 +655,11 @@ int CrearhSymbalFrame(node * root){
 		return 0;
 	}
 
+	if( !strcmp (root->token ,"VAR_DECLARE")){
+		find_var_names(root->left->right->token,root->left->left);
+		
+	}
+
 
 
 	if(root->left)
@@ -708,6 +716,8 @@ int insert_symbel(char * id,int is_func_proc,char * type,char * data, char * ret
 	temp->next=NULL;
 	insert_to_ht(temp);
 	insert_to_stack(temp);
+
+	print_stack();
 	
 	
 }
@@ -742,3 +752,9 @@ int insert_to_stack(deciptopn * symbel){
 	return 0;
 }
 
+void find_var_names(char * type,node * root){
+
+	insert_symbel(root->right->token,0,type,NULL,NULL,deep);
+	if(root->left)
+		find_var_names(type,root->left);
+}

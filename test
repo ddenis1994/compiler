@@ -1,41 +1,23 @@
 func g1(i, j, k : int) return int{
 
-	func foo(i, j, k : int) return int{
-
-	 func gt(i, j, k : int) return int{
-
-	 var a:int;
-
-	return a;
-}
-
-	return a;
-}
-	return a;
-}
-
-func g1(i, j, k : int) return int{
+	var a,j:int;
 
 	func foo(i, j, k : int) return int{
-
-	 func gt(i, j, k : int) return int{
-
-	 var a:int;
-
-	return a;
-}
+		var a,j:int;
+		return a;
+	}
+	var g,y:int;
 
 	return a;
 }
-	return a;
-}
+
 
 
 proc Main(){
 
 	func foo(i, j, k : int) return int{
 
-	 var a:int;
+	 var a,j:int;
 	 func foo(i, j, k : int) return int{
 
 	 var a:int;
