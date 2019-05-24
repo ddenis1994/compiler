@@ -1,12 +1,12 @@
 func g1(i, j, k : int) return int{
 
-	var a,j:int;
+	var a,h:int;
 
 	func foo(i, j, k : int) return int{
-		var a,j:int;
+		var a,h:int;
 		return a;
 	}
-	var g,y:int;
+	var y,o:int;
 
 	return a;
 }
@@ -17,15 +17,17 @@ proc Main(){
 
 	func foo(i, j, k : int) return int{
 
-	 var a,j:int;
-	 func foo(i, j, k : int) return int{
+		var a,h:int;
+		func foo(i, j, k : int) return int{
 
-	 var a:int;
+			var a:int;
 
-	return a;
-}
+			return a;
+		}
 
-	return a;
-}
 
+
+		return a;
 	}
+	g1();
+}

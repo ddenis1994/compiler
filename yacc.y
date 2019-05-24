@@ -70,7 +70,7 @@ node *mkleaf(char *token);
 node * creathFuncDec(char * id,node * args,char * typeOfReturn,node * block);
 int insert_to_stack(deciptopn * symbel);
 void find_var_names(char * type,node * root);
-
+deciptopn * get_symbal_from_hash(char * name);
 
 
 void printtree(node *tree,int space);
@@ -102,7 +102,7 @@ extern int yylex();
 %type<Node> STASTMENT IF_STASTMENT LOOP_STATMENT
 %type<Node> UPDATES VF VAR_DECLARE FUNC_PROC_DEC DEF_A
 %type<Node> PROC_DEF NEW_DECLARE   MAIN
-%type<Node> S RETURN_STATMENT OUT_ARGES2
+%type<Node> S RETURN_STATMENT
 %type<Node> COMPUND_STATMENT_PROC FUNC_ACTIVE_INNER_ARGES
 %nonassoc IFX
 %nonassoc test
@@ -154,22 +154,19 @@ FUNC_DEF:
 	}
 	;
 
-ARGES: '(' ')' {$$=mknode("",NULL,NULL);}
-	| '(' OUT_ARGES ')' {$$=mknode(strdup("ARGS "),$2,NULL);}
+ARGES: '(' ')' {$$=mkleaf("NULL_ARGS");}
+	| '(' OUT_ARGES ')' {$$=mknode(strdup("ARGS "),$2,NULL);
+	}
 	;
 
 
 
 OUT_ARGES:
-	INNER_ARGS ':' TYPE OUT_ARGES2{
-						$$=mknode($3,$1,NULL);
-						}
+	INNER_ARGS ':' TYPE {$$=mknode($3,$1,NULL);}
+	|INNER_ARGS ':' TYPE ';' OUT_ARGES {$$=mknode($3,$1,NULL);}
 	;
 
-OUT_ARGES2:
-	{$$=mknode("",NULL,NULL);}
-	| ';' OUT_ARGES {$$=mknode(":",NULL,NULL);}
-	;
+
 
 
 INNER_ARGS:
@@ -212,15 +209,16 @@ EXPRASION:
 	|EXPRASION SE_OP EXPRASION  {$$=mknode("<=",$1,$3);}
 	|EXPRASION '>' EXPRASION  {$$=mknode(">",$1,$3);}
 	|EXPRASION '<' EXPRASION  {$$=mknode("<",$1,$3);}
-	|FUNC_ACTIVE
+	|FUNC_ACTIVE 
 
 	;
 
 
 FUNC_ACTIVE:
-	ID '(' ')' {$$=mknode(strcat($1," ACTIVE:"),mknode(strdup("empty arguments"),NULL,NULL),NULL);}
-	|ID '(' FUNC_ACTIVE_INNER_ARGES ')' {$$=mknode(strcat($1," ACTIVE:"),mknode(strdup("ARGS "),$3,NULL),NULL);
-							}
+	ID '(' ')' {$$=mknode("FUNC_PROC_ACTIVE",mknode("ID",NULL,mkleaf($1)),mkleaf("Arges")); }
+	|ID '(' FUNC_ACTIVE_INNER_ARGES ')' {
+		$$=mknode("FUNC_PROC_ACTIVE",mknode("ID",NULL,mkleaf($1)),mknode("Arges",NULL,$3));
+	}
 	;
 
 FUNC_ACTIVE_INNER_ARGES:
@@ -280,9 +278,8 @@ UPDATES:
 
 
 COMPUND_STATMENT:
-	'{' '}' {$$=mknode("BLOCK",NULL,NULL);}
-    |'{' INNER_COMPUND_STATMENT '}' { $$=mknode("BLOCK",NULL,$2); }
-	|'{' INNER_COMPUND_STATMENT RETURN_STATMENT '}' { $$=mknode("BLOCK",$3,$2); }
+
+	'{' INNER_COMPUND_STATMENT RETURN_STATMENT '}' { $$=mknode("BLOCK",$3,$2); }
     |'{'  RETURN_STATMENT '}' { $$=mknode("BLOCK",$2,NULL); }
 	;
 
@@ -439,26 +436,31 @@ int creath_hs(){
 
 
 int insert_to_ht(deciptopn * symbel){
-	struct deciptopn * temp_symbal;
+	struct deciptopn ** temp_symbal;
+	int i=0;
 	unsigned long long int  sizeHT = SYMBALTABLESIZE;
 	//creath first hush key for the string
 	unsigned long long int idtemp = compute_hash(symbel->id)  ;
 	unsigned long long int id=idtemp-idtemp/sizeHT*sizeHT;
 	//chack if alrdy has this symbol
 
-	if(hashTableSymbel[id].name!="")
+	if(strcmp(hashTableSymbel[id].name ,"")==0)
+		hashTableSymbel[id].name = symbel->id;
+
+	if(hashTableSymbel[id].name=="")
 		if(!strcmp (hashTableSymbel[id].name ,symbel->id ))
 			//if not creah table for the symbel
 			hashTableSymbel[id].name = symbel->id;
-		
+	
 
 	//copy the pointer fot the symbel data
 
-	temp_symbal=hashTableSymbel[id].symbals;
+	temp_symbal=&(hashTableSymbel[id].symbals);
 
 	//look for first empty space
-	while(temp_symbal != NULL)
-		temp_symbal=temp_symbal -> next;
+	while((*temp_symbal) != NULL)
+		temp_symbal=&((*temp_symbal) -> next);
+	
 	//insert in the empty space the the table for the symbel
 
 
@@ -467,7 +469,8 @@ int insert_to_ht(deciptopn * symbel){
 	if (NULL)
 		return 1;
 
-	temp_symbal=symbel;
+	(*temp_symbal)=symbel;
+
 
 	return 0;
 	}
@@ -539,6 +542,7 @@ node * creathFuncDec(char * id,node * args,char * typeOfReturn,node * block){
 
 int CrearhSymbalFrame(node * root){
 	//first to to push empty stack
+	struct deciptopn * temp ;
 
 	if( !strcmp (root->token ,"BLOCK")){
 
@@ -567,10 +571,13 @@ int CrearhSymbalFrame(node * root){
 		push(creathFrame());
 		printf("found new block %d\n",deep);
 
+		find_var_names(root->left->left->right->left->token,root->left->left->right->left->left);
+		
+
 
 		
-		if(root->right->left)
-			CrearhSymbalFrame(root->right->left);
+		if(root->right)
+			CrearhSymbalFrame(root->right);
 
 		printf("finish block %d\n",deep);
 		
@@ -594,10 +601,13 @@ int CrearhSymbalFrame(node * root){
 						deep);
 
 		push(creathFrame());
+		//find_var_names(root->left->right->token,root->left->left);
+		
+
 		printf("found new block %d\n",deep);
 
-		if(root->right->left)
-			CrearhSymbalFrame(root->right->left);
+		if(root->right)
+			CrearhSymbalFrame(root->right);
 
 
 		pop();
@@ -660,6 +670,17 @@ int CrearhSymbalFrame(node * root){
 		
 	}
 
+	if( !strcmp (root->token ,"FUNC_PROC_ACTIVE")){
+		temp=get_symbal_from_hash(root->left->right->token);
+
+		if(temp==NULL){
+			printf("the func proc %s was not declared\n",root->left->right->token);
+			exit(1);
+		}
+
+		
+	}
+
 
 
 	if(root->left)
@@ -717,8 +738,7 @@ int insert_symbel(char * id,int is_func_proc,char * type,char * data, char * ret
 	insert_to_ht(temp);
 	insert_to_stack(temp);
 
-	print_stack();
-	
+
 	
 }
 
@@ -757,4 +777,17 @@ void find_var_names(char * type,node * root){
 	insert_symbel(root->right->token,0,type,NULL,NULL,deep);
 	if(root->left)
 		find_var_names(type,root->left);
+}
+
+deciptopn * get_symbal_from_hash(char * name){
+	struct deciptopn * temp;
+
+	unsigned long long int  sizeHT = SYMBALTABLESIZE;
+	//creath first hush key for the string
+	unsigned long long int idtemp = compute_hash(name);
+	unsigned long long int id=idtemp-idtemp/sizeHT*sizeHT;
+
+	temp=hashTableSymbel[id].symbals;
+	return temp;
+
 }
