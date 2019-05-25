@@ -17,6 +17,7 @@ typedef struct deciptopn{
 	int isProc_func; // if 1 is func 0 is proc 
 	char* type;
 	char* data;
+	node * arges;
 	char * return_value;
 	int frameBelong;
 	struct deciptopn * next;
@@ -163,7 +164,7 @@ ARGES: '(' ')' {$$=mkleaf("NULL_ARGS");}
 
 OUT_ARGES:
 	INNER_ARGS ':' TYPE {$$=mknode($3,$1,NULL);}
-	|INNER_ARGS ':' TYPE ';' OUT_ARGES {$$=mknode($3,$1,NULL);}
+	|INNER_ARGS ':' TYPE ';' OUT_ARGES {$$=mknode($3,$1,$5);}
 	;
 
 
@@ -566,7 +567,7 @@ int CrearhSymbalFrame(node * root){
 						root->left->left->left->right->token,
 						deep);
 						
-
+		printtree(root->left->left->right,0);
 
 		push(creathFrame());
 		printf("found new block %d\n",deep);
@@ -673,6 +674,7 @@ int CrearhSymbalFrame(node * root){
 	if( !strcmp (root->token ,"FUNC_PROC_ACTIVE")){
 		temp=get_symbal_from_hash(root->left->right->token);
 
+
 		if(temp==NULL){
 			printf("the func proc %s was not declared\n",root->left->right->token);
 			exit(1);
@@ -738,7 +740,7 @@ int insert_symbel(char * id,int is_func_proc,char * type,char * data, char * ret
 	insert_to_ht(temp);
 	insert_to_stack(temp);
 
-
+	print_stack();
 	
 }
 

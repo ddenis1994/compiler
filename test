@@ -15,7 +15,7 @@ func g1(i, j, k : int) return int{
 
 proc Main(){
 
-	func foo(i, j, k : int) return int{
+	func foo(i, j, k : int;mh : char) return int{
 
 		var a,h:int;
 		func foo(i, j, k : int) return int{
@@ -29,5 +29,5 @@ proc Main(){
 
 		return a;
 	}
-	g1();
+	g1(a);
 }
