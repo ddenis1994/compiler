@@ -29,5 +29,5 @@ proc Main(){
 
 		return a;
 	}
-	g1(a);
+	g1(a,7,g,y);
 }

@@ -75,6 +75,8 @@ deciptopn * get_symbal_from_hash(char * name);
 node * makeArgsReq(node * root);
 node * getInnerArges(node * root ,char * type);
 void printLinkedList(node * root);
+int checkFunc(node * originalArges,node * newArges);
+node * creath_arges(node* root);
 
 
 void printtree(node *tree,int space);
@@ -226,10 +228,12 @@ FUNC_ACTIVE:
 	;
 
 FUNC_ACTIVE_INNER_ARGES:
-	ID {$$=mkleaf($1);}
-	|CONST  {$$=mkleaf($1);}
-	|ID ',' FUNC_ACTIVE_INNER_ARGES {$$=mknode("",mkleaf($1),$3);}
-	|CONST ',' FUNC_ACTIVE_INNER_ARGES {$$=mknode("",mkleaf($1),$3);}
+	ID {$$=mknode("ID_ARG",mkleaf($1),NULL);}
+	|FUNC_ACTIVE {$$=mknode("FUNC_ARG",$1,NULL);}
+	|CONST  {$$=mknode("CONST_ARG",mkleaf($1),NULL);}
+	|ID ',' FUNC_ACTIVE_INNER_ARGES {$$=mknode("ID_ARG",mkleaf($1),$3);}
+	|CONST ',' FUNC_ACTIVE_INNER_ARGES {$$=mknode("CONST_ARG",mkleaf($1),$3);}
+	|FUNC_ACTIVE ',' FUNC_ACTIVE_INNER_ARGES {$$=mknode("FUNC_ARG",$1,$3);}
 	;
 
 
@@ -675,6 +679,7 @@ int CrearhSymbalFrame(node * root){
 	}
 
 	if( !strcmp (root->token ,"FUNC_PROC_ACTIVE")){
+		int temp1;
 		temp=get_symbal_from_hash(root->left->right->token);
 
 
@@ -682,7 +687,16 @@ int CrearhSymbalFrame(node * root){
 			printf("the func proc %s was not declared\n",root->left->right->token);
 			exit(1);
 		}
-		printLinkedList(temp->arges);
+
+		if((temp1=checkFunc(temp->arges,root->right))==1){
+			printf("too many arges for func %s\n",root->left->right->token);
+			exit(1);
+		}
+		
+		else if(temp1==2){
+			printf("too few arges for func %s\n",root->left->right->token);
+			exit(1);
+		}
 
 		
 	}
@@ -846,4 +860,28 @@ void printLinkedList(node * root){
 		printLinkedList(root->right);
 	else
 		printf("\n");
+}
+
+int checkFunc(node * originalArges,node * newArges){
+
+	while(originalArges){
+
+		originalArges=originalArges->right;
+		if(!newArges){
+			return 1;
+		}
+		if(newArges->right)
+			newArges=newArges->right;
+		else
+			return 2;
+	}
+
+
+}
+node * creath_arges(node* root){
+	printf("%s \n",root->token);
+	if(root->right)
+		creath_arges(root->right);
+	
+
 }
