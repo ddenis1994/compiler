@@ -62,7 +62,7 @@ int createStack() ;
 int creath_hs();
 long long compute_hash(char *  s);
 int insert_to_ht(deciptopn * symbel);
-int insert_symbel(char * id,int is_func_proc,char * type,char * data, char * return_value,int frameBelong);
+int insert_symbel(char * id,int is_func_proc,char * type,char * data, char * return_value,int frameBelong,node * arges);
 int CrearhSymbalFrame(node * root);
 struct frame * creathFrame();
 int startSemantic(node * root);
@@ -72,6 +72,9 @@ node * creathFuncDec(char * id,node * args,char * typeOfReturn,node * block);
 int insert_to_stack(deciptopn * symbel);
 void find_var_names(char * type,node * root);
 deciptopn * get_symbal_from_hash(char * name);
+node * makeArgsReq(node * root);
+node * getInnerArges(node * root ,char * type);
+void printLinkedList(node * root);
 
 
 void printtree(node *tree,int space);
@@ -314,7 +317,7 @@ VAR_DECLARE:
 	;
 
 VF: 
-	VAR INNER_ARGS ':' TYPE  ';' {$$=mknode("TYPE",$2,mkleaf($4));}
+	VAR INNER_ARGS ':' TYPE  ';' {$$=mknode($4,$2,NULL);}
 	;
 
 CONST:
@@ -565,14 +568,14 @@ int CrearhSymbalFrame(node * root){
 						"func_declare",
 						NULL,
 						root->left->left->left->right->token,
-						deep);
+						deep,
+						root->left->left->right->left);
 						
-		printtree(root->left->left->right,0);
 
 		push(creathFrame());
 		printf("found new block %d\n",deep);
 
-		find_var_names(root->left->left->right->left->token,root->left->left->right->left->left);
+		find_var_names("",root->left->left->right->left);
 		
 
 
@@ -599,11 +602,12 @@ int CrearhSymbalFrame(node * root){
 						"proc_declare",
 						NULL,
 						NULL,
-						deep);
+						deep,
+						root->left->left->right->left);
 
 		push(creathFrame());
-		//find_var_names(root->left->right->token,root->left->left);
-		
+		if(root->left->left->right->left)
+			find_var_names("",root->left->left->right->left);
 
 		printf("found new block %d\n",deep);
 
@@ -665,9 +669,8 @@ int CrearhSymbalFrame(node * root){
 		pop();
 		return 0;
 	}
-
 	if( !strcmp (root->token ,"VAR_DECLARE")){
-		find_var_names(root->left->right->token,root->left->left);
+		find_var_names(" ",root->left);
 		
 	}
 
@@ -679,6 +682,7 @@ int CrearhSymbalFrame(node * root){
 			printf("the func proc %s was not declared\n",root->left->right->token);
 			exit(1);
 		}
+		printLinkedList(temp->arges);
 
 		
 	}
@@ -724,7 +728,7 @@ int startSemantic(node * root){
 	
 }
 
-int insert_symbel(char * id,int is_func_proc,char * type,char * data, char * return_value,int frameBelong){
+int insert_symbel(char * id,int is_func_proc,char * type,char * data, char * return_value,int frameBelong , node * arges){
 	struct deciptopn * temp=(struct deciptopn *)malloc(sizeof(deciptopn));
 	temp->id=id;
 	temp->isProc_func=is_func_proc;
@@ -733,15 +737,17 @@ int insert_symbel(char * id,int is_func_proc,char * type,char * data, char * ret
 		temp->return_value=return_value;
 	else
 		temp->return_value=NULL;
+
+	if(arges)
+		temp->arges=makeArgsReq(arges);
+
 	temp->type=type;
 	temp->data=data;
 	temp->frameBelong=frameBelong;
 	temp->next=NULL;
 	insert_to_ht(temp);
 	insert_to_stack(temp);
-
 	print_stack();
-	
 }
 
 int insert_to_stack(deciptopn * symbel){
@@ -776,9 +782,19 @@ int insert_to_stack(deciptopn * symbel){
 
 void find_var_names(char * type,node * root){
 
-	insert_symbel(root->right->token,0,type,NULL,NULL,deep);
-	if(root->left)
-		find_var_names(type,root->left);
+	if ((strcmp(root->token,"ID")) && (strcmp(root->token,""))){
+
+		if(root->left)
+			find_var_names(root->token,root->left);
+				if(root->right)
+					find_var_names("",root->right);
+	}
+	else
+	{
+		insert_symbel(root->right->token ,0,type,NULL,NULL,deep,NULL);
+		if(root->left)
+			find_var_names(root->token,root->left);
+	}
 }
 
 deciptopn * get_symbal_from_hash(char * name){
@@ -792,4 +808,42 @@ deciptopn * get_symbal_from_hash(char * name){
 	temp=hashTableSymbel[id].symbals;
 	return temp;
 
+}
+
+node * makeArgsReq(node * root){
+	node * temp, * last;
+	temp=getInnerArges(root->left,root->token);
+	last=temp;
+	while(last->right)
+		last=last->right;
+	
+	if(root->right)
+		
+		last->right=makeArgsReq(root->right);
+
+	return temp;	
+	
+}
+
+node * getInnerArges(node * root ,char * type){
+	node * new_arg;
+	new_arg=(node*)malloc(sizeof(node));
+
+	new_arg->token=type;
+
+	if(root->left)
+		new_arg->right=getInnerArges(root->left,type);
+	else
+		new_arg->right=NULL;
+
+	return new_arg;
+}
+
+void printLinkedList(node * root){
+	if(root)
+		printf(" %s -> ",root->token);
+	if(root->right)
+		printLinkedList(root->right);
+	else
+		printf("\n");
 }

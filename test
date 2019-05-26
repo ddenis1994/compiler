@@ -1,4 +1,4 @@
-func g1(i, j, k : int) return int{
+func g1(i, j, k : int;jy : real) return int{
 
 	var a,h:int;
 
@@ -15,12 +15,12 @@ func g1(i, j, k : int) return int{
 
 proc Main(){
 
-	func foo(i, j, k : int;mh : char) return int{
+	func foo(i, j, k : int ; mh : char; d : real) return int{
 
 		var a,h:int;
-		func foo(i, j, k : int) return int{
+		func foo(i, j, k : int; d : real) return int{
 
-			var a:int;
+			var a,h:int;
 
 			return a;
 		}
