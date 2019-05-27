@@ -109,7 +109,7 @@ extern int yylex();
 %type<Node> STASTMENT IF_STASTMENT LOOP_STATMENT
 %type<Node> UPDATES VF VAR_DECLARE FUNC_PROC_DEC DEF_A VFDEC
 %type<Node> PROC_DEF NEW_DECLARE   MAIN
-%type<Node> S RETURN_STATMENT
+%type<Node> S RETURN_STATMENT VALUE
 %type<Node> COMPUND_STATMENT_PROC FUNC_ACTIVE_INNER_ARGES
 %nonassoc IFX
 %nonassoc test
@@ -138,7 +138,7 @@ S:
 
 FUNC_PROC_DEC:
 	DEF_A {$$=mknode("",$1,NULL);}
-	|DEF_A FUNC_PROC_DEC {$$=mknode("",$1,$2);}
+	|FUNC_PROC_DEC DEF_A  {$$=mknode("",$1,$2);}
 	;
 
 DEF_A:
@@ -185,9 +185,9 @@ INNER_ARGS:
 
 
 FUNC_BLOCK:
-	'{' RETURN EXPRASION ';' '}'  {$$=mknode("BLOCK_FUNC",NULL,mknode(strdup("RETURN BLOCK"),$3,NULL));}
+	'{' RETURN EXPRASION ';' '}'  {$$=mknode("BLOCK_FUNC",NULL,mknode(strdup("RETURN STATMENT"),$3,NULL));}
 	|'{' INNER_COMPUND_STATMENT RETURN EXPRASION ';' '}'  {
-															$$=mknode("BLOCK_FUNC",$2,mknode(strdup("RETURN BLOCK"),$4,NULL));}
+															$$=mknode("BLOCK_FUNC",$2,mknode(strdup("RETURN STATMENT"),$4,NULL));}
 	;
 
 
@@ -198,27 +198,35 @@ EXPRASION:
 	|'(' EXPRASION ')'  {$$=$2;}
 	|TRUE {$$=mkleaf("TRUE");}
 	|FALSE {$$=mkleaf("FALSE");}
-	|ID {$$=mkleaf($1);}
+	|ID {$$=mknode("ID_EXPRASION",mkleaf($1),NULL);}
 	|'^' EXPRASION {$$=$2;}
 	| '&' EXPRASION {$$=$2;}
 	|'-' EXPRASION %prec UMINUS {$$=$2;} 
 	|'!' EXPRASION {$$=$2;}
 	|ID '=' EXPRASION {$$=mknode("=",mkleaf($1),$3);}
-	|EXPRASION NE_OP EXPRASION  {$$=mknode("!=",$1,$3);}
-	|EXPRASION AND_OP EXPRASION  {$$=mknode("&&",$1,$3);}
-	|EXPRASION OR_OP EXPRASION  {$$=mknode("||",$1,$3);}
-	|EXPRASION '+' EXPRASION  {$$=mknode("+",$1,$3);printf("was");}
-	|EXPRASION '-' EXPRASION  {$$=mknode("-",$1,$3);}
-	|EXPRASION '/' EXPRASION  {$$=mknode("/",$1,$3);}
-	|EXPRASION '*' EXPRASION  {$$=mknode("*",$1,$3);}
-	|EXPRASION EQL_OP EXPRASION  {$$=mknode("==",$1,$3);}
-	|EXPRASION GE_OP EXPRASION  {$$=mknode(">=",$1,$3);}
-	|EXPRASION SE_OP EXPRASION  {$$=mknode("<=",$1,$3);}
-	|EXPRASION '>' EXPRASION  {$$=mknode(">",$1,$3);}
-	|EXPRASION '<' EXPRASION  {$$=mknode("<",$1,$3);}
+	|EXPRASION NE_OP VALUE  {$$=mknode("!=",$1,$3);}
+	|EXPRASION AND_OP VALUE  {$$=mknode("&&",$1,$3);}
+	|EXPRASION OR_OP VALUE  {$$=mknode("||",$1,$3);}
+	|EXPRASION '+' VALUE  {$$=mknode("+",$1,$3);printf("was");}
+	|EXPRASION '-' VALUE  {$$=mknode("-",$1,$3);}
+	|EXPRASION '/' VALUE  {$$=mknode("/",$1,$3);}
+	|EXPRASION '*' VALUE  {$$=mknode("*",$1,$3);}
+	|EXPRASION EQL_OP VALUE  {$$=mknode("==",$1,$3);}
+	|EXPRASION GE_OP VALUE  {$$=mknode(">=",$1,$3);}
+	|EXPRASION SE_OP VALUE  {$$=mknode("<=",$1,$3);}
+	|EXPRASION '>' VALUE  {$$=mknode(">",$1,$3);}
+	|EXPRASION '<' VALUE  {$$=mknode("<",$1,$3);}
 	|FUNC_ACTIVE 
-
 	;
+
+VALUE:
+	CONST 
+	|'(' EXPRASION ')'  {$$=$2;}
+	|TRUE {$$=mkleaf("TRUE");}
+	|FALSE {$$=mkleaf("FALSE");}
+	|ID {$$=mkleaf($1);}
+	;
+
 
 
 FUNC_ACTIVE:
@@ -266,6 +274,7 @@ STASTMENT:
 RETURN_STATMENT:
     RETURN EXPRASION ';' {
         $$=mknode("RETURN STATMENT",$2,NULL);
+		printf("got hare\n");
         }
     ;
 
@@ -562,6 +571,8 @@ node * creathFuncDec(char * id,node * args,char * typeOfReturn,node * block){
 int CrearhSymbalFrame(node * root){
 	//first to to push empty stack
 	struct deciptopn * temp ;
+	struct deciptopn * temp2 ;
+	static char * current;
 
 	if( !strcmp (root->token ,"BLOCK")){
 
@@ -585,6 +596,8 @@ int CrearhSymbalFrame(node * root){
 						root->left->left->left->right->token,
 						deep,
 						root->left->left->right->left);
+
+		current=root->left->right->token;
 						
 
 		push(creathFrame());
@@ -593,8 +606,6 @@ int CrearhSymbalFrame(node * root){
 		find_var_names("",root->left->left->right->left);
 		
 
-
-		
 		if(root->right)
 			CrearhSymbalFrame(root->right);
 
@@ -602,6 +613,9 @@ int CrearhSymbalFrame(node * root){
 		
 
 		pop();
+
+		//look for return stat
+
 
 	
 		return 0;
@@ -619,6 +633,8 @@ int CrearhSymbalFrame(node * root){
 						NULL,
 						deep,
 						root->left->left->right->left);
+
+		current=root->left->right->token;
 
 		push(creathFrame());
 		if(root->left->left->right->left)
@@ -711,6 +727,35 @@ int CrearhSymbalFrame(node * root){
 		
 	}
 
+	if( !strcmp (root->token ,"RETURN STATMENT")){
+		temp=get_symbal_from_hash(root->left->left->token);
+		temp2=get_symbal_from_hash(current);
+		printtree(root,0);
+		//printf("%s\n",root->left->left->left->token);
+		if(strcmp(temp->type, "FUNC_PROC_ACTIVE")){
+		
+		}
+		if(strcmp(temp->type, "ID_EXPRASION ")){
+		
+		}
+		else{
+			
+		}
+
+
+		if(temp==NULL){
+			printf("%s was used before declared\n",root->left->left->token);
+			exit(1);
+		}
+		if(strcmp(temp->type,temp2->return_value)){
+			printf("wrong return type in func %s \n",temp2->id);
+			exit(1);
+		}
+		
+
+	}
+
+
 
 
 	if(root->left)
@@ -771,7 +816,7 @@ int insert_symbel(char * id,int is_func_proc,char * type,char * data, char * ret
 	temp->next=NULL;
 	insert_to_ht(temp);
 	insert_to_stack(temp);
-	print_stack();
+	//print_stack();
 }
 
 int insert_to_stack(deciptopn * symbel){

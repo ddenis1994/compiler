@@ -4,7 +4,7 @@ func g1(i, j, k : int;jy : real) return int{
 
 	func foo(i, j, k : int) return int{
 		var a,h:int;
-		return a;
+		return 67.5;
 	}
 	var y,o:int;
 
@@ -25,12 +25,14 @@ proc Main(){
 
 			var a,h:int;
 
-			return a;
+			return g1();
 		}
 
 
 
 		return a;
 	}
+
+
 	g1(a,7,g1(a,7,7,d),d);
 }
