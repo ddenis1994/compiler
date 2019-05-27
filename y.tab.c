@@ -2646,19 +2646,60 @@ int CrearhSymbalFrame(node * root){
 	}
 
 	if( !strcmp (root->token ,"RETURN STATMENT")){
-		temp=get_symbal_from_hash(root->left->left->token);
+		
 		temp2=get_symbal_from_hash(current);
-		printtree(root,0);
-		//printf("%s\n",root->left->left->left->token);
-		if(temp==NULL){
-			
+
+		
+		
+		if(!strcmp(root->left->token, "FUNC_PROC_ACTIVE")){
+
+			temp=get_symbal_from_hash(root->left->left->right->token);
+
+			if(temp==NULL){
 			printf("%s was used before declared\n",root->left->left->token);
 			exit(1);
 		}
-		if(strcmp(temp->type,temp2->return_value)){
+
+		if(strcmp(temp->return_value,temp2->return_value)){
 			printf("wrong return type in func %s \n",temp2->id);
 			exit(1);
 		}
+
+		}
+
+		else if(!strcmp(root->left->token, "ID_EXPRASION")){
+
+			temp=get_symbal_from_hash(root->left->left->token);
+			if(temp==NULL){
+				printf("%s was used before declared\n",root->left->left->token);
+				exit(1);
+			}
+
+			if(strcmp(temp->type,temp2->return_value)){
+				printf("wrong return type in func %s \n",temp2->id);
+				exit(1);
+			}
+
+		}
+		else{
+			temp=(struct deciptopn *)malloc(sizeof(deciptopn));
+			temp->id=root->left->token;
+			temp->type=root->left->token;
+			temp->data=root->left->token;
+
+			if(temp==NULL){
+			printf("%s was used before declared\n",root->left->left->token);
+			exit(1);
+			}
+
+			if(strcmp(temp->type,temp2->return_value)){
+				printf("wrong return type in func %s \n",temp2->id);
+				exit(1);
+			}
+		}
+
+
+		
 		
 
 	}
