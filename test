@@ -11,6 +11,19 @@ func g1(i, j, k : int;jy : real) return int{
 	return a;
 }
 
+proc g2(i, j, k : int;jy : real){
+
+	var a,h:int;
+
+	func foo(i, j, k : int) return int{
+		var a,h:int;
+		return 67;
+	}
+	var y,o:int;
+
+
+}
+
 
 
 proc Main(){
@@ -29,6 +42,7 @@ proc Main(){
 
 		return a;
 	}
+	a=g2(a,7,g1(a,7,7,d),d);
 
 
 	g1(a,7,g1(a,7,7,d),d);

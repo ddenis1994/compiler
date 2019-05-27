@@ -782,20 +782,28 @@ int CrearhSymbalFrame(node * root){
 		temp=get_symbal_from_hash(root->left->token);
 		//printf("%s \n",root->right->token);
 		printtree(root,0);
-
-		if(!strcmp(root->right->token,"FUNC_PROC_ACTIVE")){
+		if(strcmp(root->right->token,"FUNC_PROC_ACTIVE")==0){
 			temp2=get_symbal_from_hash(root->right->left->right->token);
+
+			if(temp2->return_value==NULL){
+				printf("cannot assignment proc %s \n",temp2->id);
+				
+				exit(1);
+			}
+
 			if(strcmp(temp->type,temp2->return_value)){
 				printf("wrong assignment type \nexpected %s got %s\n",
 				temp->type,temp2->return_value);
+				
 				exit(1);
 			}
 		}
-		if(!strcmp(root->right->token,"ID_EXPRASION")){
+		else if(!strcmp(root->right->token,"ID_EXPRASION")){
 			temp2=get_symbal_from_hash(root->right->left->token);
 			if(strcmp(temp->type,temp2->type)){
 				printf("wrong assignment type \nexpected %s got %s\n",
 				temp->type,temp2->type);
+				
 				exit(1);
 			}
 
@@ -804,6 +812,7 @@ int CrearhSymbalFrame(node * root){
 			if(strcmp(temp->type,root->right->token)){
 				printf("wrong assignment type \nexpected %s got %s\n",
 				temp->type,root->right->token);
+
 				exit(1);
 			}
 		}
@@ -1011,10 +1020,7 @@ int checkFunc(node * originalArges,node * newArges){
 
 			else if(strcmp("ID_ARG",newArges->token)==0){
 				temp=get_symbal_from_hash(newArges->left->token);
-				if(temp==NULL){
-					printf("used symbel %s before declorasion \n",newArges->left->token);
-					exit(1);
-				}
+				
 
 				chack_arges(temp,temp2,0);
 			}
@@ -1023,10 +1029,7 @@ int checkFunc(node * originalArges,node * newArges){
 				temp=get_symbal_from_hash(newArges->left->left->right->token);
 			
 
-				if(temp==NULL){
-					printf("used symbel %s before declorasion \n",newArges->left->token);
-					exit(1);
-				}
+				
 				if((temp1=checkFunc(temp->arges,newArges->left->right))==1){
 					printf("too many arges for func %s\n",temp->id);
 					exit(1);
