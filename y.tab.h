@@ -55,38 +55,43 @@ extern int yydebug;
     INT = 261,
     BOOL = 262,
     STRING = 263,
-    CHAR_POINTER = 264,
-    REAL_POINTER = 265,
-    FLOAT_POINTER = 266,
-    INT_POINTER = 267,
-    ELSE = 268,
-    IF = 269,
-    FOR = 270,
-    WHILE = 271,
-    TRUE = 272,
-    FALSE = 273,
-    RETURN = 274,
-    MAIN = 275,
-    VAR = 276,
-    FUNC = 277,
-    PROC = 278,
-    NULL_VALUE = 279,
-    AND_OP = 280,
-    GE_OP = 281,
-    SE_OP = 282,
-    NE_OP = 283,
-    OR_OP = 284,
-    EQL_OP = 285,
-    BOOL_VALUE = 286,
-    CHAR_VALUE = 287,
-    STRING_VALUE = 288,
-    INT_NUM = 289,
-    F_NUM = 290,
-    ID = 291,
-    IFX = 292,
-    test = 293,
-    UMINUS = 294,
-    UFUNC = 295
+    CHAR_POINER = 264,
+    REAL_POINER = 265,
+    FLOAT_POINER = 266,
+    INT_POINER = 267,
+    CHAR_POINTER = 268,
+    REAL_POINTER = 269,
+    FLOAT_POINTER = 270,
+    INT_POINTER = 271,
+    ELSE = 272,
+    IF = 273,
+    FOR = 274,
+    WHILE = 275,
+    TRUE = 276,
+    FALSE = 277,
+    RETURN = 278,
+    MAIN = 279,
+    VAR = 280,
+    FUNC = 281,
+    PROC = 282,
+    NULL_VALUE = 283,
+    AND_OP = 284,
+    GE_OP = 285,
+    SE_OP = 286,
+    NE_OP = 287,
+    OR_OP = 288,
+    EQL_OP = 289,
+    BOOL_VALUE = 290,
+    CHAR_VALUE = 291,
+    STRING_VALUE = 292,
+    INT_NUM = 293,
+    F_NUM = 294,
+    HEX_NUM = 295,
+    ID = 296,
+    IFX = 297,
+    test = 298,
+    UMINUS = 299,
+    UFUNC = 300
   };
 #endif
 /* Tokens.  */
@@ -96,50 +101,55 @@ extern int yydebug;
 #define INT 261
 #define BOOL 262
 #define STRING 263
-#define CHAR_POINTER 264
-#define REAL_POINTER 265
-#define FLOAT_POINTER 266
-#define INT_POINTER 267
-#define ELSE 268
-#define IF 269
-#define FOR 270
-#define WHILE 271
-#define TRUE 272
-#define FALSE 273
-#define RETURN 274
-#define MAIN 275
-#define VAR 276
-#define FUNC 277
-#define PROC 278
-#define NULL_VALUE 279
-#define AND_OP 280
-#define GE_OP 281
-#define SE_OP 282
-#define NE_OP 283
-#define OR_OP 284
-#define EQL_OP 285
-#define BOOL_VALUE 286
-#define CHAR_VALUE 287
-#define STRING_VALUE 288
-#define INT_NUM 289
-#define F_NUM 290
-#define ID 291
-#define IFX 292
-#define test 293
-#define UMINUS 294
-#define UFUNC 295
+#define CHAR_POINER 264
+#define REAL_POINER 265
+#define FLOAT_POINER 266
+#define INT_POINER 267
+#define CHAR_POINTER 268
+#define REAL_POINTER 269
+#define FLOAT_POINTER 270
+#define INT_POINTER 271
+#define ELSE 272
+#define IF 273
+#define FOR 274
+#define WHILE 275
+#define TRUE 276
+#define FALSE 277
+#define RETURN 278
+#define MAIN 279
+#define VAR 280
+#define FUNC 281
+#define PROC 282
+#define NULL_VALUE 283
+#define AND_OP 284
+#define GE_OP 285
+#define SE_OP 286
+#define NE_OP 287
+#define OR_OP 288
+#define EQL_OP 289
+#define BOOL_VALUE 290
+#define CHAR_VALUE 291
+#define STRING_VALUE 292
+#define INT_NUM 293
+#define F_NUM 294
+#define HEX_NUM 295
+#define ID 296
+#define IFX 297
+#define test 298
+#define UMINUS 299
+#define UFUNC 300
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 
 union YYSTYPE
 {
-#line 86 "yacc.y" /* yacc.c:1921  */
+#line 87 "yacc.y" /* yacc.c:1921  */
 
 	char * String;
 	struct node * Node;
 
-#line 143 "y.tab.h" /* yacc.c:1921  */
+#line 153 "y.tab.h" /* yacc.c:1921  */
 };
 
 typedef union YYSTYPE YYSTYPE;

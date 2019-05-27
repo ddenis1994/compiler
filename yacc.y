@@ -77,6 +77,7 @@ node * getInnerArges(node * root ,char * type);
 void printLinkedList(node * root);
 int checkFunc(node * originalArges,node * newArges);
 node * creath_arges(node* root);
+int chack_arges(deciptopn * originalArges,node * newArges,int typeofchack);
 
 
 void printtree(node *tree,int space);
@@ -88,7 +89,7 @@ extern int yylex();
 	struct node * Node;
 }
 %start S
-%token <String> CHAR REAL FLOAT INT BOOL STRING
+%token <String> CHAR REAL FLOAT INT BOOL STRING CHAR_POINER REAL_POINER FLOAT_POINER INT_POINER
 %token <String> CHAR_POINTER REAL_POINTER FLOAT_POINTER INT_POINTER 
 %token ELSE IF
 %token FOR WHILE
@@ -97,16 +98,16 @@ extern int yylex();
 %token <String> VAR FUNC PROC
 %token NULL_VALUE 
 %token AND_OP GE_OP SE_OP NE_OP OR_OP EQL_OP
-%token <String> BOOL_VALUE CHAR_VALUE STRING_VALUE INT_NUM F_NUM
+%token <String> BOOL_VALUE CHAR_VALUE STRING_VALUE INT_NUM F_NUM HEX_NUM
 %token <String> ID 
 %type <String> TYPE 
 %type <Node> INNER_ARGS 
-%type <String> CONST 
+%type <Node> CONST 
 %type <Node> OUT_ARGES ARGES FUNC_DEF FUNC_BLOCK INNER_COMPUND_STATMENT EXPRASION 
 %type <Node> FUNC_ACTIVE  COMPUND_STATMENT
 %type <Node> STASTMENT_LIST DEC_INNER_BLOCK
 %type<Node> STASTMENT IF_STASTMENT LOOP_STATMENT
-%type<Node> UPDATES VF VAR_DECLARE FUNC_PROC_DEC DEF_A
+%type<Node> UPDATES VF VAR_DECLARE FUNC_PROC_DEC DEF_A VFDEC
 %type<Node> PROC_DEF NEW_DECLARE   MAIN
 %type<Node> S RETURN_STATMENT
 %type<Node> COMPUND_STATMENT_PROC FUNC_ACTIVE_INNER_ARGES
@@ -193,7 +194,7 @@ FUNC_BLOCK:
 
 
 EXPRASION:
-	CONST {$$=mkleaf($1);}
+	CONST 
 	|'(' EXPRASION ')'  {$$=$2;}
 	|TRUE {$$=mkleaf("TRUE");}
 	|FALSE {$$=mkleaf("FALSE");}
@@ -230,9 +231,9 @@ FUNC_ACTIVE:
 FUNC_ACTIVE_INNER_ARGES:
 	ID {$$=mknode("ID_ARG",mkleaf($1),NULL);}
 	|FUNC_ACTIVE {$$=mknode("FUNC_ARG",$1,NULL);}
-	|CONST  {$$=mknode("CONST_ARG",mkleaf($1),NULL);}
+	|CONST  {$$=mknode("CONST_ARG",$1,NULL);}
 	|ID ',' FUNC_ACTIVE_INNER_ARGES {$$=mknode("ID_ARG",mkleaf($1),$3);}
-	|CONST ',' FUNC_ACTIVE_INNER_ARGES {$$=mknode("CONST_ARG",mkleaf($1),$3);}
+	|CONST ',' FUNC_ACTIVE_INNER_ARGES {$$=mknode("CONST_ARG",$1,$3);}
 	|FUNC_ACTIVE ',' FUNC_ACTIVE_INNER_ARGES {$$=mknode("FUNC_ARG",$1,$3);}
 	;
 
@@ -321,12 +322,18 @@ VAR_DECLARE:
 	;
 
 VF: 
-	VAR INNER_ARGS ':' TYPE  ';' {$$=mknode($4,$2,NULL);}
+	VAR VFDEC {$$=$2;}
+	;
+
+VFDEC:
+	INNER_ARGS ':' TYPE  ';' {$$=mknode($3,$1,NULL);}
+	|INNER_ARGS ':' TYPE  ';' VFDEC {$$=mknode($3,$1,$5);}
 	;
 
 CONST:
-	INT_NUM 
-	|F_NUM 
+	INT_NUM {$$=mknode("int",mkleaf($1),NULL);}
+	|F_NUM {$$=mknode("float",mkleaf($1),NULL);}
+	|HEX_NUM {$$=mknode("hex",mkleaf($1),NULL);}
 	;
 
 TYPE:	
@@ -336,6 +343,10 @@ TYPE:
 	|FLOAT 
 	|REAL 
 	|CHAR 
+	|CHAR_POINER
+	|REAL_POINER
+	|FLOAT_POINER
+	|INT_POINER {printf("got hare\n");}
 	;
 %%
 
@@ -687,7 +698,6 @@ int CrearhSymbalFrame(node * root){
 			printf("the func proc %s was not declared\n",root->left->right->token);
 			exit(1);
 		}
-
 		if((temp1=checkFunc(temp->arges,root->right))==1){
 			printf("too many arges for func %s\n",root->left->right->token);
 			exit(1);
@@ -863,25 +873,94 @@ void printLinkedList(node * root){
 }
 
 int checkFunc(node * originalArges,node * newArges){
+	char * arg_type;
+	struct deciptopn * temp;
+	node * temp2;
+	int temp1;
 
 	while(originalArges){
-
-		originalArges=originalArges->right;
-		if(!newArges){
+		
+		
+		if(!newArges)
 			return 1;
-		}
-		if(newArges->right)
+		
+		if(newArges->right){
+
+			arg_type=originalArges->token;
+
 			newArges=newArges->right;
-		else
+			temp2=originalArges;
+			originalArges=originalArges->right;
+
+
+
+			if(strcmp("CONST_ARG",newArges->token)==0){
+				temp=(struct deciptopn *)malloc(sizeof(deciptopn));
+				temp->id=newArges->left->left->token;
+				temp->type=newArges->left->token;
+				temp->data=newArges->left->left->token;
+				chack_arges(temp,temp2,0);
+			}
+
+			else if(strcmp("ID_ARG",newArges->token)==0){
+				temp=get_symbal_from_hash(newArges->left->token);
+				if(temp==NULL){
+					printf("used symbel %s before declorasion \n",newArges->left->token);
+					exit(1);
+				}
+
+				chack_arges(temp,temp2,0);
+			}
+
+			else if(strcmp("FUNC_ARG",newArges->token)==0){
+				temp=get_symbal_from_hash(newArges->left->left->right->token);
+			
+
+				if(temp==NULL){
+					printf("used symbel %s before declorasion \n",newArges->left->token);
+					exit(1);
+				}
+				if((temp1=checkFunc(temp->arges,newArges->left->right))==1){
+					printf("too many arges for func %s\n",temp->id);
+					exit(1);
+				}
+
+		
+		
+
+
+
+				chack_arges(temp,temp2,1);
+
+				
+
+
+
+
+			}
+
+
+		}
+		else if(!newArges->right)
 			return 2;
 	}
-
-
 }
-node * creath_arges(node* root){
-	printf("%s \n",root->token);
-	if(root->right)
-		creath_arges(root->right);
-	
 
+int chack_arges(deciptopn * originalArges,node * newArges,int typeofchack){
+	if(typeofchack==0)
+		if (strcmp(newArges->token,originalArges->type))
+			{
+				printf("wrong type for var %s \nexpected %s got %s\n",originalArges->id,
+				newArges->token,originalArges->type);
+				exit(1);
+			}
+
+	if(typeofchack==1)
+		if (strcmp(newArges->token,originalArges->return_value))
+			{
+				printf("wrong type for func/proc %s \nexpected %s got %s\n",originalArges->id,
+				newArges->token,originalArges->return_value);
+				exit(1);
+			}
+		return 0;
 }

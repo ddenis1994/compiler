@@ -9,11 +9,10 @@ static void comment(void);
 
 %%
 ("/%"[0-9a-zA-Z]*"%/")                    { }
-"char*"                  {yylval.String=strdup(yytext); return (CHAR);}
-"real*"                  {yylval.String=strdup(yytext); return(REAL);}
-"else*"                  {yylval.String=strdup(yytext); return(ELSE);}
-"float*"                 {yylval.String=strdup(yytext); return(FLOAT);}
-"int*"                   {yylval.String=strdup(yytext); return(INT);}
+"char\*"                  {yylval.String=strdup(yytext); return (CHAR_POINER);}
+"real\*"                  {yylval.String=strdup(yytext); return(REAL_POINER);}
+"float\*"                 {yylval.String=strdup(yytext); return(FLOAT_POINER);}
+"int\*"                   {yylval.String=strdup(yytext); return(INT_POINER);}
 "char"                  {yylval.String=strdup(yytext); return (CHAR);}
 "real"                  {yylval.String=strdup(yytext); return(REAL);}
 "else"                  {yylval.String=strdup(yytext); return(ELSE);}
@@ -60,7 +59,7 @@ static void comment(void);
 '[a-zA-Z]'              {yylval.String=strdup(yytext); return(CHAR_VALUE); }
 \"[0-9a-zA-Z]*\"        {yylval.String=strdup(yytext); return(STRING_VALUE); }
 (0|[1-9][0-9]*)         {yylval.String=strdup(yytext); return(INT_NUM); }
-0[xX][a-fA-F0-9]+       {yylval.String=strdup(yytext); return (INT_NUM); }
+0[xX][a-fA-F0-9]+       {yylval.String=strdup(yytext); return (HEX_NUM); }
 [0-9]*"."([Ee]?[+-]?[0-9]+)? {yylval.String=strdup(yytext); return (F_NUM); }
 [a-zA-Z][a-zA-Z0-9_]*   {yylval.String=strdup(yytext); return(ID);}
 
