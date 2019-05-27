@@ -196,26 +196,26 @@ FUNC_BLOCK:
 EXPRASION:
 	CONST 
 	|'(' EXPRASION ')'  {$$=$2;}
-	|TRUE {$$=mkleaf("TRUE");}
-	|FALSE {$$=mkleaf("FALSE");}
+	|TRUE {$$=mknode("BOOL_RXPRASION",mkleaf("false"),NULL);}
+	|FALSE {$$=mknode("BOOL_RXPRASION",mkleaf("true"),NULL);}
 	|ID {$$=mknode("ID_EXPRASION",mkleaf($1),NULL);}
-	|'^' EXPRASION {$$=$2;}
-	| '&' EXPRASION {$$=$2;}
-	|'-' EXPRASION %prec UMINUS {$$=$2;} 
-	|'!' EXPRASION {$$=$2;}
+	|'^' EXPRASION {$$=mknode("ADDR_RXPRASION",mkleaf("^"),NULL);}
+	| '&' EXPRASION {$$=mknode("ADDR_RXPRASION",mkleaf("&"),NULL);}
+	|'-' EXPRASION %prec UMINUS {$$=mknode("NUM_RXPRASION",mkleaf("&"),NULL);}
+	|'!' EXPRASION {$$=mknode("BOOL_RXPRASION",mkleaf("&"),NULL);}
 	|ID '=' EXPRASION {$$=mknode("=",mkleaf($1),$3);}
-	|EXPRASION NE_OP VALUE  {$$=mknode("!=",$1,$3);}
-	|EXPRASION AND_OP VALUE  {$$=mknode("&&",$1,$3);}
-	|EXPRASION OR_OP VALUE  {$$=mknode("||",$1,$3);}
-	|EXPRASION '+' VALUE  {$$=mknode("+",$1,$3);printf("was");}
-	|EXPRASION '-' VALUE  {$$=mknode("-",$1,$3);}
-	|EXPRASION '/' VALUE  {$$=mknode("/",$1,$3);}
-	|EXPRASION '*' VALUE  {$$=mknode("*",$1,$3);}
-	|EXPRASION EQL_OP VALUE  {$$=mknode("==",$1,$3);}
-	|EXPRASION GE_OP VALUE  {$$=mknode(">=",$1,$3);}
-	|EXPRASION SE_OP VALUE  {$$=mknode("<=",$1,$3);}
-	|EXPRASION '>' VALUE  {$$=mknode(">",$1,$3);}
-	|EXPRASION '<' VALUE  {$$=mknode("<",$1,$3);}
+	|EXPRASION NE_OP VALUE  {$$=mknode("BOOL_RXPRASION",mknode("!=",$1,$3),NULL);}
+	|EXPRASION AND_OP VALUE  {$$=mknode("BOOL_RXPRASION",mknode("&&",$1,$3),NULL);}
+	|EXPRASION OR_OP VALUE  {$$=mknode("BOOL_RXPRASION",mknode("||",$1,$3),NULL);}
+	|EXPRASION '+' VALUE  {$$=mknode("NUM_RXPRASION",mknode("+",$1,$3),NULL);}
+	|EXPRASION '-' VALUE  {$$=mknode("NUM_RXPRASION",mknode("-",$1,$3),NULL);}
+	|EXPRASION '/' VALUE  {$$=mknode("NUM_RXPRASION",mknode("/",$1,$3),NULL);}
+	|EXPRASION '*' VALUE  {$$=mknode("NUM_RXPRASION",mknode("*",$1,$3),NULL);}
+	|EXPRASION EQL_OP VALUE  {$$=mknode("BOOL_RXPRASION",mknode("==",$1,$3),NULL);}
+	|EXPRASION GE_OP VALUE  {$$=mknode("BOOL_RXPRASION",mknode(">=",$1,$3),NULL);}
+	|EXPRASION SE_OP VALUE  {$$=mknode("BOOL_RXPRASION",mknode("<=",$1,$3),NULL);}
+	|EXPRASION '>' VALUE  {$$=mknode("BOOL_RXPRASION",mknode(">",$1,$3),NULL);}
+	|EXPRASION '<' VALUE  {$$=mknode("BOOL_RXPRASION",mknode("<",$1,$3),NULL);}
 	|FUNC_ACTIVE 
 	;
 
@@ -769,10 +769,7 @@ int CrearhSymbalFrame(node * root){
 			temp->type=root->left->token;
 			temp->data=root->left->token;
 
-			if(temp==NULL){
-			printf("%s was used before declared\n",root->left->left->token);
-			exit(1);
-			}
+			
 
 			if(strcmp(temp->type,temp2->return_value)){
 				printf("wrong return type in func %s \n",temp2->id);
@@ -780,9 +777,38 @@ int CrearhSymbalFrame(node * root){
 			}
 		}
 
+	}
+	if( !strcmp (root->token ,"=")){
+		temp=get_symbal_from_hash(root->left->token);
+		//printf("%s \n",root->right->token);
+		printtree(root,0);
 
+		if(!strcmp(root->right->token,"FUNC_PROC_ACTIVE")){
+			temp2=get_symbal_from_hash(root->right->left->right->token);
+			if(strcmp(temp->type,temp2->return_value)){
+				printf("wrong assignment type \nexpected %s got %s\n",
+				temp->type,temp2->return_value);
+				exit(1);
+			}
+		}
+		if(!strcmp(root->right->token,"ID_EXPRASION")){
+			temp2=get_symbal_from_hash(root->right->left->token);
+			if(strcmp(temp->type,temp2->type)){
+				printf("wrong assignment type \nexpected %s got %s\n",
+				temp->type,temp2->type);
+				exit(1);
+			}
+
+		}
+		else{
+			if(strcmp(temp->type,root->right->token)){
+				printf("wrong assignment type \nexpected %s got %s\n",
+				temp->type,root->right->token);
+				exit(1);
+			}
+		}
 		
-		
+
 
 	}
 
@@ -906,6 +932,11 @@ deciptopn * get_symbal_from_hash(char * name){
 	unsigned long long int id=idtemp-idtemp/sizeHT*sizeHT;
 
 	temp=hashTableSymbel[id].symbals;
+	if(!temp)
+	{
+		printf("first used before declare %s\nsemantic error\n",name);
+		exit(1);
+	}
 	return temp;
 
 }
