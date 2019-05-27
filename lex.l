@@ -56,7 +56,7 @@ static void comment(void);
 ")"                     { return ')'; }
 "["                     { return '['; }
 "]"                     { return ']'; }
-'[a-zA-Z]'              {yylval.String=strdup(yytext); return(CHAR_VALUE); }
+\'.\'                   {yylval.String=strdup(yytext); return(CHAR_VALUE); }
 \"[0-9a-zA-Z]*\"        {yylval.String=strdup(yytext); return(STRING_VALUE); }
 (0|[1-9][0-9]*)         {yylval.String=strdup(yytext); return(INT_NUM); }
 0[xX][a-fA-F0-9]+       {yylval.String=strdup(yytext); return (HEX_NUM); }
