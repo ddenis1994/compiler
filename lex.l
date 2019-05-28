@@ -5,10 +5,11 @@
 #include "y.tab.h"
 extern void yyerror(const char *);
 static void comment(void);
+
 %}
 
 %%
-("/%"[0-9a-zA-Z]*"%/")                    { }
+("/%[0-9a-zA-Z]*%/")                    { }
 "char\*"                  {yylval.String=strdup(yytext); return (CHAR_POINER);}
 "real\*"                  {yylval.String=strdup(yytext); return(REAL_POINER);}
 "int\*"                   {yylval.String=strdup(yytext); return(INT_POINER);}
@@ -28,7 +29,6 @@ static void comment(void);
 "var"                   { return(VAR); }
 "func"                  { yylval.String=strdup(yytext); return(FUNC); }
 "proc"                  { return(PROC); }
-"null"                  { return(NULL_VALUE); }
 "&&"                    { return(AND_OP); }
 "/"                     { return '/'; }
 "=="                    { return (EQL_OP); }
@@ -49,7 +49,6 @@ static void comment(void);
 ";"                     { return ';'; }
 ":"                     { return ':'; }
 ","                     { return ','; }
-"|"                     { return '|'; }
 "{"                     { return '{'; }
 "}"                     { return '}'; }
 "("                     { return '('; }
