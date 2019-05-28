@@ -77,6 +77,7 @@ node * getInnerArges(node * root ,char * type);
 void printLinkedList(node * root);
 int checkFunc(node * originalArges,node * newArges);
 node * creath_arges(node* root);
+char * type_num_return(node* root);
 int chack_arges(deciptopn * originalArges,node * newArges,int typeofchack);
 
 
@@ -89,8 +90,8 @@ extern int yylex();
 	struct node * Node;
 }
 %start S
-%token <String> CHAR REAL FLOAT INT BOOL STRING CHAR_POINER REAL_POINER FLOAT_POINER INT_POINER
-%token <String> CHAR_POINTER REAL_POINTER FLOAT_POINTER INT_POINTER 
+%token <String> CHAR REAL INT BOOL STRING CHAR_POINER REAL_POINER FLOAT_POINER INT_POINER
+%token <String> CHAR_POINTER REAL_POINTER  INT_POINTER 
 %token ELSE IF
 %token FOR WHILE
 %token TRUE FALSE
@@ -98,7 +99,7 @@ extern int yylex();
 %token <String> VAR FUNC PROC
 %token NULL_VALUE 
 %token AND_OP GE_OP SE_OP NE_OP OR_OP EQL_OP
-%token <String> BOOL_VALUE CHAR_VALUE STRING_VALUE INT_NUM F_NUM HEX_NUM
+%token <String> BOOL_VALUE CHAR_VALUE STRING_VALUE INT_NUM R_NUM HEX_NUM
 %token <String> ID 
 %type <String> TYPE 
 %type <Node> INNER_ARGS 
@@ -117,7 +118,7 @@ extern int yylex();
 %right RETURN  
 %right ';'
 %left '+' '-'
-%left '*' '/'
+%left '*' '/' 
 
 %nonassoc OR_OP AND_OP '>' '<' GE_OP SE_OP EQL_OP
 %right '!' '^' '&' 
@@ -196,13 +197,14 @@ FUNC_BLOCK:
 EXPRASION:
 	CONST 
 	|'(' EXPRASION ')'  {$$=$2;}
-	|TRUE {$$=mknode("BOOL_RXPRASION",mkleaf("false"),NULL);}
-	|FALSE {$$=mknode("BOOL_RXPRASION",mkleaf("true"),NULL);}
+	|TRUE {$$=mknode("BOOL_RXPRASION",mkleaf("true"),NULL);}
+	|FALSE {$$=mknode("BOOL_RXPRASION",mkleaf("false"),NULL);}
 	|ID {$$=mknode("ID_EXPRASION",mkleaf($1),NULL);}
 	|'^' EXPRASION {$$=mknode("ADDR_RXPRASION",mkleaf("^"),NULL);}
 	| '&' EXPRASION {$$=mknode("ADDR_RXPRASION",mkleaf("&"),NULL);}
 	|'-' EXPRASION %prec UMINUS {$$=mknode("NUM_RXPRASION",mkleaf("&"),NULL);}
 	|'!' EXPRASION {$$=mknode("BOOL_RXPRASION",mkleaf("&"),NULL);}
+	|ID '[' EXPRASION ']' '=' VALUE {$$=mknode("ADDR_ASS",mknode("=ADDR",mkleaf($1),$3),$6);}
 	|ID '=' EXPRASION {$$=mknode("=",mkleaf($1),$3);}
 	|EXPRASION NE_OP VALUE  {$$=mknode("BOOL_RXPRASION",mknode("!=",$1,$3),NULL);}
 	|EXPRASION AND_OP VALUE  {$$=mknode("BOOL_RXPRASION",mknode("&&",$1,$3),NULL);}
@@ -222,9 +224,10 @@ EXPRASION:
 VALUE:
 	CONST 
 	|'(' EXPRASION ')'  {$$=$2;}
-	|TRUE {$$=mkleaf("TRUE");}
-	|FALSE {$$=mkleaf("FALSE");}
-	|ID {$$=mkleaf($1);}
+	|TRUE {$$=mknode("BOOL_RXPRASION",mkleaf("true"),NULL);}
+	|FALSE {$$=mknode("BOOL_RXPRASION",mkleaf("false"),NULL);}
+	|ID {$$=mknode("ID_EXPRASION",mkleaf($1),NULL);}
+	|FUNC_ACTIVE 
 	;
 
 
@@ -338,7 +341,7 @@ VFDEC:
 
 CONST:
 	INT_NUM {$$=mknode("int",mkleaf($1),NULL);}
-	|F_NUM {$$=mknode("float",mkleaf($1),NULL);}
+	|R_NUM {$$=mknode("real",mkleaf($1),NULL);}
 	|HEX_NUM {$$=mknode("hex",mkleaf($1),NULL);}
 	;
 
@@ -346,12 +349,10 @@ TYPE:
 	STRING '[' INT_NUM ']'
 	|BOOL 
 	|INT 
-	|FLOAT 
 	|REAL 
 	|CHAR 
 	|CHAR_POINER
 	|REAL_POINER
-	|FLOAT_POINER
 	|INT_POINER {printf("got hare\n");}
 	;
 %%
@@ -763,6 +764,7 @@ int CrearhSymbalFrame(node * root){
 		}
 
 		if(strcmp(temp->return_value,temp2->return_value)){
+
 			printf("wrong return type in func %s \n",temp2->id);
 			exit(1);
 		}
@@ -772,12 +774,11 @@ int CrearhSymbalFrame(node * root){
 		else if(!strcmp(root->left->token, "ID_EXPRASION")){
 
 			temp=get_symbal_from_hash(root->left->left->token);
-			if(temp==NULL){
-				printf("%s was used before declared\n",root->left->left->token);
-				exit(1);
-			}
+
+
 
 			if(strcmp(temp->type,temp2->return_value)){
+				printf("test %s\n",temp->type);
 				printf("wrong return type in func %s \n",temp2->id);
 				exit(1);
 			}
@@ -799,6 +800,9 @@ int CrearhSymbalFrame(node * root){
 
 	}
 	if( !strcmp (root->token ,"=")){
+		
+
+
 		temp=get_symbal_from_hash(root->left->token);
 
 
@@ -843,7 +847,36 @@ int CrearhSymbalFrame(node * root){
 
 
 	}
+	if( !strcmp (root->token ,"ADDR_ASS")){
 
+		printf("%s ik\n",root->left->right->token);
+
+		if (!strcmp("NUM_RXPRASION",root->left->right->token)){
+			if(strcmp(type_num_return(root->left->right),"int")){
+				printf("wrong type in addr\n");
+				exit(1);
+			}
+		}
+		else if(strcmp("FUNC_PROC_ACTIVE",root->left->right->token)==0 ){
+			temp=get_symbal_from_hash(root->left->right->left->right->token);
+			if(!temp->isProc_func){
+				printf("cannot use proc %s hare\n",temp->id);
+				exit(1);
+			}
+			if(strcmp(temp->return_value,"int")){
+				printf("func %s dont return int value\n",temp->id);
+				exit(1);
+			}
+		}
+		else{
+			if(strcmp("int",root->left->right->token)){
+				printf("wrong type in addr\n");
+				exit(1);
+			}
+		}
+		
+		
+	}
 
 
 
@@ -905,7 +938,7 @@ int insert_symbel(char * id,int is_func_proc,char * type,char * data, char * ret
 	temp->next=NULL;
 	insert_to_ht(temp);
 	insert_to_stack(temp);
-	//print_stack();
+	print_stack();
 }
 
 int insert_to_stack(deciptopn * symbel){
@@ -940,7 +973,7 @@ int insert_to_stack(deciptopn * symbel){
 
 void find_var_names(char * type,node * root){
 
-	
+
 
 	if ((strcmp(root->token,"ID")) && (strcmp(root->token,""))){
 
@@ -951,6 +984,7 @@ void find_var_names(char * type,node * root){
 	}
 	else
 	{
+
 		insert_symbel(root->right->token ,0,type,NULL,NULL,deep,NULL);
 		if(root->left)
 			find_var_names(root->token,root->left);
@@ -1104,4 +1138,113 @@ int chack_arges(deciptopn * originalArges,node * newArges,int typeofchack){
 				exit(1);
 			}
 		return 0;
+}
+char * type_num_return(node* root){
+	deciptopn * temp1;
+	deciptopn * temp2;
+	deciptopn * temp3=NULL;
+	char * sec=NULL;
+	
+	if(!strcmp("NUM_RXPRASION",root->token)){
+		if(strcmp("NUM_RXPRASION",root->left->left->token)){
+			//Found the end
+			if(!strcmp("ID_EXPRASION",root->left->left->token)){
+				temp1=get_symbal_from_hash(root->left->left->left->token);
+			}
+			else if(!strcmp("FUNC_PROC_ACTIVE",root->left->left->token)){
+				temp3=get_symbal_from_hash(root->left->left->left->right->token);
+				temp1=(deciptopn *)malloc(sizeof(deciptopn));
+				if(temp3->isProc_func==0){
+					printf("cannot use proc %s in hare \n",temp3->id);
+					exit(1);
+				}
+				temp1->type=temp3->return_value;
+				temp1->id="func";
+
+
+			}
+			else{
+				temp1=(deciptopn *)malloc(sizeof(deciptopn));
+				temp1->type=root->left->left->token;
+				temp1->id="const";
+				temp1->data=root->left->left->left->token;
+			}
+
+			if(!strcmp("ID_EXPRASION",root->left->right->token)){
+				temp2=get_symbal_from_hash(root->left->right->left->token);
+
+			}
+			else if(!strcmp("FUNC_PROC_ACTIVE",root->left->right->token)){
+				temp3=get_symbal_from_hash(root->left->right->left->right->token);
+
+				
+				temp2=(deciptopn *)malloc(sizeof(deciptopn));
+				if(temp3->isProc_func==0){
+					printf("cannot use proc %s in hare \n",temp3->id);
+					exit(1);
+				}
+				temp2->type=temp3->return_value;
+				temp2->id="func";
+			}
+			else{
+				temp2=(deciptopn *)malloc(sizeof(deciptopn));
+				temp2->type=root->left->right->token;
+				temp2->id="const";
+				temp2->data=root->left->right->left->token;
+			}
+
+
+			if(!strcmp(temp1->type,temp2->type))
+				return (temp1->type);
+			else if(strcmp(temp1->type,"real")==0 || strcmp(temp2->type,"real")==0)
+				return strdup("real");
+			else
+				return strdup("int");
+
+		}
+
+
+
+		sec = type_num_return(root->left->left);
+				
+
+
+		if(!strcmp("ID_EXPRASION",root->left->right->token))
+				temp1=get_symbal_from_hash(root->left->right->left->token);
+
+		else if(!strcmp("FUNC_PROC_ACTIVE",root->left->right->token)){
+			temp3=get_symbal_from_hash(root->left->right->left->right->token);
+			temp1=(deciptopn *)malloc(sizeof(deciptopn));
+			if(temp3->isProc_func==0){
+				printf("cannot use proc %s in hare \n",temp3->id);
+				exit(1);
+			}
+			temp1->type=temp3->return_value;
+			temp1->id="func";
+
+
+		}
+		else{
+			temp1=(deciptopn *)malloc(sizeof(deciptopn));
+			temp1->type=root->left->right->token;
+			temp1->id="const";
+			temp1->data=root->left->left->left->token;
+		}
+
+
+		if(!strcmp(temp1->type,sec))
+				return (temp1->type);
+			else if(strcmp(temp1->type,"real")==0 || strcmp(sec,"real")==0)
+				return("real");
+			else
+				return("int");
+		
+	}
+
+	
+	
+
+
+	
+	
 }

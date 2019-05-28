@@ -12,10 +12,11 @@ func g1(i, j, k : int;jy : real) return int{
 }
 
 
-proc g2(i, j, k : int;jy : real){
+func g2(i: int) return int{
 
-
-	var y,o:int*;
+	var u,l:int;
+	var y,jjj:real;
+	return u;
 
 
 }
@@ -30,7 +31,7 @@ proc Main(){
 
 		var akk,h,g:int;F:char;
 		var kuuu:char;
-		var kss:char;
+		var kss:string[100];
 		func foo(i, j, k : int; d : real) return int{
 
 			var a,h:int;
@@ -41,7 +42,8 @@ proc Main(){
 
 		return a;
 	}
-	a=75;
+	
+	b[2]=c;
 
 	if ( a==7  ){
 		var fsss:int;
@@ -49,9 +51,8 @@ proc Main(){
 	}
 
 	while(ajjj==9){
-		var fsss:int;
+		var fs:int;
 	}
 
-	for(y=0;j==9;i=i+1)
-		g1(a,7,g1(a,7,7,d),d);
+
 }
