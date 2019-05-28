@@ -80,6 +80,7 @@ node * creath_arges(node* root);
 char * type_num_return(node* root);
 char * type_bool_return(node* root);
 void chack_for_num_wrong(node * root);
+void relase_hs(stack_Data *);
 int chack_arges(deciptopn * originalArges,node * newArges,int typeofchack);
 
 
@@ -538,10 +539,27 @@ void pop() {
     if (isEmpty(frameStack)) 
         return ; 
 	deep--;
+
 	struct frame * temp=frameStack->array[(frameStack->top)--];
+	relase_hs(temp->symbels);
     free(temp);
 
 	} 
+
+void relase_hs(stack_Data * data){
+	struct deciptopn ** temp;
+	struct deciptopn * temp2;
+	while(data!=NULL){
+		temp2=get_symbal_from_hash(data->name);
+		temp=& temp2 ;
+		if((*temp)->next==NULL)
+			(*temp)=NULL;
+		else{
+			(*temp)=(*temp)->next;
+		}
+		data=data->next;
+	}
+}
 void print_stack(){
 	int i ;
 	struct stack_Data * symbals_top_frame;
@@ -579,11 +597,10 @@ int CrearhSymbalFrame(node * root){
 	if( !strcmp (root->token ,"BLOCK")){
 
 		push(creathFrame());
-		printf("found new block %d\n",deep);
 		if(root->right)
 			CrearhSymbalFrame(root->right);
 
-		printf("finish block %d\n",deep);
+
 		pop();
 		return 0;
 	}
@@ -603,7 +620,7 @@ int CrearhSymbalFrame(node * root){
 						
 
 		push(creathFrame());
-		printf("found new block %d\n",deep);
+
 
 		find_var_names("",root->left->left->right->left);
 		
@@ -611,7 +628,7 @@ int CrearhSymbalFrame(node * root){
 		if(root->right)
 			CrearhSymbalFrame(root->right);
 
-		printf("finish block %d\n",deep);
+
 		
 
 		pop();
@@ -642,7 +659,6 @@ int CrearhSymbalFrame(node * root){
 		if(root->left->left->right->left)
 			find_var_names("",root->left->left->right->left);
 
-		printf("found new block %d\n",deep);
 
 		if(root->right)
 			CrearhSymbalFrame(root->right);
@@ -653,7 +669,6 @@ int CrearhSymbalFrame(node * root){
 	}
 
 	if( !strcmp (root->token ,"IF")){
-		printf("found new block %d\n",deep);
 
 		if(strcmp("BOOL_EXPRASION",root->left->right->token)){
 			printf("if statment must have bool exprasion \n");
@@ -673,7 +688,7 @@ int CrearhSymbalFrame(node * root){
 
 
 	if( !strcmp (root->token ,"WHILE")){
-		printf("found new block %d\n",deep);
+
 		
 		
 
@@ -697,7 +712,6 @@ int CrearhSymbalFrame(node * root){
 	}
 
 	if( !strcmp (root->token ,"FOR")){
-		printf("found new block %d\n",deep);
 
 		if(strcmp("BOOL_EXPRASION",root->left->right->left->token)){
 			printf("for statment must have bool exprasion \n");
@@ -1044,7 +1058,6 @@ int insert_symbel(char * id,int is_func_proc,char * type,char * data, char * ret
 	temp->next=NULL;
 	insert_to_ht(temp);
 	insert_to_stack(temp);
-	//print_stack();
 }
 
 int insert_to_stack(deciptopn * symbel){
