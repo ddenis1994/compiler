@@ -13,6 +13,7 @@ static void comment(void);
 "real\*"                  {yylval.String=strdup(yytext); return(REAL_POINER);}
 "int\*"                   {yylval.String=strdup(yytext); return(INT_POINER);}
 "char"                  {yylval.String=strdup(yytext); return (CHAR);}
+"null"                  {yylval.String=strdup(yytext); return (NULLA);}
 "real"                  {yylval.String=strdup(yytext); return(REAL);}
 "else"                  {yylval.String=strdup(yytext); return(ELSE);}
 "for"                   { return(FOR);}

@@ -93,7 +93,7 @@ extern int yylex();
 }
 %start S
 %token <String> CHAR REAL INT BOOL STRING CHAR_POINER REAL_POINER FLOAT_POINER INT_POINER
-%token <String> CHAR_POINTER REAL_POINTER  INT_POINTER 
+%token <String> CHAR_POINTER REAL_POINTER  INT_POINTER NULLA
 %token ELSE IF
 %token FOR WHILE
 %token TRUE FALSE
@@ -204,8 +204,8 @@ EXPRASION:
 	|ID {$$=mknode("ID_EXPRASION",mkleaf($1),NULL);}
 	|'^' EXPRASION {$$=mknode("ADDR_EXPRASION",mkleaf("^"),NULL);}
 	| '&' EXPRASION {$$=mknode("ADDR_EXPRASION",mkleaf("&"),NULL);}
-	|'-' EXPRASION %prec UMINUS {$$=mknode("NUM_EXPRASION",mkleaf("&"),NULL);}
-	|'!' EXPRASION {$$=mknode("BOOL_EXPRASION",mkleaf("&"),NULL);}
+	|'-' EXPRASION %prec UMINUS {$$=mknode("NUM_EXPRASION",mkleaf("-"),NULL);}
+	|'!' EXPRASION {$$=mknode("NOT_EXPRASION",$2,NULL);}
 	|ID '[' EXPRASION ']' '=' VALUE {$$=mknode("ADDR_ASS",mknode("=ADDR",mkleaf($1),$3),$6);}
 	|ID '=' EXPRASION {$$=mknode("=",mkleaf($1),$3);}
 	|EXPRASION NE_OP VALUE  {$$=mknode("BOOL_EXPRASION",mknode("!=",$1,$3),NULL);}
@@ -221,6 +221,7 @@ EXPRASION:
 	|EXPRASION '>' VALUE  {$$=mknode("BOOL_EXPRASION",mknode(">",$1,$3),NULL);}
 	|EXPRASION '<' VALUE  {$$=mknode("BOOL_EXPRASION",mknode("<",$1,$3),NULL);}
 	|FUNC_ACTIVE 
+	| '|' EXPRASION '|' {$$=mknode("ABS_EXPRASION",$2,NULL);}
 	;
 
 VALUE:
@@ -345,6 +346,7 @@ CONST:
 	INT_NUM {$$=mknode("int",mkleaf($1),NULL);}
 	|R_NUM {$$=mknode("real",mkleaf($1),NULL);}
 	|HEX_NUM {$$=mknode("hex",mkleaf($1),NULL);}
+	|NULLA {$$=mknode("null_value",mkleaf("null"),NULL);}
 	;
 
 TYPE:	
@@ -803,7 +805,7 @@ int CrearhSymbalFrame(node * root){
 	}
 	if( !strcmp (root->token ,"=")){
 		
-
+	
 
 		temp=get_symbal_from_hash(root->left->token);
 
@@ -825,6 +827,17 @@ int CrearhSymbalFrame(node * root){
 			}
 
 		}
+		else if(!strcmp(root->right->token,"null_value")){
+				if(!strcmp("char*",temp->type) || !strcmp("int*",temp->type) ||
+				!strcmp("real*",temp->type)){
+
+				}
+				else{
+					printf("wrong type pointer %s\n",temp->id);
+					exit(1);
+				}
+
+		}
 		else if(!strcmp(root->right->token,"NUM_EXPRASION")){
 			if(strcmp(type_num_return(root->right),temp->type)){
 				printf("wrong type in ass %s\n",temp->id);
@@ -840,10 +853,36 @@ int CrearhSymbalFrame(node * root){
 
 		}
 		else if(!strcmp(root->right->token,"ADDR_EXPRASION")){
-
+			
+			printtree(root,0);
 			//TODO chack num exprasion
 		}
-
+		else if(!strcmp(root->right->token,"ABS_EXPRASION")){
+			if(strcmp(temp->type,"int")){
+				printf("wrong assignment type \nexpected int got %s \n",
+				temp->type);
+				exit(1);
+			}
+			temp2=get_symbal_from_hash(root->right->left->left->token);
+			if(strcmp(temp2->type,"string")){
+				printf("wrong assignment type \nexpected string got %s \n",
+				temp->type);
+				exit(1);
+			}
+		}
+		else if(!strcmp(root->right->token,"NOT_EXPRASION")){
+			if(strcmp(temp->type,"bool")){
+				printf("wrong assignment type \nexpected int got %s \n",
+				temp->type);
+				exit(1);
+			}
+			temp2=get_symbal_from_hash(root->right->left->left->token);
+			if(strcmp(temp2->type,"bool")){
+				printf("wrong assignment type \nexpected bool got %s \n",
+				temp2->type);
+				exit(1);
+			}
+		}
 		else{
 			if(strcmp(temp->type,root->right->token)){
 				printf("wrong assignment type \nexpected %s got %s\n",
@@ -890,6 +929,14 @@ int CrearhSymbalFrame(node * root){
 		}
 		
 		
+	}
+
+	if( !strcmp (root->token ,"NOT_EXPRASION")){
+		temp=get_symbal_from_hash(root->left->left->token);
+		if(strcmp("bool",temp->type)){
+				printf("wrong type in %s\n",temp->id);;
+				exit(1);
+			}
 	}
 
 

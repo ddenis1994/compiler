@@ -30,7 +30,7 @@ proc Main(){
 		
 
 		var uju,test:bool;
-		var kuuu:char;
+		var kuuu:char*;
 		var kss:string[100];
 		var hh:bool;
 		
@@ -47,7 +47,10 @@ proc Main(){
 	
 	kss[2]=c;
 
-	uju =  i > uju;
+	kuuu = null;
+
+	uju= ! uju;
+
 
 	if ( a==7  ){
 		var fsss:int;
