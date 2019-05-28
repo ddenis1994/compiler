@@ -107,7 +107,7 @@ extern int yylex();
 %type <Node> FUNC_ACTIVE  COMPUND_STATMENT
 %type <Node> STASTMENT_LIST DEC_INNER_BLOCK
 %type<Node> STASTMENT IF_STASTMENT LOOP_STATMENT
-%type<Node> UPDATES VF VAR_DECLARE FUNC_PROC_DEC DEF_A VFDEC
+%type<Node> VF VAR_DECLARE FUNC_PROC_DEC DEF_A VFDEC
 %type<Node> PROC_DEF NEW_DECLARE   MAIN
 %type<Node> S RETURN_STATMENT VALUE
 %type<Node> COMPUND_STATMENT_PROC FUNC_ACTIVE_INNER_ARGES
@@ -254,18 +254,19 @@ STASTMENT_LIST:
 
 IF_STASTMENT:
 	IF '(' EXPRASION ')' STASTMENT ELSE STASTMENT {
-		$$=mknode("IF_ELSE",
+		$$=mknode("IF",
 		mknode("EXPRASION_IF",NULL,$3),
 		mknode("BODY_IF",mknode("ELSE",NULL,$7),$5)
 		);
 		}		
 																										
 	|IF '(' EXPRASION ')'  STASTMENT %prec IFX {  
-        $$=mknode("IF",mknode("EXPRASION_IF",NULL,$3),mknode("BODY_IF",NULL,$5));}
+        $$=mknode("IF",mknode("EXPRASION_IF",NULL,$3),mknode("BODY_IF",NULL,$5));
+}
 	;
 
 STASTMENT:
-	COMPUND_STATMENT
+	COMPUND_STATMENT_PROC
 	|EXPRASION ';' 
 	|IF_STASTMENT
 	|LOOP_STATMENT
@@ -282,21 +283,17 @@ LOOP_STATMENT:
 	WHILE '(' EXPRASION ')' STASTMENT {
 		$$=mknode("WHILE",mknode("EXPRESSION",NULL,$3),mknode("BODY",NULL,$5));
 		}
-	|FOR '(' EXPRASION ';' EXPRASION ';' UPDATES ')' STASTMENT
+	|FOR '(' EXPRASION ';' EXPRASION ';' EXPRASION ')' STASTMENT
 		
-	{	
-		$$=mknode("FOR",mknode("INIT",mknode("EXPRESSION_FOR",mknode("UPDATE",NULL,$7),$5),$3),mknode("BODY",NULL,$9));
-	}
+	{	$$=mknode("FOR",mknode("INIT",$3,mknode("EXPRESSION_FOR",$5,
+	mknode("UPDATE",$7,NULL))),mknode("BODY",NULL,$9));
+		}
 	;
 
-UPDATES:
-	ID '+' '+' {$$=mknode(strcat($1,strdup("++")),NULL,NULL);}
-	|ID '-' '-' {$$=mknode(strcat($1,strdup("--")),NULL,NULL);}
-	;
+
 
 
 COMPUND_STATMENT:
-
 	'{' INNER_COMPUND_STATMENT RETURN_STATMENT '}' { $$=mknode("BLOCK",$3,$2); }
     |'{'  RETURN_STATMENT '}' { $$=mknode("BLOCK",$2,NULL); }
 	;
@@ -314,10 +311,10 @@ INNER_COMPUND_STATMENT:
 
 
 DEC_INNER_BLOCK:
-	NEW_DECLARE DEC_INNER_BLOCK {$$=mknode("DECLARE",$1,$2);
+	NEW_DECLARE DEC_INNER_BLOCK {$$=mknode("",$1,$2);
+	
 	}
-	|NEW_DECLARE {$$=mknode("DECLARE",$1,NULL);
-}
+	|NEW_DECLARE 
 	;
 
 NEW_DECLARE:
@@ -326,12 +323,12 @@ NEW_DECLARE:
 	;
 
 VAR_DECLARE:
-	 VF {$$=mknode("VAR_DECLARE",$1,NULL);}
-	|VAR_DECLARE VF {$$=mknode("VAR_DECLARE",$1,$2);}
+	 VF {$$=mknode("",$1,NULL);}
+	|VAR_DECLARE VF {$$=mknode("",$1,$2);}
 	;
 
 VF: 
-	VAR VFDEC {$$=$2;}
+	VAR VFDEC {$$=mknode("VAR_DECLARE",$2,NULL);}
 	;
 
 VFDEC:
@@ -652,6 +649,12 @@ int CrearhSymbalFrame(node * root){
 
 	if( !strcmp (root->token ,"IF")){
 		printf("found new block %d\n",deep);
+
+		if(strcmp("BOOL_RXPRASION",root->left->right->token)){
+			printf("if statment must have bool exprasion \n");
+			exit(1);
+		}
+
 		push(creathFrame());
 
 		//TODO take data from left son 
@@ -662,23 +665,22 @@ int CrearhSymbalFrame(node * root){
 		return 0;
 
 	}
-	if( !strcmp (root->token ,"IF_ELSE")){
-		printf("found new block %d\n",deep);
-		push(creathFrame());
-
-
-
-		//TODO crate new method for chaking the else!!
-
-		CrearhSymbalFrame(root->right);
-
-		pop();
-		return 0;
-	}
 
 
 	if( !strcmp (root->token ,"WHILE")){
 		printf("found new block %d\n",deep);
+		
+		
+
+		if(strcmp("BOOL_RXPRASION",root->left->right->token)){
+			printf("while statment must have bool exprasion \n");
+			exit(1);
+		}
+
+
+		CrearhSymbalFrame(root->left);
+
+
 		push(creathFrame());
 
 		//TODO take data from left son 
@@ -691,6 +693,23 @@ int CrearhSymbalFrame(node * root){
 
 	if( !strcmp (root->token ,"FOR")){
 		printf("found new block %d\n",deep);
+
+		if(strcmp("BOOL_RXPRASION",root->left->right->left->token)){
+			printf("for statment must have bool exprasion \n");
+			exit(1);
+		}
+		if(strcmp("=",root->left->left->token)){
+			printf("for statment must init var \n");
+			exit(1);
+		}
+
+		if(strcmp("=",root->left->right->right->left->token)){
+			printf("for statment must update var \n");
+			exit(1);
+		}
+		CrearhSymbalFrame(root->left);
+
+
 		push(creathFrame());
 
 		//TODO take data from left son 
@@ -702,6 +721,7 @@ int CrearhSymbalFrame(node * root){
 	}
 	if( !strcmp (root->token ,"VAR_DECLARE")){
 		find_var_names(" ",root->left);
+
 		
 	}
 
@@ -780,21 +800,13 @@ int CrearhSymbalFrame(node * root){
 	}
 	if( !strcmp (root->token ,"=")){
 		temp=get_symbal_from_hash(root->left->token);
-		//printf("%s \n",root->right->token);
-		printtree(root,0);
-		if(strcmp(root->right->token,"FUNC_PROC_ACTIVE")==0){
+
+
+		if(!strcmp(root->right->token,"FUNC_PROC_ACTIVE")){
 			temp2=get_symbal_from_hash(root->right->left->right->token);
-
-			if(temp2->return_value==NULL){
-				printf("cannot assignment proc %s \n",temp2->id);
-				
-				exit(1);
-			}
-
 			if(strcmp(temp->type,temp2->return_value)){
 				printf("wrong assignment type \nexpected %s got %s\n",
 				temp->type,temp2->return_value);
-				
 				exit(1);
 			}
 		}
@@ -803,16 +815,27 @@ int CrearhSymbalFrame(node * root){
 			if(strcmp(temp->type,temp2->type)){
 				printf("wrong assignment type \nexpected %s got %s\n",
 				temp->type,temp2->type);
-				
 				exit(1);
 			}
 
 		}
+		else if(!strcmp(root->right->token,"NUM_RXPRASION")){
+
+			//TODO chack num exprasion
+		}
+		else if(!strcmp(root->right->token,"BOOL_RXPRASION")){
+
+			//TODO chack num exprasion
+		}
+		else if(!strcmp(root->right->token,"ADDR_RXPRASION")){
+
+			//TODO chack num exprasion
+		}
+
 		else{
 			if(strcmp(temp->type,root->right->token)){
 				printf("wrong assignment type \nexpected %s got %s\n",
 				temp->type,root->right->token);
-
 				exit(1);
 			}
 		}
@@ -917,6 +940,8 @@ int insert_to_stack(deciptopn * symbel){
 
 void find_var_names(char * type,node * root){
 
+	
+
 	if ((strcmp(root->token,"ID")) && (strcmp(root->token,""))){
 
 		if(root->left)
@@ -1020,7 +1045,10 @@ int checkFunc(node * originalArges,node * newArges){
 
 			else if(strcmp("ID_ARG",newArges->token)==0){
 				temp=get_symbal_from_hash(newArges->left->token);
-				
+				if(temp==NULL){
+					printf("used symbel %s before declorasion \n",newArges->left->token);
+					exit(1);
+				}
 
 				chack_arges(temp,temp2,0);
 			}
@@ -1029,7 +1057,10 @@ int checkFunc(node * originalArges,node * newArges){
 				temp=get_symbal_from_hash(newArges->left->left->right->token);
 			
 
-				
+				if(temp==NULL){
+					printf("used symbel %s before declorasion \n",newArges->left->token);
+					exit(1);
+				}
 				if((temp1=checkFunc(temp->arges,newArges->left->right))==1){
 					printf("too many arges for func %s\n",temp->id);
 					exit(1);
