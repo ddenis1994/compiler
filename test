@@ -50,7 +50,7 @@ proc Main(){
 	kuuu = null;
 
 	kuuu = & i;
-	kuuu = ^ kuuu;
+	i = ^ kuuu;
 
 	uju= ! uju;
 

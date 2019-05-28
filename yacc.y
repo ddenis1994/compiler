@@ -854,8 +854,29 @@ int CrearhSymbalFrame(node * root){
 		}
 		else if(!strcmp(root->right->token,"ADDR_EXPRASION")){
 			
-			printtree(root,0);
-			//TODO chack num exprasion
+			temp=get_symbal_from_hash(root->left->token);
+			if(!strcmp(root->right->left->token,"&")){
+				if(!strcmp(temp->type,"char*") || !strcmp(temp->type,"int*")||
+			!strcmp(temp->type,"real*") ){
+				;
+			}
+			else{
+				printf("wrong type in op & assiment\n");
+				exit(1);
+			}
+
+			}
+			else if(!strcmp(root->right->left->token,"^")){
+				if(!strcmp(temp->type,"char") || !strcmp(temp->type,"int") ||
+			!strcmp(temp->type,"real") || !strcmp(temp->type,"string")){
+				;
+			}
+			else{
+				printf("wrong type in op ^ assiment\n");
+				exit(1);
+			}
+			}
+
 		}
 		else if(!strcmp(root->right->token,"ABS_EXPRASION")){
 			if(strcmp(temp->type,"int")){
@@ -1346,12 +1367,7 @@ char * type_bool_return(node* root){
 	deciptopn * temp2;
 	deciptopn * temp3=NULL;
 	char * sec=NULL;
-	
-
-printtree(root,0);
-	
-	
-	
+		
 	if(!strcmp("BOOL_EXPRASION",root->token)){
 		if(strcmp("BOOL_EXPRASION",root->left->left->token)){
 			if(!strcmp("||",root->left->token) || !strcmp("&&",root->left->token)){
