@@ -20,8 +20,8 @@ static void comment(void);
 "int"                   {yylval.String=strdup(yytext); return(INT);}
 "return"                { return(RETURN);}
 "while"                 { return(WHILE); }
-"bool"                  { return(BOOL); }
-"string"                { return(STRING); }
+"bool"                  {yylval.String=strdup(yytext); return(BOOL); }
+"string"                {yylval.String=strdup(yytext); return(STRING); }
 "true"                  { return(TRUE); }
 "false"                { return(FALSE); }
 "var"                   { return(VAR); }
@@ -35,6 +35,7 @@ static void comment(void);
 "<="                    { return (SE_OP); }
 "!="                    { return (NE_OP); }
 "||"                    { return (OR_OP); }
+"|"                     { return '|'; }
 "="                     { return '='; }
 ">"                     { return '>'; }
 "<"                     { return '<'; }

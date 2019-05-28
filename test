@@ -29,9 +29,11 @@ proc Main(){
 	func foo(i, j, k : int ; mh : char; d : real) return int{
 		
 
-		var akk,h,g:int;F:char;
+		var uju,test:bool;
 		var kuuu:char;
 		var kss:string[100];
+		var hh:bool;
+		
 		func foo(i, j, k : int; d : real) return int{
 
 			var a,h:int;
@@ -43,7 +45,9 @@ proc Main(){
 		return a;
 	}
 	
-	b[2]=c;
+	kss[2]=c;
+
+	uju =  i > uju;
 
 	if ( a==7  ){
 		var fsss:int;
