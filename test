@@ -49,6 +49,9 @@ proc Main(){
 
 	kuuu = null;
 
+	kuuu = & i;
+	kuuu = ^ kuuu;
+
 	uju= ! uju;
 
 

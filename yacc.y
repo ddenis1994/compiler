@@ -202,8 +202,8 @@ EXPRASION:
 	|TRUE {$$=mknode("BOOL_EXPRASION",mkleaf("true"),NULL);}
 	|FALSE {$$=mknode("BOOL_EXPRASION",mkleaf("false"),NULL);}
 	|ID {$$=mknode("ID_EXPRASION",mkleaf($1),NULL);}
-	|'^' EXPRASION {$$=mknode("ADDR_EXPRASION",mkleaf("^"),NULL);}
-	| '&' EXPRASION {$$=mknode("ADDR_EXPRASION",mkleaf("&"),NULL);}
+	|'^' EXPRASION {$$=mknode("ADDR_EXPRASION",mkleaf("^"),$2);}
+	| '&' EXPRASION {$$=mknode("ADDR_EXPRASION",mkleaf("&"),$2);}
 	|'-' EXPRASION %prec UMINUS {$$=mknode("NUM_EXPRASION",mkleaf("-"),NULL);}
 	|'!' EXPRASION {$$=mknode("NOT_EXPRASION",$2,NULL);}
 	|ID '[' EXPRASION ']' '=' VALUE {$$=mknode("ADDR_ASS",mknode("=ADDR",mkleaf($1),$3),$6);}
@@ -938,7 +938,31 @@ int CrearhSymbalFrame(node * root){
 				exit(1);
 			}
 	}
+	if( !strcmp (root->token ,"ADDR_EXPRASION")){
+		temp=get_symbal_from_hash(root->right->left->token);
+		if(!strcmp(root->left->token,"&")){
+			if(!strcmp(temp->type,"char") || !strcmp(temp->type,"int") ||
+			!strcmp(temp->type,"real") || !strcmp(temp->type,"string")){
+				;
+			}
+			else{
+				printf("wrong type in op &\n");
+				exit(1);
+			}
+		}
+		if(!strcmp(root->left->token,"^")){
+			if(!strcmp(temp->type,"char*") || !strcmp(temp->type,"int*")||
+			!strcmp(temp->type,"real*") ){
+				;
+			}
+			else{
+				printf("wrong type in op ^\n");
+				exit(1);
+			}
+		}
 
+
+	}
 
 
 	if(root->left)
