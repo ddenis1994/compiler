@@ -2,3 +2,4 @@ y.tab*
 lex.yy.c
 .vscode
 a.out
+output*
