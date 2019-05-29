@@ -3,3 +3,4 @@ lex.yy.c
 .vscode
 a.out
 output*
+y.output
