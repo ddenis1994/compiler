@@ -84,6 +84,7 @@ char * type_bool_return(node* root);
 void chack_for_num_wrong(node * root);
 void relase_hs(stack_Data *);
 int chack_arges(deciptopn * originalArges,node * newArges,int typeofchack);
+char * type_return(struct node * root);
 
 
 void printtree(node *tree,int space);
@@ -99,7 +100,7 @@ extern int yylex();
 %token <String> CHAR_POINTER REAL_POINTER  INT_POINTER NULLA 
 %token ELSE IF
 %token FOR WHILE
-%token TRUE FALSE
+%token TRUE FALSE 
 %token RETURN MAIN
 %token <String> VAR FUNC PROC
 %token NULL_VALUE
@@ -214,7 +215,7 @@ FUNC_BLOCK:
 
 EXPRASION:
 	CONST 
-	|'(' EXPRASION ')'  {$$=$2;}
+	|'(' EXPRASION ')'  {$$=mknode("PRIORATY",NULL,$2);}
 	|TRUE {$$=mknode("BOOL_EXPRASION",mkleaf("true"),NULL);}
 	|FALSE {$$=mknode("BOOL_EXPRASION",mkleaf("false"),NULL);}
 	|ID {$$=mknode("ID_EXPRASION",mkleaf($1),NULL);}
@@ -241,8 +242,8 @@ EXPRASION:
 	;
 
 VALUE:
-	CONST 
-	|'(' EXPRASION ')'  {$$=$2;}
+	|CONST 
+	|'(' EXPRASION ')'  {$$=mknode("PRIORATY",NULL,$2);}
 	|TRUE {$$=mknode("BOOL_EXPRASION",mkleaf("true"),NULL);}
 	|FALSE {$$=mknode("BOOL_EXPRASION",mkleaf("false"),NULL);}
 	|ID {$$=mknode("ID_EXPRASION",mkleaf($1),NULL);}
@@ -297,7 +298,7 @@ STASTMENT:
 RETURN_STATMENT:
     RETURN EXPRASION ';' {
         $$=mknode("RETURN STATMENT",$2,NULL);
-		printf("got hare\n");
+
         }
     ;
 
@@ -328,7 +329,8 @@ COMPUND_STATMENT_PROC:
 INNER_COMPUND_STATMENT:
 	STASTMENT_LIST { $$=mknode("",NULL,$1);}
 	|DEC_INNER_BLOCK {$$=mknode("",$1,NULL);}
-	|DEC_INNER_BLOCK  STASTMENT_LIST {$$=mknode("",$1,$2);}
+	|DEC_INNER_BLOCK  STASTMENT_LIST {$$=mknode("",$1,$2);
+	}
 	;
 
 
@@ -340,12 +342,13 @@ DEC_INNER_BLOCK:
 	;
 
 NEW_DECLARE:
-	VAR_DECLARE
+	VAR_DECLARE 
 	|FUNC_PROC_DEC
 	;
 
 VAR_DECLARE:
-	 VF {$$=mknode("",$1,NULL);}
+	 VF {$$=mknode("",$1,NULL);
+	 }
 	|VAR_DECLARE VF {$$=mknode("",$1,$2);}
 	;
 
@@ -608,6 +611,7 @@ int CrearhSymbalFrame(node * root){
 	struct deciptopn * temp ;
 	struct deciptopn * temp2 ;
 	static char * current;
+	char * type;
 
 	if( !strcmp (root->token ,"BLOCK")){
 
@@ -843,24 +847,12 @@ int CrearhSymbalFrame(node * root){
 
 		temp=get_symbal_from_hash(root->left->token);
 
-
-		if(!strcmp(root->right->token,"FUNC_PROC_ACTIVE")){
-			temp2=get_symbal_from_hash(root->right->left->right->token);
-			if(strcmp(temp->type,temp2->return_value)){
-				printf("wrong assignment type \nexpected %s got %s\n",
-				temp->type,temp2->return_value);
-				exit(1);
-			}
+		if(!strcmp(temp->type,(type=type_return(root->right)))){
+			printf("got type %s\n",type);
 		}
-		else if(!strcmp(root->right->token,"ID_EXPRASION")){
-			temp2=get_symbal_from_hash(root->right->left->token);
-			if(strcmp(temp->type,temp2->type)){
-				printf("wrong assignment type \nexpected %s got %s\n",
-				temp->type,temp2->type);
-				exit(1);
-			}
 
-		}
+
+
 		else if(!strcmp(root->right->token,"null_value")){
 				if(!strcmp("char*",temp->type) || !strcmp("int*",temp->type) ||
 				!strcmp("real*",temp->type)){
@@ -872,20 +864,7 @@ int CrearhSymbalFrame(node * root){
 				}
 
 		}
-		else if(!strcmp(root->right->token,"NUM_EXPRASION")){
-			if(strcmp(type_num_return(root->right),temp->type)){
-				printf("wrong type in ass %s\n",temp->id);
-				exit(1);
-			}
-
-		}
-		else if(!strcmp(root->right->token,"BOOL_EXPRASION")){
-			if(strcmp(type_bool_return(root->right),temp->type)){
-				printf("wrong type in ass %s\n",temp->id);
-				exit(1);
-			}
-
-		}
+		
 		else if(!strcmp(root->right->token,"ADDR_EXPRASION")){
 			
 			temp=get_symbal_from_hash(root->left->token);
@@ -927,7 +906,7 @@ int CrearhSymbalFrame(node * root){
 		}
 		else if(!strcmp(root->right->token,"NOT_EXPRASION")){
 			if(strcmp(temp->type,"bool")){
-				printf("wrong assignment type \nexpected int got %s \n",
+				printf("wrong assignment type  \nexpected int got %s \n",
 				temp->type);
 				exit(1);
 			}
@@ -1395,60 +1374,106 @@ void chack_for_num_wrong(node * root){
 	}
 }
 
-char * type_bool_return(node* root){
+
+
+char * type_return(struct node * root){
 	deciptopn * temp1;
 	deciptopn * temp2;
 	deciptopn * temp3=NULL;
 	char * sec=NULL;
-		
-	if(!strcmp("BOOL_EXPRASION",root->token)){
-		if(strcmp("BOOL_EXPRASION",root->left->left->token)){
+
+	
+	printf("%s name\n",root->left->token);
+	if(!strcmp(root->token,"ID_EXPRASION")){
+		temp2=get_symbal_from_hash(root->left->token);
+		return temp2->type;
+	}
+
+	if(!strcmp(root->token,"FUNC_PROC_ACTIVE")){
+		temp2=get_symbal_from_hash(root->left->right->token);
+		if(!temp2->isProc_func){
+			printf("cannot use proc %s \n",temp2->id);
+			exit(1);
+		}
+		return temp2->return_value;
+	}
+	
+
+
+
+	if(!strcmp("PRIORATY",root->token)){
+
+		return type_return(root->right);
+	}
+
+
+
+	if(!strcmp("BOOL_EXPRASION",root->token) || !strcmp("NUM_EXPRASION",root->token)){
+		if(strcmp("BOOL_EXPRASION",root->left->left->token) && strcmp("NUM_EXPRASION",root->left->left->token)){
+
+
+			
+			
+			if(!strcmp("ID_EXPRASION",root->left->left->token))
+				temp1=get_symbal_from_hash(root->left->left->left->token);
+			
+			else if(!strcmp("FUNC_PROC_ACTIVE",root->left->left->token)){
+				temp3=get_symbal_from_hash(root->left->left->left->right->token);
+				temp1=(deciptopn *)malloc(sizeof(deciptopn));
+				if(temp3->isProc_func==0){
+					printf("cannot use proc %s in hare \n",temp3->id);
+					exit(1);
+				}
+				temp1->type=temp3->return_value;
+				temp1->id="func";
+
+				}
+			else if(!strcmp("PRIORATY",root->left->left->token)){
+				
+				temp1=(deciptopn *)malloc(sizeof(deciptopn));
+				temp1->type=type_return(root->left->left->right);
+
+			}
+
+			else{
+
+				temp1=(deciptopn *)malloc(sizeof(deciptopn));
+				temp1->type=root->left->left->token;
+				temp1->id="const";
+				temp1->data=root->left->left->left->token;
+			}
+
+			if(!strcmp("ID_EXPRASION",root->left->right->token)){
+				
+				temp2=get_symbal_from_hash(root->left->right->left->token);
+			}
+
+			else if(!strcmp("FUNC_PROC_ACTIVE",root->left->right->token)){
+				temp3=get_symbal_from_hash(root->left->right->left->right->token);
+				temp2=(deciptopn *)malloc(sizeof(deciptopn));
+				if(temp3->isProc_func==0){
+					printf("cannot use proc %s in hare \n",temp3->id);
+					exit(1);
+				}
+				temp2->type=temp3->return_value;
+				temp2->id="func";
+			}
+			else if(!strcmp("PRIORATY",root->left->right->token)){
+
+				temp2=(deciptopn *)malloc(sizeof(deciptopn));
+				temp2->type=type_return(root->left->right->right);
+			}
+				
+			else{
+
+				temp2=(deciptopn *)malloc(sizeof(deciptopn));
+				temp2->type=root->left->right->token;
+				temp2->id="const";
+				temp2->data=root->left->right->left->token;
+			}
+
 			if(!strcmp("||",root->left->token) || !strcmp("&&",root->left->token)){
 
-				if(!strcmp("ID_EXPRASION",root->left->left->token)){
-					temp1=get_symbal_from_hash(root->left->left->left->token);
-				}
-				else if(!strcmp("FUNC_PROC_ACTIVE",root->left->left->token)){
-					temp3=get_symbal_from_hash(root->left->left->left->right->token);
-					temp1=(deciptopn *)malloc(sizeof(deciptopn));
-					if(temp3->isProc_func==0){
-						printf("cannot use proc %s in hare \n",temp3->id);
-						exit(1);
-					}
-					temp1->type=temp3->return_value;
-					temp1->id="func";
-
-
-				}
-				else{
-					temp1=(deciptopn *)malloc(sizeof(deciptopn));
-					temp1->type=root->left->left->token;
-					temp1->id="const";
-					temp1->data=root->left->left->left->token;
-				}
-
-				if(!strcmp("ID_EXPRASION",root->left->right->token)){
-					temp2=get_symbal_from_hash(root->left->right->left->token);
-
-				}
-				else if(!strcmp("FUNC_PROC_ACTIVE",root->left->right->token)){
-					temp3=get_symbal_from_hash(root->left->right->left->right->token);
-
-				
-					temp2=(deciptopn *)malloc(sizeof(deciptopn));
-					if(temp3->isProc_func==0){
-						printf("cannot use proc %s in hare \n",temp3->id);
-						exit(1);
-					}
-					temp2->type=temp3->return_value;
-					temp2->id="func";
-				}
-				else{
-					temp2=(deciptopn *)malloc(sizeof(deciptopn));
-					temp2->type=root->left->right->token;
-					temp2->id="const";
-					temp2->data=root->left->right->left->token;
-				}
 				if(strcmp(temp1->type,"bool") || strcmp(temp2->type,"bool")){
 					printf("wrong type not bool\n");
 					exit(1);
@@ -1459,54 +1484,8 @@ char * type_bool_return(node* root){
 			}
 			else if(!strcmp(">=",root->left->token) || !strcmp("<=",root->left->token)
 			|| !strcmp("<",root->left->token) || !strcmp(">",root->left->token)){
-
-				if(!strcmp("ID_EXPRASION",root->left->left->token)){
-					temp1=get_symbal_from_hash(root->left->left->left->token);
-				}
-				else if(!strcmp("FUNC_PROC_ACTIVE",root->left->left->token)){
-					temp3=get_symbal_from_hash(root->left->left->left->right->token);
-					temp1=(deciptopn *)malloc(sizeof(deciptopn));
-					if(temp3->isProc_func==0){
-						printf("cannot use proc %s in hare \n",temp3->id);
-						exit(1);
-					}
-					temp1->type=temp3->return_value;
-					temp1->id="func";
-
-
-				}
-				else{
-					temp1=(deciptopn *)malloc(sizeof(deciptopn));
-					temp1->type=root->left->left->token;
-					temp1->id="const";
-					temp1->data=root->left->left->left->token;
-				}
-
-				if(!strcmp("ID_EXPRASION",root->left->right->token)){
-					temp2=get_symbal_from_hash(root->left->right->left->token);
-
-				}
-				else if(!strcmp("FUNC_PROC_ACTIVE",root->left->right->token)){
-					temp3=get_symbal_from_hash(root->left->right->left->right->token);
-
-				
-					temp2=(deciptopn *)malloc(sizeof(deciptopn));
-					if(temp3->isProc_func==0){
-						printf("cannot use proc %s in hare \n",temp3->id);
-						exit(1);
-					}
-					temp2->type=temp3->return_value;
-					temp2->id="func";
-				}
-				else{
-					temp2=(deciptopn *)malloc(sizeof(deciptopn));
-					temp2->type=root->left->right->token;
-					temp2->id="const";
-					temp2->data=root->left->right->left->token;
-				}
 				if(!strcmp(temp1->type,"int") && !strcmp(temp2->type,"int"))
 					return ("bool");
-
 				else if(!strcmp(temp1->type,"real") && !strcmp(temp2->type,"real"))
 					return ("bool");
 
@@ -1519,53 +1498,7 @@ char * type_bool_return(node* root){
 					exit(1);
 				}
 			}
-			
 			else if(!strcmp("!=",root->left->token) || !strcmp("==",root->left->token)){
-
-				if(!strcmp("ID_EXPRASION",root->left->left->token)){
-					temp1=get_symbal_from_hash(root->left->left->left->token);
-				}
-				else if(!strcmp("FUNC_PROC_ACTIVE",root->left->left->token)){
-					temp3=get_symbal_from_hash(root->left->left->left->right->token);
-					temp1=(deciptopn *)malloc(sizeof(deciptopn));
-					if(temp3->isProc_func==0){
-						printf("cannot use proc %s in hare \n",temp3->id);
-						exit(1);
-					}
-					temp1->type=temp3->return_value;
-					temp1->id="func";
-
-
-				}
-				else{
-					temp1=(deciptopn *)malloc(sizeof(deciptopn));
-					temp1->type=root->left->left->token;
-					temp1->id="const";
-					temp1->data=root->left->left->left->token;
-				}
-
-				if(!strcmp("ID_EXPRASION",root->left->right->token)){
-					temp2=get_symbal_from_hash(root->left->right->left->token);
-
-				}
-				else if(!strcmp("FUNC_PROC_ACTIVE",root->left->right->token)){
-					temp3=get_symbal_from_hash(root->left->right->left->right->token);
-
-				
-					temp2=(deciptopn *)malloc(sizeof(deciptopn));
-					if(temp3->isProc_func==0){
-						printf("cannot use proc %s in hare \n",temp3->id);
-						exit(1);
-					}
-					temp2->type=temp3->return_value;
-					temp2->id="func";
-				}
-				else{
-					temp2=(deciptopn *)malloc(sizeof(deciptopn));
-					temp2->type=root->left->right->token;
-					temp2->id="const";
-					temp2->data=root->left->right->left->token;
-				}
 				if(!strcmp(temp1->type,"int") && !strcmp(temp2->type,"int"))
 					return ("bool");
 
@@ -1586,194 +1519,120 @@ char * type_bool_return(node* root){
 					printf("wrong type not bool\n");
 					exit(1);
 				}
+			}
+			else if(!strcmp("+",root->left->token) || !strcmp("-",root->left->token)||
+					!strcmp("*",root->left->token) || !strcmp("/",root->left->token)){
 
-
+				if(!strcmp(temp1->type,temp2->type))
+					return (temp1->type);
+				else if(!strcmp(temp1->type,"real") || !strcmp(temp2->type,"real"))
+					return strdup("real");
+				else
+					return strdup("int");
 			}
 
 
-
+			else{
+				printf("wrong type not bool\n");
+				exit(1);
+			}
 		}
 	}
 
-	else{
-		printf("wrong type not bool\n");
-					exit(1);
-	}
-	printf("got hare\n");
-	sec = type_bool_return(root->left->left);
-	printf("%s kkk\n",sec);
-					
-
-			if(!strcmp("||",root->left->token) || !strcmp("&&",root->left->token)){
-				
-			
-				
-
-				if(!strcmp("ID_EXPRASION",root->left->right->token)){
-					temp2=get_symbal_from_hash(root->left->right->left->token);
-
-
-				}
-				else if(!strcmp("FUNC_PROC_ACTIVE",root->left->right->token)){
-					temp3=get_symbal_from_hash(root->left->right->left->right->token);
-
-				
-					temp2=(deciptopn *)malloc(sizeof(deciptopn));
-					if(temp3->isProc_func==0){
-						printf("cannot use proc %s in hare \n",temp3->id);
-						exit(1);
-					}
-					temp2->type=temp3->return_value;
-					temp2->id="func";
-				}
-				else{
-					temp2=(deciptopn *)malloc(sizeof(deciptopn));
-					temp2->type=root->left->right->token;
-					temp2->id="const";
-					temp2->data=root->left->left->left->token;
-				}
-				printf(" type %s\n",temp2->type);
-				if(strcmp(temp2->type,"bool") || strcmp(sec,"bool")){
-					printf("wrong type not bool\n");
-					exit(1);
-				}
-			
-				else
-					return ("bool");
-			}
-			else if(!strcmp(">=",root->left->token) || !strcmp("<=",root->left->token)
-			|| !strcmp("<",root->left->token) || !strcmp(">",root->left->token)){
-
-				if(!strcmp("ID_EXPRASION",root->left->left->token)){
-					temp1=get_symbal_from_hash(root->left->left->left->token);
-				}
-				else if(!strcmp("FUNC_PROC_ACTIVE",root->left->left->token)){
-					temp3=get_symbal_from_hash(root->left->left->left->right->token);
-					temp1=(deciptopn *)malloc(sizeof(deciptopn));
-					if(temp3->isProc_func==0){
-						printf("cannot use proc %s in hare \n",temp3->id);
-						exit(1);
-					}
-					temp1->type=temp3->return_value;
-					temp1->id="func";
-
-
-				}
-				else{
-					temp1=(deciptopn *)malloc(sizeof(deciptopn));
-					temp1->type=root->left->left->token;
-					temp1->id="const";
-					temp1->data=root->left->left->left->token;
-				}
-
-				if(!strcmp("ID_EXPRASION",root->left->right->token)){
-					temp2=get_symbal_from_hash(root->left->right->left->token);
-
-				}
-				else if(!strcmp("FUNC_PROC_ACTIVE",root->left->right->token)){
-					temp3=get_symbal_from_hash(root->left->right->left->right->token);
-
-				
-					temp2=(deciptopn *)malloc(sizeof(deciptopn));
-					if(temp3->isProc_func==0){
-						printf("cannot use proc %s in hare \n",temp3->id);
-						exit(1);
-					}
-					temp2->type=temp3->return_value;
-					temp2->id="func";
-				}
-				else{
-					temp2=(deciptopn *)malloc(sizeof(deciptopn));
-					temp2->type=root->left->right->token;
-					temp2->id="const";
-					temp2->data=root->left->right->left->token;
-				}
-				if(!strcmp(temp1->type,"int") && !strcmp(temp2->type,"int"))
-					return ("bool");
-
-				else if(!strcmp(temp1->type,"real") && !strcmp(temp2->type,"real"))
-					return ("bool");
-
-				else if(!strcmp(temp1->type,"int") && !strcmp(temp2->type,"real"))
-					return ("bool");
-				else if(!strcmp(temp1->type,"real") && !strcmp(temp2->type,"int"))
-					return ("bool");
-				else{
-					printf("wrong type not bool\n");
-					exit(1);
-				}
-			}
-			
-			else if(!strcmp("!=",root->left->token) || !strcmp("==",root->left->token)){
-
-				if(!strcmp("ID_EXPRASION",root->left->left->token)){
-					temp1=get_symbal_from_hash(root->left->left->left->token);
-				}
-				else if(!strcmp("FUNC_PROC_ACTIVE",root->left->left->token)){
-					temp3=get_symbal_from_hash(root->left->left->left->right->token);
-					temp1=(deciptopn *)malloc(sizeof(deciptopn));
-					if(temp3->isProc_func==0){
-						printf("cannot use proc %s in hare \n",temp3->id);
-						exit(1);
-					}
-					temp1->type=temp3->return_value;
-					temp1->id="func";
-
-
-				}
-				else{
-					temp1=(deciptopn *)malloc(sizeof(deciptopn));
-					temp1->type=root->left->left->token;
-					temp1->id="const";
-					temp1->data=root->left->left->left->token;
-				}
-
-				if(!strcmp("ID_EXPRASION",root->left->right->token)){
-					temp2=get_symbal_from_hash(root->left->right->left->token);
-
-				}
-				else if(!strcmp("FUNC_PROC_ACTIVE",root->left->right->token)){
-					temp3=get_symbal_from_hash(root->left->right->left->right->token);
-
-				
-					temp2=(deciptopn *)malloc(sizeof(deciptopn));
-					if(temp3->isProc_func==0){
-						printf("cannot use proc %s in hare \n",temp3->id);
-						exit(1);
-					}
-					temp2->type=temp3->return_value;
-					temp2->id="func";
-				}
-				else{
-					temp2=(deciptopn *)malloc(sizeof(deciptopn));
-					temp2->type=root->left->right->token;
-					temp2->id="const";
-					temp2->data=root->left->right->left->token;
-				}
-				if(!strcmp(temp1->type,"int") && !strcmp(temp2->type,"int"))
-					return ("bool");
-
-				else if(!strcmp(temp1->type,"bool") && !strcmp(temp2->type,"bool"))
-					return ("bool");
-
-				else if(!strcmp(temp1->type,"real") && !strcmp(temp2->type,"real"))
-					return ("bool");
-				else if(!strcmp(temp1->type,"char") && !strcmp(temp2->type,"char"))
-					return ("bool");
-				else if(!strcmp(temp1->type,"char*") && !strcmp(temp2->type,"char*"))
-					return ("bool");
-				else if(!strcmp(temp1->type,"int*") && !strcmp(temp2->type,"int*"))
-					return ("bool");
-				else if(!strcmp(temp1->type,"real*") && !strcmp(temp2->type,"real*"))
-					return ("bool");
-				else{
-					printf("wrong type not bool\n");
-					exit(1);
-				}
-			}
-
-
 	
+	sec = type_return(root->left->left);
 
 
+
+
+
+
+	if(!strcmp("ID_EXPRASION",root->left->right->token))
+		temp2=get_symbal_from_hash(root->left->right->left->token);
+
+	else if(!strcmp("FUNC_PROC_ACTIVE",root->left->right->token)){
+		temp3=get_symbal_from_hash(root->left->right->left->right->token);
+		temp2=(deciptopn *)malloc(sizeof(deciptopn));
+		if(temp3->isProc_func==0){
+			printf("cannot use proc %s in hare \n",temp3->id);
+			exit(1);
+		}
+		temp2->type=temp3->return_value;
+		temp2->id="func";
+	}
+	else if(!strcmp("PRIORATY",root->left->left->token)){
+
+				temp2=(deciptopn *)malloc(sizeof(deciptopn));
+				temp2->type=type_return(root->left->right->right);
+			}
+
+	else{
+		temp2=(deciptopn *)malloc(sizeof(deciptopn));
+		temp2->type=root->left->right->token;
+		temp2->id="const";
+		temp2->data=root->left->left->left->token;
+
+	}
+
+
+	if(!strcmp("||",root->left->token) || !strcmp("&&",root->left->token)){
+		if(strcmp(temp2->type,"bool") || strcmp(sec,"bool")){
+			printf("wrong type not bool\n");
+			exit(1);
+		}
+		else
+			return ("bool");
+	}
+	else if(!strcmp(">=",root->left->token) || !strcmp("<=",root->left->token)
+			|| !strcmp("<",root->left->token) || !strcmp(">",root->left->token)){
+		
+
+		if(!strcmp(sec,"int") && !strcmp(temp2->type,"int")){
+			return("bool");
+		}
+
+		else if(!strcmp(sec,"real") && !strcmp(temp2->type,"real"))
+			return ("bool");
+
+		else if(!strcmp(sec,"int") && !strcmp(temp2->type,"real"))
+			return ("bool");
+		else if(!strcmp(sec,"real") && !strcmp(temp2->type,"int"))
+			return ("bool");
+		else{
+			printf("wrong type not bool\n");
+			exit(1);
+			}
+		}
+	else if(!strcmp("!=",root->left->token) || !strcmp("==",root->left->token)){
+		if(!strcmp(sec,"int") && !strcmp(temp2->type,"int"))
+			return ("bool");
+		else if(!strcmp(sec,"bool") && !strcmp(temp2->type,"bool"))
+			return ("bool");
+		else if(!strcmp(sec,"real") && !strcmp(temp2->type,"real"))
+			return ("bool");
+		else if(!strcmp(sec,"char") && !strcmp(temp2->type,"char"))
+			return ("bool");
+		else if(!strcmp(sec,"char*") && !strcmp(temp2->type,"char*"))
+			return ("bool");
+		else if(!strcmp(sec,"int*") && !strcmp(temp2->type,"int*"))
+			return ("bool");
+		else if(!strcmp(sec,"real*") && !strcmp(temp2->type,"real*"))
+			return ("bool");
+		else{
+			printf("wrong type not bool\n");
+			exit(1);
+		}
+	
+	}
+	else if(!strcmp("+",root->left->token) || !strcmp("-",root->left->token)||
+			!strcmp("*",root->left->token) || !strcmp("/",root->left->token)){
+
+		if(!strcmp(sec,temp2->type))
+			return (sec);
+		else if(VALUEstrcmp(sec,"real")==0 || strcmp(temp2->type,"real")==0)
+			return strdup("real");
+		else
+			return strdup("int");
+		}
+	
 }
