@@ -7,6 +7,7 @@
 #include <fenv.h>
 #define SYMBALTABLESIZE 100000
 typedef struct node
+
 {
 char *token;
 struct node *left;
@@ -50,6 +51,7 @@ typedef struct symblaTable{
 	struct deciptopn * symbals;
 } symblaTable;
 
+static int mainCounter = 0;
 static int deep=0;
 static struct symblaTable * hashTableSymbel;
 static struct Stack * frameStack;
@@ -100,19 +102,19 @@ extern int yylex();
 %token TRUE FALSE
 %token RETURN MAIN
 %token <String> VAR FUNC PROC
-%token NULL_VALUE 
+%token NULL_VALUE
 %token AND_OP GE_OP SE_OP NE_OP OR_OP EQL_OP
 %token <String> BOOL_VALUE CHAR_VALUE STRING_VALUE INT_NUM R_NUM HEX_NUM
 %token <String> ID 
 %type <String> TYPE 
 %type <Node> INNER_ARGS 
-%type <Node> CONST 
+%type <Node> CONST MAIN_END
 %type <Node> OUT_ARGES ARGES FUNC_DEF FUNC_BLOCK INNER_COMPUND_STATMENT EXPRASION 
 %type <Node> FUNC_ACTIVE  COMPUND_STATMENT
 %type <Node> STASTMENT_LIST DEC_INNER_BLOCK
 %type<Node> STASTMENT IF_STASTMENT LOOP_STATMENT
 %type<Node> VF VAR_DECLARE FUNC_PROC_DEC DEF_A VFDEC
-%type<Node> PROC_DEF NEW_DECLARE   MAIN
+%type<Node> PROC_DEF NEW_DECLARE
 %type<Node> S RETURN_STATMENT VALUE
 %type<Node> COMPUND_STATMENT_PROC FUNC_ACTIVE_INNER_ARGES
 %nonassoc IFX
@@ -132,17 +134,24 @@ extern int yylex();
 
 %%
 S: 
-	FUNC_PROC_DEC {
-        $$=mknode("BLOCK",$1,NULL);
+	FUNC_PROC_DEC MAIN_END {
+        $$=mknode("BLOCK",mknode("",$2,$1), NULL);
 		startSemantic($$);
         printf("ok\n");
         }
 	;
 
+MAIN_END:
+	PROC MAIN '(' ')' COMPUND_STATMENT_PROC  {
+		$$=mknode("ARGS",NULL,NULL);
+		$$=mknode("ID",$$,mkleaf("MAIN"));
+		$$=mknode("PROC",$$,$5);
+		}
+	;
 
 FUNC_PROC_DEC:
 	DEF_A {$$=mknode("",$1,NULL);}
-	|FUNC_PROC_DEC DEF_A  {$$=mknode("",$1,$2);}
+	|FUNC_PROC_DEC DEF_A {$$=mknode("",$1,$2);}
 	;
 
 DEF_A:
@@ -642,8 +651,14 @@ int CrearhSymbalFrame(node * root){
 	}
 
 	if( !strcmp (root->token ,"PROC")){
-
-
+		if( !strcmp(root->left->right->token, "MAIN")){
+			printf("%d\n",mainCounter);
+			mainCounter++;
+			if(mainCounter > 1){
+				printf("Only 1 'Main' proc is allowed.\n");
+				exit(1);
+			}
+		}
 		insert_symbel(
 						root->left->right->token,
 						1,
