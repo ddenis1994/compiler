@@ -116,7 +116,7 @@ extern int yylex();
 %type<Node> VF VAR_DECLARE FUNC_PROC_DEC DEF_A VFDEC
 %type<Node> PROC_DEF NEW_DECLARE
 %type<Node> S RETURN_STATMENT VALUE
-%type<Node> COMPUND_STATMENT_PROC FUNC_ACTIVE_INNER_ARGES
+%type<Node> COMPUND_STATMENT_PROC FUNC_ACTIVE_INNER_ARGES MAINBLOCK
 %nonassoc IFX
 %nonassoc test
 %nonassoc ELSE
@@ -134,8 +134,8 @@ extern int yylex();
 
 %%
 S: 
-	FUNC_PROC_DEC MAIN_END {
-        $$=mknode("BLOCK",mknode("",$2,$1), NULL);
+	MAINBLOCK  {
+        $$=mknode("BLOCK",$1, NULL);
 		startSemantic($$);
         printf("ok\n");
         }
@@ -143,15 +143,21 @@ S:
 
 MAIN_END:
 	PROC MAIN '(' ')' COMPUND_STATMENT_PROC  {
-		$$=mknode("ARGS",NULL,NULL);
+		$$=mknode("ARGS",NULL,mkleaf(""));
 		$$=mknode("ID",$$,mkleaf("MAIN"));
 		$$=mknode("PROC",$$,$5);
 		}
 	;
 
+MAINBLOCK:
+	FUNC_PROC_DEC MAIN_END {$$=mknode("",$1,$2);}
+	|MAIN_END {$$=mknode("",$1,NULL);}
+	;
+
 FUNC_PROC_DEC:
-	DEF_A {$$=mknode("",$1,NULL);}
-	|FUNC_PROC_DEC DEF_A {$$=mknode("",$1,$2);}
+
+	DEF_A  {$$=mknode("",$1,NULL);}
+	|FUNC_PROC_DEC DEF_A  {$$=mknode("",$1,$2);}
 	;
 
 DEF_A:
@@ -615,7 +621,6 @@ int CrearhSymbalFrame(node * root){
 	}
 		
 	if( !strcmp (root->token ,"FUNC")){
-		
 		insert_symbel(
 						root->left->right->token,
 						1,
@@ -1597,7 +1602,6 @@ char * type_bool_return(node* root){
 	printf("got hare\n");
 	sec = type_bool_return(root->left->left);
 	printf("%s kkk\n",sec);
-	printtree(root,0);
 					
 
 			if(!strcmp("||",root->left->token) || !strcmp("&&",root->left->token)){
