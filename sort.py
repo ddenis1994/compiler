@@ -42,11 +42,12 @@ def sortedData(labels, indexes, data):
         return data
 
 def main():
-        with open(sys.argv[1],"r") as f:
+        fileName = sys.argv[1] # First parameter from bash.
+        with open(fileName, "r") as f:
                 data = f.read()
         labels = returnLabels(data)
         indexes = returnIndexes(labels)
-        with open(sys.argv[1]+"AfterScript.txt","w") as f:
+        with open(fileName, "w") as f:
                 f.write(sortedData(labels, indexes, data)) # Writes the sorted data into a file.
 
 if __name__ == "__main__":
