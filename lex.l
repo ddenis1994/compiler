@@ -4,12 +4,14 @@
 #include <string.h>
 #include "y.tab.h"
 extern void yyerror(const char *);
-static void comment(void);
+int comment();
+char * cut_first (char * string);
+
 
 %}
 
 %%
-("/%[0-9a-zA-Z]*%/")                    { }
+"/%"                { comment();}
 "char\*"                  {yylval.String=strdup(yytext); return (CHAR_POINER);}
 "real\*"                  {yylval.String=strdup(yytext); return(REAL_POINER);}
 "int\*"                   {yylval.String=strdup(yytext); return(INT_POINER);}
@@ -56,11 +58,12 @@ static void comment(void);
 ")"                     { return ')'; }
 "["                     { return '['; }
 "]"                     { return ']'; }
-\'.\'                   {yylval.String=strdup(yytext); return(CHAR_VALUE); }
+\'.\'              {yylval.String=strdup(yytext); return CHAR_VALUE; }
 \"[0-9a-zA-Z]*\"        {yylval.String=strdup(yytext); return(STRING_VALUE); }
 (0|[1-9][0-9]*)         {yylval.String=strdup(yytext); return(INT_NUM); }
 0[xX][a-fA-F0-9]+       {yylval.String=strdup(yytext); return (HEX_NUM); }
 [0-9]*"."([Ee]?[+-]?[0-9]+)? {yylval.String=strdup(yytext); return (R_NUM); }
+[\&\^][a-zA-Z][a-zA-Z0-9_]*   {yylval.String=strdup(cut_first(yytext)); return(ADDR_ID);}
 [a-zA-Z][a-zA-Z0-9_]*   {yylval.String=strdup(yytext); return(ID);}
 
 [ \t\v\n\f]             { ; }
@@ -70,22 +73,24 @@ int yywrap(void)
     return 1;
 }
 
-void comment(void)
+int comment()
 {
-    int c;
-    c=input();
-    while(c!=0){
+    char  c ,c1;
+    loop:
+    while((c=input())!= '%' && c !=0);
+    \
     
-        if(c=='%'){
-            while((c=input())!='%')
-            ;
-            if (c=='/')
-                return;
-            if(c==0)
-                break;
+    if(c=='%' && (c1=input())=='/'){
+        return 0;
+    }
+    else
+       return (comment());
+}
 
-        }
-        c=input();
-        }
-    yyerror("wrong comment");
+char * cut_first (char * string){
+    int i;
+    for(i=0;i<strlen(string)+1;i++){
+        string[i]=string[i+1];
+    }
+    return string;
 }
