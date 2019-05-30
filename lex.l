@@ -26,8 +26,8 @@ char * cut_first (char * string);
 "while"                 { return(WHILE); }
 "bool"                  {yylval.String=strdup(yytext); return(BOOL); }
 "string"                {yylval.String=strdup(yytext); return(STRING); }
-"true"                  { return(TRUE); }
-"false"                { return(FALSE); }
+"true"                  {yylval.String=strdup(yytext); return(BOOL_VAL); }
+"false"                {yylval.String=strdup(yytext); return(BOOL_VAL); }
 "var"                   { return(VAR); }
 "func"                  { yylval.String=strdup(yytext); return(FUNC); }
 "proc"                  { return(PROC); }
@@ -63,7 +63,7 @@ char * cut_first (char * string);
 (0|[1-9][0-9]*)         {yylval.String=strdup(yytext); return(INT_NUM); }
 0[xX][a-fA-F0-9]+       {yylval.String=strdup(yytext); return (HEX_NUM); }
 [0-9]*"."([Ee]?[+-]?[0-9]+)? {yylval.String=strdup(yytext); return (R_NUM); }
-[\&\^][a-zA-Z][a-zA-Z0-9_]*   {yylval.String=strdup(cut_first(yytext)); return(ADDR_ID);}
+[\&\^][a-zA-Z][a-zA-Z0-9_]*=   {yylval.String=strdup(cut_first(yytext)); return(ADDR_ID);}
 [a-zA-Z][a-zA-Z0-9_]*   {yylval.String=strdup(yytext); return(ID);}
 
 [ \t\v\n\f]             { ; }

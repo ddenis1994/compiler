@@ -86,6 +86,7 @@ void relase_hs(stack_Data *);
 int chack_arges(deciptopn * originalArges,node * newArges,int typeofchack);
 char * type_return(struct node * root);
 char * cut_char(char * string);
+struct deciptopn * type_chack2(struct node * root);
 
 
 void printtree(node *tree,int space);
@@ -107,7 +108,7 @@ extern int yylex();
 %token NULL_VALUE
 %token AND_OP GE_OP SE_OP NE_OP OR_OP EQL_OP
 %token <String> BOOL_VALUE CHAR_VALUE STRING_VALUE INT_NUM R_NUM HEX_NUM
-%token <String> ID 
+%token <String> ID BOOL_VAL
 %type <String> TYPE 
 %type <Node> INNER_ARGS
 %type <Node> CONST MAIN_END
@@ -223,8 +224,6 @@ FUNC_BLOCK:
 EXPRASION:
 	CONST
 	|'(' EXPRASION ')'  {$$=mknode("PRIORATY",NULL,$2);}
-	|TRUE {$$=mknode("BOOL_EXPRASION",mkleaf("true"),NULL);}
-	|FALSE {$$=mknode("BOOL_EXPRASION",mkleaf("false"),NULL);}
 	|ID {$$=mknode("ID_EXPRASION",mkleaf($1),NULL);}
 	|'^' EXPRASION {$$=mknode("ADDR_EXPRASION",mkleaf("^"),$2);}
 	| '&' EXPRASION {$$=mknode("ADDR_EXPRASION",mkleaf("&"),$2);}
@@ -251,7 +250,7 @@ EXPRASION:
 	;
 
 VALUE:
-	|ID '[' EXPRASION ']' {$$=mknode("ADDR_ASS",mknode("block",mkleaf($1),$3),NULL);}
+	ID '[' EXPRASION ']' {$$=mknode("ADDR_ASS",mknode("block",mkleaf($1),$3),NULL);}
 	|CONST 
 	|'(' EXPRASION ')'  {$$=mknode("PRIORATY",NULL,$2);}
 	|TRUE {$$=mknode("BOOL_EXPRASION",mkleaf("true"),NULL);}
@@ -259,6 +258,10 @@ VALUE:
 	|ID {$$=mknode("ID_EXPRASION",mkleaf($1),NULL);}
 	|FUNC_ACTIVE 
 	| '|' VALUE '|' {$$=mknode("ABS_EXPRASION",$2,NULL);}
+	|'^' VALUE {$$=mknode("ADDR_EXPRASION",mkleaf("^"),$2);}
+	|'&' VALUE {$$=mknode("ADDR_EXPRASION",mkleaf("&"),$2);}
+	|'-' VALUE %prec UMINUS {$$=mknode("NUM_EXPRASION",mkleaf("-"),$2);}
+	|'!' VALUE {$$=mknode("NOT_EXPRASION",$2,NULL);}
 	;
 
 
@@ -374,6 +377,7 @@ CONST:
 	|NULLA {$$=mknode("null_value",mkleaf("null"),NULL);}
 	|CHAR_VALUE {$$=mknode("char",mkleaf($1),NULL);}
 	|STRING_VALUE {$$=mknode("string",mkleaf($1),NULL);}
+	|BOOL_VAL {$$=mknode("bool",mkleaf($1),NULL);}
 	;
 
 TYPE:	
@@ -688,7 +692,7 @@ int CrearhSymbalFrame(node * root){
 	}
 
 	if( !strcmp (root->token ,"IF")){
-		if(strcmp("bool",type_return(root->left->right))){
+		if(strcmp("bool",type_chack2(root->left->right)->type)){
 			printf("if statment must have bool exprasion \n");
 			exit(1);
 		}
@@ -707,10 +711,7 @@ int CrearhSymbalFrame(node * root){
 
 	if( !strcmp (root->token ,"WHILE")){
 
-		
-		
-
-		if(strcmp("bool",type_return(root->left->right))){
+		if(strcmp("bool",type_chack2(root->left->right)->type)){
 			printf("while statment must have bool exprasion \n");
 			exit(1);
 		}
@@ -844,11 +845,13 @@ int CrearhSymbalFrame(node * root){
 
 		temp=get_symbal_from_hash(root->left->token);
 
-		if(!strcmp(temp->type,(type=type_return(root->right)))){
+		temp2=type_chack2(root->right);
+
+		if(!strcmp(temp->type,temp2->type)){
 
 		}
 
-		else if(!strcmp("null_value",type)){
+		else if(!strcmp("null_value",temp2->type)){
 			if(!strcmp("char*",temp->type) || !strcmp("int*",temp->type) ||
 				!strcmp("real*",temp->type)){
 
@@ -858,7 +861,7 @@ int CrearhSymbalFrame(node * root){
 					exit(1);
 				}
 		}
-		else if(!strcmp("char*",type)){
+		else if(!strcmp("char*",temp2->type)){
 				if(strcmp("string",temp->type)){
 					printf("wrong type pointer %s\n",temp->id);
 					exit(1);
@@ -1478,4 +1481,177 @@ char * cut_char(char * string){
 	int l=strlen(string),i;
 	string[l-1]=string[l];
 	return string;
+}
+struct deciptopn * type_chack2(struct node * root){
+	struct deciptopn * temp1;
+	struct deciptopn * temp2;
+	struct deciptopn * temp3;
+	printtree(root,0);
+
+	if(!strcmp("FUNC_PROC_ACTIVE",root->token)){
+		temp1=get_symbal_from_hash(root->left->right->token);
+		if(!temp1->isProc_func){
+
+			printf("cannot use proc %s in assiment\n",temp1->id);
+			exit(1);
+		}
+			temp2=temp2=(deciptopn *)malloc(sizeof(deciptopn));
+			temp2->id=temp1->id;
+			temp2->type=temp1->return_value;
+		return temp2;
+	}
+	else if(!strcmp("ABS_EXPRASION",root->token)){
+		temp3=(deciptopn *)malloc(sizeof(deciptopn));
+		temp3->id=strdup("const");
+		temp3->type=strdup("int");
+		temp1=type_chack2(root->left);
+		if(strcmp(temp1->type,"string")){
+			printf("size of string must have string and not %s\n",temp1->type);
+			exit(1);
+		}
+		printf("%s\n",temp1->type);
+
+		return temp3;
+	}
+	else if(!strcmp("ADDR_ASS",root->token)){
+		temp1=get_symbal_from_hash(root->left->left->token);
+		if(strcmp(temp1->type,"string")){
+			printf("string must have string and not %s\n",temp1->type);
+			exit(1);
+		}
+		temp2=get_symbal_from_hash(root->left->right->left->token);
+		if(strcmp(temp2->type,"int")){
+			printf("string must have int index and not %s\n",temp1->type);
+			exit(1);
+		}
+		temp3=(deciptopn *)malloc(sizeof(deciptopn));
+		temp3->id=strdup("string");
+		temp3->type=strdup("char");
+		return temp3;
+
+	}
+	else if(!strcmp("ID_EXPRASION",root->token)){
+		return get_symbal_from_hash(root->left->token);
+	}
+
+	else if(!strcmp("ADDR_EXPRASION",root->token)){
+		
+		temp1=type_chack2(root->right);
+
+
+		temp3=(deciptopn *)malloc(sizeof(deciptopn));
+		temp3->id=strdup("string");
+		
+
+		if(!strcmp("&",root->left->token)){
+			temp3->type=strcat(temp1->type,"*");;
+		}
+		else if(!strcmp("^",root->left->token))
+			temp3->type=cut_char(temp1->type);;
+
+
+		return(temp3);
+	}
+	else if(!strcmp("int",root->token) || !strcmp("real",root->token) ||
+		!strcmp("hex",root->token) || !strcmp("char",root->token) ||
+		!strcmp("string",root->token) || !strcmp("bool",root->token)	){
+		temp2=(deciptopn *)malloc(sizeof(deciptopn));
+		temp2->id=strdup("const");
+		temp2->type=root->token;
+		return temp2;
+	}
+	else if(!strcmp("PRIORATY",root->token)){
+		return type_chack2(root->right);
+	}
+
+	if(!strcmp("NUM_EXPRASION",root->token)){
+		temp1=type_chack2(root->left->left);
+		temp2=type_chack2(root->left->right);
+
+		if(!strcmp("+",root->left->token) || !strcmp("-",root->left->token)){
+			if(!strcmp(temp1->type,"char*") && !strcmp(temp2->type,"int"))
+				return temp1;
+		}
+		if(!strcmp("*",root->left->token) || !strcmp("/",root->left->token) ||
+			!strcmp("+",root->left->token) || !strcmp("-",root->left->token)){
+			if(!strcmp(temp1->type,"int") && !strcmp(temp2->type,"int"))
+				return temp1;
+			else if(!strcmp(temp1->type,"int") && !strcmp(temp2->type,"real"))
+				return temp2;
+			else if(!strcmp(temp1->type,"real") && !strcmp(temp2->type,"int"))
+				return temp2;
+			else if(!strcmp(temp1->type,"real") && !strcmp(temp2->type,"real"))
+				return temp2;
+			else{
+				printf("wrong type in assiment\n");
+				exit(1);
+			}
+		}
+		else{
+				printf("wrong type in assiment\n");
+				exit(1);
+		}
+
+	}
+	if(!strcmp("BOOL_EXPRASION",root->token)){
+		temp2=type_chack2(root->left->right);
+		temp1=type_chack2(root->left->left);
+		if(!strcmp("||",root->left->token) || !strcmp("&&",root->left->token)){
+			if(strcmp(temp1->type,"bool") || strcmp(temp2->type,"bool")){
+				printf("wrong type not bool\n");
+				exit(1);
+			}
+			else
+				return temp1;
+		}
+		else if(!strcmp(">=",root->left->token) || !strcmp("<=",root->left->token)
+			|| !strcmp("<",root->left->token) || !strcmp(">",root->left->token)){
+				temp3=(deciptopn *)malloc(sizeof(deciptopn));
+				temp3->id=strdup("const");
+				temp3->type=strdup("bool");
+				if(!strcmp(temp1->type,"int") && !strcmp(temp2->type,"int")){
+					
+					return temp3;
+				}
+				else if(!strcmp(temp1->type,"real") && !strcmp(temp2->type,"real"))
+					return temp3;
+
+				else if(!strcmp(temp1->type,"int") && !strcmp(temp2->type,"real"))
+					return temp3;
+				else if(!strcmp(temp1->type,"real") && !strcmp(temp2->type,"int"))
+					return temp3;
+				else{
+					printf("wrong type not bool\n");
+					exit(1);
+				}
+			}
+		else if(!strcmp("!=",root->left->token) || !strcmp("==",root->left->token)){
+			temp3=(deciptopn *)malloc(sizeof(deciptopn));
+				temp3->id=strdup("const");
+				temp3->type=strdup("bool");
+			if(!strcmp(temp1->type,"int") && !strcmp(temp2->type,"int"))
+					return temp3;
+				else if(!strcmp(temp1->type,"bool") && !strcmp(temp2->type,"bool"))
+					return temp3;		
+				else if(!strcmp(temp1->type,"real") && !strcmp(temp2->type,"real"))
+					return temp3;
+				else if(!strcmp(temp1->type,"char") && !strcmp(temp2->type,"char"))
+					return temp3;
+				else if(!strcmp(temp1->type,"char*") && !strcmp(temp2->type,"char*"))
+					return temp3;
+				else if(!strcmp(temp1->type,"int*") && !strcmp(temp2->type,"int*"))
+					return temp3;
+				else if(!strcmp(temp1->type,"real*") && !strcmp(temp2->type,"real*"))
+					return temp3;
+				else{
+					printf("wrong type not bool\n");
+					exit(1);
+				}
+			}
+		
+
+	}
+
+	return NULL;
+
 }
