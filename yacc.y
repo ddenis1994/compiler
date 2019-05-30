@@ -851,10 +851,8 @@ int CrearhSymbalFrame(node * root){
 			printf("got type %s\n",type);
 		}
 
-
-
-		else if(!strcmp(root->right->token,"null_value")){
-				if(!strcmp("char*",temp->type) || !strcmp("int*",temp->type) ||
+		else if(!strcmp("null_value",type)){
+			if(!strcmp("char*",temp->type) || !strcmp("int*",temp->type) ||
 				!strcmp("real*",temp->type)){
 
 				}
@@ -862,8 +860,11 @@ int CrearhSymbalFrame(node * root){
 					printf("wrong type pointer %s\n",temp->id);
 					exit(1);
 				}
-
 		}
+
+
+
+		
 		
 		else if(!strcmp(root->right->token,"ADDR_EXPRASION")){
 			
@@ -1382,8 +1383,12 @@ char * type_return(struct node * root){
 	deciptopn * temp3=NULL;
 	char * sec=NULL;
 
+
 	
-	printf("%s name\n",root->left->token);
+	printtree(root,0);
+	if(!strcmp(root->token,"null_value")){
+		return "null_value";
+	}
 	if(!strcmp(root->token,"ID_EXPRASION")){
 		temp2=get_symbal_from_hash(root->left->token);
 		return temp2->type;
@@ -1629,7 +1634,7 @@ char * type_return(struct node * root){
 
 		if(!strcmp(sec,temp2->type))
 			return (sec);
-		else if(VALUEstrcmp(sec,"real")==0 || strcmp(temp2->type,"real")==0)
+		else if(strcmp(sec,"real")==0 || strcmp(temp2->type,"real")==0)
 			return strdup("real");
 		else
 			return strdup("int");
