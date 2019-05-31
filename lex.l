@@ -12,9 +12,9 @@ char * cut_first (char * string);
 
 %%
 "/%"                { comment();}
-"char\*"                  {yylval.String=strdup(yytext); return (CHAR_POINER);}
-"real\*"                  {yylval.String=strdup(yytext); return(REAL_POINER);}
-"int\*"                   {yylval.String=strdup(yytext); return(INT_POINER);}
+"char*"                  {yylval.String=strdup(yytext); return (CHAR_POINTER);}
+"real*"                  {yylval.String=strdup(yytext); return(REAL_POINTER);}
+"int*"                   {yylval.String=strdup(yytext); return(INT_POINTER);}
 "char"                  {yylval.String=strdup(yytext); return (CHAR);}
 "null"                  {yylval.String=strdup(yytext); return (NULLA);}
 "real"                  {yylval.String=strdup(yytext); return(REAL);}

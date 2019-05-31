@@ -72,7 +72,6 @@ func foo3(i, j, k : int) return int
     return total;
 }
 
-
 func foo2() return int
 {
     var s1, s2: string[100];
@@ -92,14 +91,13 @@ func foo2() return int
     return cnt;
 }
 
-
 func foo4() return int
 {
     {   
 	var x : int;
 	var y : int*;
 	x = 5;
-	y = &x;
+	y = &x; /% EEERRRROOOORRRRR, needs to handle that '&' is for pointers%/
 
 	x = 6;
 	
@@ -128,10 +126,3 @@ func foo4() return int
     return 0;
 }
 
-
-
-proc Main()
-{
-    var a : int;
-    a = foo2();
-}

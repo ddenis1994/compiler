@@ -6,13 +6,14 @@
 #include <math.h>
 #include <fenv.h>
 #define SYMBALTABLESIZE 100000
-typedef struct node
 
+typedef struct node
 {
 char *token;
 struct node *left;
 struct node *right;
 } node;
+
 typedef struct deciptopn{
 	char* id;
 	int isProc_func; // if 1 is func 0 is proc 
@@ -23,8 +24,6 @@ typedef struct deciptopn{
 	int frameBelong;
 	struct deciptopn * next;
 } deciptopn;
-
-
 
 typedef struct frame{
 	int frameID;
@@ -98,16 +97,14 @@ extern int yylex();
 	struct node * Node;
 }
 %start S
-%token <String> CHAR REAL INT BOOL STRING CHAR_POINER REAL_POINER FLOAT_POINER INT_POINER
-%token <String> CHAR_POINTER REAL_POINTER  INT_POINTER NULLA 
+%token <String> CHAR REAL INT BOOL STRING CHAR_POINTER REAL_POINTER INT_POINTER NULLA
 %token ELSE IF
 %token FOR WHILE
 %token TRUE FALSE 
 %token RETURN
 %token <String> VAR FUNC PROC ADDR_ID
-%token NULL_VALUE
 %token AND_OP GE_OP SE_OP NE_OP OR_OP EQL_OP
-%token <String> BOOL_VALUE CHAR_VALUE STRING_VALUE INT_NUM R_NUM HEX_NUM
+%token <String> CHAR_VALUE STRING_VALUE INT_NUM R_NUM HEX_NUM
 %token <String> ID BOOL_VAL
 %type <String> TYPE 
 %type <Node> INNER_ARGS
@@ -121,18 +118,14 @@ extern int yylex();
 %type<Node> S RETURN_STATMENT VALUE
 %type<Node> COMPUND_STATMENT_PROC FUNC_ACTIVE_INNER_ARGES
 %nonassoc IFX
-%nonassoc test
 %nonassoc ELSE
+%nonassoc OR_OP AND_OP '>' '<' GE_OP SE_OP EQL_OP
 %right RETURN  
 %right ';'
-%left '+' '-'
-%left '*' '/' 
-
-%nonassoc OR_OP AND_OP '>' '<' GE_OP SE_OP EQL_OP
 %right '!' '^' '&' 
 %right UMINUS
-%left UFUNC 
-
+%left '+' '-'
+%left '*' '/' 
 
 %%
 S: 
@@ -341,9 +334,9 @@ TYPE:
 	|INT 
 	|REAL 
 	|CHAR 
-	|CHAR_POINER
-	|REAL_POINER
-	|INT_POINER 
+	|CHAR_POINTER
+	|REAL_POINTER
+	|INT_POINTER 
 	;
 %%
 
@@ -498,7 +491,7 @@ int isEmpty()
 // Function to add an item to stack.  It increases top by 1 
 void push( struct frame * item) { 
     if (isFull(frameStack)) {
-		printf("the stack is fulll \n");
+		printf("the stack is full \n");
         return; 
 	}
     frameStack->array[++(frameStack->top)] = item; 
@@ -799,17 +792,14 @@ int CrearhSymbalFrame(node * root){
 		
 
 		temp=get_symbal_from_hash(root->left->token);
-
 		temp2=type_chack2(root->right);
 
 		if(!strcmp(temp->type,temp2->type)){
-
 		}
 
 		else if(!strcmp("null_value",temp2->type)){
 			if(!strcmp("char*",temp->type) || !strcmp("int*",temp->type) ||
 				!strcmp("real*",temp->type)){
-
 				}
 				else{
 					printf("wrong type pointer %s\n",temp->id);
@@ -818,14 +808,18 @@ int CrearhSymbalFrame(node * root){
 		}
 		else if(!strcmp("char*",temp2->type)){
 				if(strcmp("string",temp->type)){
-					printf("wrong type pointer %s\n",temp->id);
+					printf("Wrong type pointer %s\n",temp->id);
 					exit(1);
 				}
 		}
 		else{
-			printf("wrong type assiment in %s\nexpactred %s got %s\n",temp->id
-			,temp->type,type);
-					exit(1);
+			printf("Wrong type assignment in %s, Expected %s and got %s\n",temp->id
+			,temp->type,temp2->type);
+			printf("%s == %s ? ID\n",temp->id ,temp2->id);
+			printf("data = %s \n",temp->data );
+			printf("isProc_func = %d \n",temp->isProc_func );
+
+			exit(1);
 		}
 
 
@@ -1109,7 +1103,7 @@ char * type_return(struct node * root){
 	if(!strcmp(root->token,"ABS_EXPRASION")){
 		sec = type_return(root->left);
 		if(strcmp(sec,"string")){
-			printf("oparator | | must have string arg\n");
+			printf("oparator || must have string arg\n");
 			exit(1);
 		}
 		return("int");
@@ -1390,7 +1384,7 @@ struct deciptopn * type_chack2(struct node * root){
 	struct deciptopn * temp1;
 	struct deciptopn * temp2;
 	struct deciptopn * temp3;
-	printtree(root,0);
+	//printtree(root,0);
 
 	if(!strcmp("FUNC_PROC_ACTIVE",root->token)){
 		temp1=get_symbal_from_hash(root->left->right->token);
@@ -1413,7 +1407,7 @@ struct deciptopn * type_chack2(struct node * root){
 			printf("size of string must have string and not %s\n",temp1->type);
 			exit(1);
 		}
-		printf("%s\n",temp1->type);
+		//printf("%s\n",temp1->type);
 
 		return temp3;
 	}
@@ -1458,11 +1452,11 @@ struct deciptopn * type_chack2(struct node * root){
 	}
 	else if(!strcmp("int",root->token) || !strcmp("real",root->token) ||
 		!strcmp("hex",root->token) || !strcmp("char",root->token) ||
-		!strcmp("string",root->token) || !strcmp("bool",root->token)	){
-		temp2=(deciptopn *)malloc(sizeof(deciptopn));
-		temp2->id=strdup("const");
-		temp2->type=root->token;
-		return temp2;
+		!strcmp("string",root->token) || !strcmp("bool",root->token)){
+			temp2=(deciptopn *)malloc(sizeof(deciptopn));
+			temp2->id=strdup("const");
+			temp2->type=root->token;
+			return temp2;
 	}
 	else if(!strcmp("PRIORATY",root->token)){
 		return type_chack2(root->right);
