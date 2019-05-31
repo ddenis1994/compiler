@@ -31,7 +31,6 @@ char * cut_first (char * string);
 "var"                   { return(VAR); }
 "func"                  { yylval.String=strdup(yytext); return(FUNC); }
 "proc"                  { return(PROC); }
-"Main"                  { yylval.String=strdup(yytext); return(MAIN); }
 "&&"                    { return(AND_OP); }
 "/"                     { return '/'; }
 "=="                    { return (EQL_OP); }

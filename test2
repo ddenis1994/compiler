@@ -4,3 +4,7 @@ proc x1(a,b,c:real){
 	y=b;
 	z=c;
 }
+
+proc Main(){
+	var x : real;
+}
