@@ -815,10 +815,11 @@ int CrearhSymbalFrame(node * root){
 		else{
 			printf("Wrong type assignment in %s, Expected %s and got %s\n",temp->id
 			,temp->type,temp2->type);
+			/*
 			printf("%s == %s ? ID\n",temp->id ,temp2->id);
 			printf("data = %s \n",temp->data );
 			printf("isProc_func = %d \n",temp->isProc_func );
-
+			*/
 			exit(1);
 		}
 
