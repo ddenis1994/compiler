@@ -146,7 +146,6 @@ S:
 	;
 
 FUNC_PROC_DEC:
-
 	DEF_A  {$$=mknode("",$1,NULL);}
 	|FUNC_PROC_DEC DEF_A  {$$=mknode("",$1,$2);}
 	;
@@ -156,8 +155,6 @@ DEF_A:
 	|PROC_DEF {$$=mknode("NEW_PROC",$1,NULL);}
 	;
 
-
-
 PROC_DEF:
 	PROC ID ARGES COMPUND_STATMENT_PROC  {
 				
@@ -166,12 +163,10 @@ PROC_DEF:
 		$$=mknode("PROC",$$,$4);
 
 		}
-		
 	;
 
 FUNC_DEF:
 	FUNC ID  ARGES  RETURN TYPE FUNC_BLOCK {$$=creathFuncDec($2,$3,$5,$6);
-
 	}
 	;
 
@@ -180,15 +175,10 @@ ARGES: '(' ')' {$$=mkleaf("NULL_ARGS");}
 	}
 	;
 
-
-
 OUT_ARGES:
 	INNER_ARGS ':' TYPE {$$=mknode($3,$1,NULL);}
 	|INNER_ARGS ':' TYPE ';' OUT_ARGES {$$=mknode($3,$1,$5);}
 	;
-
-
-
 
 INNER_ARGS:
 	ID {$$=mknode("ID",NULL,mkleaf($1));}
@@ -196,15 +186,11 @@ INNER_ARGS:
 		}
 	;
 
-
 FUNC_BLOCK:
 	'{' RETURN EXPRASION ';' '}'  {$$=mknode("BLOCK_FUNC",NULL,mknode(strdup("RETURN STATMENT"),$3,NULL));}
 	|'{' INNER_COMPUND_STATMENT RETURN EXPRASION ';' '}'  {
 															$$=mknode("BLOCK_FUNC",$2,mknode(strdup("RETURN STATMENT"),$4,NULL));}
 	;
-
-
-
 
 EXPRASION:
 	CONST
@@ -249,8 +235,6 @@ VALUE:
 	|'!' VALUE {$$=mknode("NOT_EXPRASION",$2,NULL);}
 	;
 
-
-
 FUNC_ACTIVE:
 	ID '(' ')' {$$=mknode("FUNC_PROC_ACTIVE",mknode("ID",NULL,mkleaf($1)),mkleaf("Arges")); }
 	|ID '(' FUNC_ACTIVE_INNER_ARGES ')' {
@@ -293,7 +277,6 @@ STASTMENT:
 RETURN_STATMENT:
     RETURN EXPRASION ';' {
         $$=mknode("RETURN STATMENT",$2,NULL);
-
         }
     ;
 
@@ -308,9 +291,6 @@ LOOP_STATMENT:
 		}
 	;
 
-
-
-
 COMPUND_STATMENT:
 	'{' INNER_COMPUND_STATMENT RETURN_STATMENT '}' { $$=mknode("BLOCK",$3,$2); }
     |'{'  RETURN_STATMENT '}' { $$=mknode("BLOCK",$2,NULL); }
@@ -324,17 +304,11 @@ COMPUND_STATMENT_PROC:
 INNER_COMPUND_STATMENT:
 	STASTMENT_LIST { $$=mknode("",NULL,$1);}
 	|DEC_INNER_BLOCK {$$=mknode("",$1,NULL);}
-	|DEC_INNER_BLOCK  STASTMENT_LIST {$$=mknode("",$1,$2);
-
-	
-	}
+	|DEC_INNER_BLOCK  STASTMENT_LIST {$$=mknode("",$1,$2);}
 	;
 
-
 DEC_INNER_BLOCK:
-	NEW_DECLARE DEC_INNER_BLOCK {$$=mknode("",$1,$2);
-
-	}
+	NEW_DECLARE DEC_INNER_BLOCK {$$=mknode("",$1,$2);}
 	|NEW_DECLARE 	
 	;
 
@@ -343,16 +317,12 @@ NEW_DECLARE:
 	|DEF_A
 	;
 
-
 VF: 
 	VAR VFDEC  {$$=mknode("VAR_DECLARE",$2,NULL);}
 	;
 
 VFDEC:
-	
 	INNER_ARGS ':' TYPE ';'  {$$=mknode($3,$1,NULL);}
-
-	
 	;
 
 CONST:
