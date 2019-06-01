@@ -789,8 +789,6 @@ int CrearhSymbalFrame(node * root){
 
 	}
 	if( !strcmp (root->token ,"=")){
-		
-
 		temp=get_symbal_from_hash(root->left->token);
 		temp2=type_chack2(root->right);
 
@@ -822,33 +820,12 @@ int CrearhSymbalFrame(node * root){
 			*/
 			exit(1);
 		}
-
-
-
-		
-		
-		
-		
-		
-		
-
-
 	}
-	
-
-	
-
-
 	if(root->left)
 		CrearhSymbalFrame(root->left);
 	if(root->right)
 		CrearhSymbalFrame(root->right);
-	
-
-
 }
-
-
 
 int startSemantic(node * root){
 
@@ -867,8 +844,6 @@ int startSemantic(node * root){
 
 	push(creathFrame());
 	CrearhSymbalFrame(root->left);
-
-
 
 	//start to clear data
 	free(hashTableSymbel->symbals);
@@ -1203,7 +1178,7 @@ char * type_return(struct node * root){
 			}
 
 			if(!strcmp("||",root->left->token) || !strcmp("&&",root->left->token)){
-			
+
 				if(strcmp(temp1->type,"bool") || strcmp(temp2->type,"bool")){
 					printf("wrong type not bool\n");
 					exit(1);
@@ -1231,7 +1206,6 @@ char * type_return(struct node * root){
 				}
 			}
 			else if(!strcmp("!=",root->left->token) || !strcmp("==",root->left->token)){
-
 
 				if(!strcmp(temp1->type,"int") && !strcmp(temp2->type,"int"))
 					return ("bool");
@@ -1273,6 +1247,7 @@ char * type_return(struct node * root){
 
 
 			else{
+				
 				printf("wrong type not bool\n");
 				exit(1);
 			}

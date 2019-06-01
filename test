@@ -97,11 +97,11 @@ func foo4() return int
 	var x : int;
 	var y : int*;
 	x = 5;
-	y = &x; /% EEERRRROOOORRRRR, needs to handle that '&' is for pointers%/
+	y = &x; 
 
-	x = 6;
+	x = 6; 							/% EEERRRROOOORRRRR, need to handle that '&' is for pointers%/
 	
-	if (&x == y && ^y == x){
+	if (&x == y && ^y == x){ 		/% EEERRRROOOORRRRR, the comparison as 'bool' type%/
 		^y = 9;
 	}
      	{
