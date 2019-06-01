@@ -99,11 +99,14 @@ func foo4() return int
 	var x : int;
 	var y : int*;
 	x = 5;
+
+	
+	
 	y = &x;
 
 	x = 6;
 	
-	if (&x == y && ^y == x){
+	if (&x == y && (^y == x)){
 		^y = 9;
 	}
      	{
