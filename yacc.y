@@ -6,13 +6,14 @@
 #include <math.h>
 #include <fenv.h>
 #define SYMBALTABLESIZE 100000
-typedef struct node
 
+typedef struct node
 {
 char *token;
 struct node *left;
 struct node *right;
 } node;
+
 typedef struct deciptopn{
 	char* id;
 	int isProc_func; // if 1 is func 0 is proc 
@@ -23,8 +24,6 @@ typedef struct deciptopn{
 	int frameBelong;
 	struct deciptopn * next;
 } deciptopn;
-
-
 
 typedef struct frame{
 	int frameID;
@@ -98,20 +97,18 @@ extern int yylex();
 	struct node * Node;
 }
 %start S
-%token <String> CHAR REAL INT BOOL STRING CHAR_POINER REAL_POINER FLOAT_POINER INT_POINER
-%token <String> CHAR_POINTER REAL_POINTER  INT_POINTER NULLA 
+%token <String> CHAR REAL INT BOOL STRING CHAR_POINTER REAL_POINTER INT_POINTER NULLA
 %token ELSE IF
 %token FOR WHILE
 %token TRUE FALSE 
-%token RETURN MAIN
-%token <String> VAR FUNC PROC
-%token NULL_VALUE
+%token RETURN
+%token <String> VAR FUNC PROC ADDR_ID
 %token AND_OP GE_OP SE_OP NE_OP OR_OP EQL_OP
-%token <String> BOOL_VALUE CHAR_VALUE STRING_VALUE INT_NUM R_NUM HEX_NUM
+%token <String> CHAR_VALUE STRING_VALUE INT_NUM R_NUM HEX_NUM
 %token <String> ID BOOL_VAL
 %type <String> TYPE 
 %type <Node> INNER_ARGS
-%type <Node> CONST MAIN_END
+%type <Node> CONST 
 %type <Node> OUT_ARGES ARGES FUNC_DEF FUNC_BLOCK INNER_COMPUND_STATMENT EXPRASION 
 %type <Node> FUNC_ACTIVE  COMPUND_STATMENT
 %type <Node> STASTMENT_LIST DEC_INNER_BLOCK
@@ -119,25 +116,20 @@ extern int yylex();
 %type<Node> VF FUNC_PROC_DEC DEF_A VFDEC
 %type<Node> PROC_DEF NEW_DECLARE
 %type<Node> S RETURN_STATMENT VALUE
-%type<Node> COMPUND_STATMENT_PROC FUNC_ACTIVE_INNER_ARGES MAINBLOCK
+%type<Node> COMPUND_STATMENT_PROC FUNC_ACTIVE_INNER_ARGES
 %nonassoc IFX
-%nonassoc test
 %nonassoc ELSE
+%nonassoc OR_OP AND_OP '>' '<' GE_OP SE_OP EQL_OP
 %right RETURN  
 %right ';'
+%right '!' '^' '&' 
+%right UMINUS
 %left '+' '-'
 %left '*' '/' 
 
-%nonassoc OR_OP AND_OP '>' '<' GE_OP SE_OP EQL_OP
-%right '!' '^' '&' 
-%right UMINUS
-%left UFUNC
-%right MAIN 
-
-
 %%
 S: 
-	MAINBLOCK  {
+	FUNC_PROC_DEC  {
         $$=mknode("BLOCK",$1, NULL);
 
 		startSemantic($$);
@@ -146,22 +138,7 @@ S:
         }
 	;
 
-MAIN_END:
-	PROC MAIN '(' ')' COMPUND_STATMENT_PROC  {
-
-		$$=mknode("ARGS",NULL,mkleaf(""));
-		$$=mknode("ID",$$,mkleaf("MAIN"));
-		$$=mknode("PROC",$$,$5);
-		}
-	;
-
-MAINBLOCK:
-	FUNC_PROC_DEC MAIN_END {$$=mknode("",$1,$2);}
-	|MAIN_END {$$=mknode("",$1,NULL);}
-	;
-
 FUNC_PROC_DEC:
-
 	DEF_A  {$$=mknode("",$1,NULL);}
 	|FUNC_PROC_DEC DEF_A  {$$=mknode("",$1,$2);}
 	;
@@ -171,8 +148,6 @@ DEF_A:
 	|PROC_DEF {$$=mknode("NEW_PROC",$1,NULL);}
 	;
 
-
-
 PROC_DEF:
 	PROC ID ARGES COMPUND_STATMENT_PROC  {
 				
@@ -181,12 +156,10 @@ PROC_DEF:
 		$$=mknode("PROC",$$,$4);
 
 		}
-		
 	;
 
 FUNC_DEF:
 	FUNC ID  ARGES  RETURN TYPE FUNC_BLOCK {$$=creathFuncDec($2,$3,$5,$6);
-
 	}
 	;
 
@@ -195,15 +168,10 @@ ARGES: '(' ')' {$$=mkleaf("NULL_ARGS");}
 	}
 	;
 
-
-
 OUT_ARGES:
 	INNER_ARGS ':' TYPE {$$=mknode($3,$1,NULL);}
 	|INNER_ARGS ':' TYPE ';' OUT_ARGES {$$=mknode($3,$1,$5);}
 	;
-
-
-
 
 INNER_ARGS:
 	ID {$$=mknode("ID",NULL,mkleaf($1));}
@@ -211,15 +179,11 @@ INNER_ARGS:
 		}
 	;
 
-
 FUNC_BLOCK:
 	'{' RETURN EXPRASION ';' '}'  {$$=mknode("BLOCK_FUNC",NULL,mknode(strdup("RETURN STATMENT"),$3,NULL));}
 	|'{' INNER_COMPUND_STATMENT RETURN EXPRASION ';' '}'  {
 															$$=mknode("BLOCK_FUNC",$2,mknode(strdup("RETURN STATMENT"),$4,NULL));}
 	;
-
-
-
 
 EXPRASION:
 	CONST
@@ -264,8 +228,6 @@ VALUE:
 	|'!' VALUE {$$=mknode("NOT_EXPRASION",$2,NULL);}
 	;
 
-
-
 FUNC_ACTIVE:
 	ID '(' ')' {$$=mknode("FUNC_PROC_ACTIVE",mknode("ID",NULL,mkleaf($1)),mkleaf("Arges")); }
 	|ID '(' FUNC_ACTIVE_INNER_ARGES ')' {
@@ -308,7 +270,6 @@ STASTMENT:
 RETURN_STATMENT:
     RETURN EXPRASION ';' {
         $$=mknode("RETURN STATMENT",$2,NULL);
-
         }
     ;
 
@@ -323,9 +284,6 @@ LOOP_STATMENT:
 		}
 	;
 
-
-
-
 COMPUND_STATMENT:
 	'{' INNER_COMPUND_STATMENT RETURN_STATMENT '}' { $$=mknode("BLOCK",$3,$2); }
     |'{'  RETURN_STATMENT '}' { $$=mknode("BLOCK",$2,NULL); }
@@ -339,17 +297,11 @@ COMPUND_STATMENT_PROC:
 INNER_COMPUND_STATMENT:
 	STASTMENT_LIST { $$=mknode("",NULL,$1);}
 	|DEC_INNER_BLOCK {$$=mknode("",$1,NULL);}
-	|DEC_INNER_BLOCK  STASTMENT_LIST {$$=mknode("",$1,$2);
-
-	
-	}
+	|DEC_INNER_BLOCK  STASTMENT_LIST {$$=mknode("",$1,$2);}
 	;
 
-
 DEC_INNER_BLOCK:
-	NEW_DECLARE DEC_INNER_BLOCK {$$=mknode("",$1,$2);
-
-	}
+	NEW_DECLARE DEC_INNER_BLOCK {$$=mknode("",$1,$2);}
 	|NEW_DECLARE 	
 	;
 
@@ -358,16 +310,12 @@ NEW_DECLARE:
 	|DEF_A
 	;
 
-
 VF: 
 	VAR VFDEC  {$$=mknode("VAR_DECLARE",$2,NULL);}
 	;
 
 VFDEC:
-	
 	INNER_ARGS ':' TYPE ';'  {$$=mknode($3,$1,NULL);}
-
-	
 	;
 
 CONST:
@@ -386,9 +334,9 @@ TYPE:
 	|INT 
 	|REAL 
 	|CHAR 
-	|CHAR_POINER
-	|REAL_POINER
-	|INT_POINER 
+	|CHAR_POINTER
+	|REAL_POINTER
+	|INT_POINTER 
 	;
 %%
 
@@ -543,7 +491,7 @@ int isEmpty()
 // Function to add an item to stack.  It increases top by 1 
 void push( struct frame * item) { 
     if (isFull(frameStack)) {
-		printf("the stack is fulll \n");
+		printf("the stack is full \n");
         return; 
 	}
     frameStack->array[++(frameStack->top)] = item; 
@@ -623,6 +571,10 @@ int CrearhSymbalFrame(node * root){
 	}
 		
 	if( !strcmp (root->token ,"FUNC")){
+		if(!strcmp(root->left->right->token, "Main")){
+			printf("'Main' must be proc type.\n");
+				exit(1);
+		}
 		insert_symbel(
 						root->left->right->token,
 						1,
@@ -634,9 +586,7 @@ int CrearhSymbalFrame(node * root){
 
 		current=root->left->right->token;
 						
-
 		push(creathFrame());
-
 
 		if(strcmp(root->left->left->right->token,"NULL_ARGS"))
 			find_var_names("",root->left->left->right->left);
@@ -645,22 +595,20 @@ int CrearhSymbalFrame(node * root){
 		if(root->right)
 			CrearhSymbalFrame(root->right);
 
-
-		
-
 		pop();
 
-		//look for return stat
-
-
-	
+		//look for return stat	
 		return 0;
 
 	}
 
 	if( !strcmp (root->token ,"PROC")){
-		if( !strcmp(root->left->right->token, "MAIN")){
-			printf("%d\n",mainCounter);
+		if( !strcmp(root->left->right->token, "Main")){
+			if(!strcmp(root->left->left->right->token, "ARGS ")){
+				printf("'Main' proc cannot take arguments.\n");
+				exit(1);
+			}
+
 			mainCounter++;
 			if(mainCounter > 1){
 				printf("Only 1 'Main' proc is allowed.\n");
@@ -867,13 +815,11 @@ int CrearhSymbalFrame(node * root){
 		temp2=type_chack2(root->right);
 
 		if(!strcmp(temp->type,temp2->type)){
-
 		}
 
 		else if(!strcmp("null_value",temp2->type)){
 			if(!strcmp("char*",temp->type) || !strcmp("int*",temp->type) ||
 				!strcmp("real*",temp->type)){
-
 				}
 				else{
 					printf("wrong type pointer %s\n",temp->id);
@@ -882,7 +828,7 @@ int CrearhSymbalFrame(node * root){
 		}
 		else if(!strcmp("char*",temp2->type)){
 				if(strcmp("string",temp->type)){
-					printf("wrong type pointer %s\n",temp->id);
+					printf("Wrong type pointer %s\n",temp->id);
 					exit(1);
 				}
 		}
@@ -891,33 +837,12 @@ int CrearhSymbalFrame(node * root){
 			,temp->type,temp2->type);
 					exit(1);
 		}
-
-
-
-		
-		
-		
-		
-		
-		
-
-
 	}
-	
-
-	
-
-
 	if(root->left)
 		CrearhSymbalFrame(root->left);
 	if(root->right)
 		CrearhSymbalFrame(root->right);
-	
-
-
 }
-
-
 
 int startSemantic(node * root){
 
@@ -936,8 +861,6 @@ int startSemantic(node * root){
 
 	push(creathFrame());
 	CrearhSymbalFrame(root->left);
-
-
 
 	//start to clear data
 	free(hashTableSymbel->symbals);
@@ -1002,7 +925,6 @@ void find_var_names(char * type,node * root){
 	if(root->right)
 		find_var_names("",root->right);
 	
-
 	if(strcmp(root->token,"ID")){
 		if(root->left)
 			find_var_names(root->token,root->left);
@@ -1014,16 +936,7 @@ void find_var_names(char * type,node * root){
 			insert_symbel(root->right->token ,0,type,NULL,NULL,deep,NULL);
 			root = root->left;
 		}
-
 	}
-
-
-
-	
-
-
-
-	
 }
 
 deciptopn * get_symbal_from_hash(char * name){
@@ -1050,7 +963,6 @@ deciptopn * get_symbal_from_hash(char * name){
 		exit(1);
 	}
 	return temp;
-
 }
 
 node * makeArgsReq(node * root){
@@ -1065,7 +977,6 @@ node * makeArgsReq(node * root){
 		last->right=makeArgsReq(root->right);
 
 	return temp;	
-	
 }
 
 node * getInnerArges(node * root ,char * type){
@@ -1098,8 +1009,7 @@ int checkFunc(node * originalArges,node * newArges){
 	node * temp2;
 	int temp1;
 
-	while(originalArges){
-		
+	while(originalArges){	
 		
 		if(!newArges)
 			return 1;
@@ -1115,10 +1025,6 @@ int checkFunc(node * originalArges,node * newArges){
 			newArges=newArges->right;
 			temp2=originalArges;
 			originalArges=originalArges->right;
-
-			
-
-
 		}
 		else if(!newArges->right)
 			return 2;
@@ -1143,11 +1049,6 @@ int chack_arges(deciptopn * originalArges,node * newArges,int typeofchack){
 			}
 		return 0;
 }
-
-	
-
-
-
 
 
 char * cut_char(char * string){
@@ -1244,11 +1145,11 @@ struct deciptopn * type_chack2(struct node * root){
 	}
 	else if(!strcmp("int",root->token) || !strcmp("real",root->token) ||
 		!strcmp("hex",root->token) || !strcmp("char",root->token) ||
-		!strcmp("string",root->token) || !strcmp("bool",root->token)	){
-		temp2=(deciptopn *)malloc(sizeof(deciptopn));
-		temp2->id=strdup("const");
-		temp2->type=root->token;
-		return temp2;
+		!strcmp("string",root->token) || !strcmp("bool",root->token)){
+			temp2=(deciptopn *)malloc(sizeof(deciptopn));
+			temp2->id=strdup("const");
+			temp2->type=root->token;
+			return temp2;
 	}
 	else if(!strcmp("PRIORATY",root->token)){
 		return type_chack2(root->right);
@@ -1339,8 +1240,6 @@ struct deciptopn * type_chack2(struct node * root){
 					exit(1);
 				}
 			}
-		
-
 	}
 
 	return NULL;

@@ -72,7 +72,6 @@ func foo3(i, j, k : int) return int
     return total;
 }
 
-
 func foo2() return int
 {
     var s1, s2: string[100];
@@ -92,19 +91,15 @@ func foo2() return int
     return cnt;
 }
 
-
 func foo4() return int
 {
     {   
 	var x : int;
 	var y : int*;
 	x = 5;
+	y = &x; 
 
-	
-	
-	y = &x;
-
-	x = 6;
+	x = 6; 							/% EEERRRROOOORRRRR, need to handle that '&' is for pointers%/
 	
 	if (&x == y && (^y == x)){
 		^y = 9;
@@ -114,7 +109,7 @@ func foo4() return int
 		var y : string[10];
 		var z : char;
 		y = "foobar";
-		x = &y[5];         
+		/% x = &y[8];    last to fix %/     
 		z = ^(x - 5);       
 		y = "barfoo"; 
    		{
@@ -131,10 +126,3 @@ func foo4() return int
     return 0;
 }
 
-
-
-proc Main()
-{
-    var a : int;
-    a = foo2();
-}
