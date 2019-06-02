@@ -19,7 +19,7 @@ func foo1(a, b, y : int; c: char) return bool
 		res = (b == c) && (y > a);
 		/% res = (b == c) && (y + a); %/
 		/% 3 + 6 = 9; %/
-		 ^x = 6;  
+		/% ^x = 6; %/
 	}
     	return res ;
 }
@@ -72,6 +72,7 @@ func foo3(i, j, k : int) return int
     return total;
 }
 
+
 func foo2() return int
 {
     var s1, s2: string[100];
@@ -80,7 +81,7 @@ func foo2() return int
     j=0;
     cnt = 1;
     while(i<|s1|){
-	while(j<(|s2|/2)){
+	while(j<|s2|/2){
 	    if (s1[i] == s2[j]){
 		cnt = cnt*2;
 	    }
@@ -91,17 +92,16 @@ func foo2() return int
     return cnt;
 }
 
+
 func foo4() return int
 {
     {   
 	var x : int;
 	var y : int*;
 	x = 5;
-	y = &x; 
-
-	x = 6; 							/% EEERRRROOOORRRRR, need to handle that '&' is for pointers%/
-	
-	if (&x == y &&^y == x ){
+	y = &x;
+	x = 6;
+	if (&x == y && ^y == x){
 		^y = 9;
 	}
      	{
@@ -109,7 +109,7 @@ func foo4() return int
 		var y : string[10];
 		var z : char;
 		y = "foobar";
-		x = &y[8];       
+		x = &y[5];         
 		z = ^(x - 5);       
 		y = "barfoo"; 
    		{
@@ -117,12 +117,19 @@ func foo4() return int
 			var y : int*;
 			var z : char*;
 			var g : char;
-		/%	 y = &(1 + 3);  fix %/ 
-		/%	y = &x;        %/   
-		/%	z = &(&g);  %/  
+			/% y = &(1+3);
+			y = &x;             
+			z = &(&g); %/
     		}
 	}
      }
     return 0;
 }
 
+
+
+proc Main()
+{
+    var a : int;
+    a = foo2();
+}

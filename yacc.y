@@ -216,7 +216,6 @@ EXPRASION:
 	|EXPRASION '<' EXPRASION  {$$=mknode("BOOL_EXPRASION",mknode("<",$1,$3),NULL);}
 	|FUNC_ACTIVE 
 	| '|' EXPRASION '|' {$$=mknode("ABS_EXPRASION",$2,NULL);}
-	
 	|'^' EXPRASION {$$=mknode("ADDR_EXPRASION",mkleaf("^"),$2);}
 	| '&' EXPRASION {$$=mknode("ADDR_EXPRASION",mkleaf("&"),$2);}
 	;
@@ -262,8 +261,8 @@ STASTMENT:
 	|LOOP_STATMENT
 	|ID '=' EXPRASION ';' {$$=mknode("=",mkleaf($1),$3);}
 	|ID '[' EXPRASION ']' '=' EXPRASION ';' {$$=mknode("ADDR_ASS",mknode("block",mkleaf($1),$3),$6);}
-	|'&' ID '=' EXPRASION ';' {$$=mknode("ADDR_ASS",mknode("&",mkleaf($2),NULL),$4);}
-	|'^' ID '=' EXPRASION ';' {$$=mknode("ADDR_ASS",mknode("^",mkleaf($2),NULL),$4);}
+	|'&' ID '=' EXPRASION ';' {$$=mknode("ADDR_ASS_EQ",mknode("&",mkleaf($2),NULL),$4);}
+	|'^' ID '=' EXPRASION ';' {$$=mknode("ADDR_ASS_EQ",mknode("^",mkleaf($2),NULL),$4);}
     
 	;
 
@@ -728,6 +727,32 @@ int CrearhSymbalFrame(node * root){
 
 		
 	}
+
+	if( !strcmp (root->token ,"ADDR_ASS_EQ")){
+		temp2=type_chack2(root->right);
+
+		temp=get_symbal_from_hash(root->left->left->token);
+
+		if( !strcmp (root->left->token ,"^")){
+			if( !strcmp(temp->type,"string") && !strcmp(cut_char(strdup(temp2->type)),"char")){
+				printf("op ^ must be on pointer \n");
+				exit(1);
+			}
+			else if(strcmp(temp2->type,cut_char(strdup(temp->type)))){
+				printf("op ^ must be on same type \n");
+				exit(1);
+			}
+		}
+		else if(!strcmp (root->left->token ,"&")){
+			if(strcmp(temp2->type,strcat(strdup(temp->type),"*"))){
+				printf("op & must be on same type \n");
+				exit(1);
+			}
+		}
+
+	}
+		
+
 
 	if( !strcmp (root->token ,"RETURN STATMENT")){
 		
