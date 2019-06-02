@@ -19,6 +19,8 @@ char *var;
 char *label;
 char *truelabel;
 char *falselabel;
+char * next;
+
 int sum;
 
 
@@ -98,8 +100,14 @@ char * cut_char(char * string);
 struct deciptopn * type_chack2(struct node * root);
 
 //part3
-char* freshLabel();
+char* freshvar();
+char* freshlabel();
+char * gen(char *,char *,char *,char *);
+void code(struct node * before_chack,char * label,char * truelabel,char * falselabel);
+void AC3code(struct node * root);
+static int v=0;
 static int l=0;
+static char * code3AC="";
 
 
 void printtree(node *tree,int space);
@@ -134,14 +142,6 @@ extern int yylex();
 %nonassoc ELSE
 
 
-
-
-
-
-
-
-
-
 %right RETURN  
 %right ';'
 %left AND_OP OR_OP
@@ -156,7 +156,7 @@ S:
 	FUNC_PROC_DEC MAIN_DEF {
         $$=mknode("BLOCK",$1, $2);
 		startSemantic($$);
-        
+        AC3code($$);
         }
 	;
 
@@ -176,22 +176,25 @@ PROC_DEF:
 		$$=mknode("ARGS",NULL,$3);
 		$$=mknode("ID",$$,mkleaf($2));
 		$$=mknode("PROC",$$,$4);
+		$$->label=strdup($2);
 
 		}
 	;
 
 MAIN_DEF:
-	PROC MAIN '(' ')' COMPUND_STATMENT_PROC  {
-				
+	PROC MAIN '(' ')' COMPUND_STATMENT_PROC  {		
 		$$=mknode("ARGS",NULL,NULL);
 		$$=mknode("ID",$$,mkleaf("Main"));
 		$$=mknode("PROC",$$,$5);
+		$$->label=strdup("Main");
 
 		}
 	;
 
 FUNC_DEF:
-	FUNC ID  ARGES  RETURN TYPE FUNC_BLOCK {$$=creathFuncDec($2,$3,$5,$6);
+	FUNC ID  ARGES  RETURN TYPE FUNC_BLOCK {
+		$$=creathFuncDec($2,$3,$5,$6);
+		$$->label=$2;
 	}
 	;
 
@@ -219,26 +222,52 @@ FUNC_BLOCK:
 
 EXPRASION:
 	CONST 
-	|'(' EXPRASION ')'  {$$=mknode("PRIORATY",NULL,$2);}
-	|ID {$$=mknode("ID_EXPRASION",mkleaf($1),NULL);$$->var=$1;}
-	|'-' EXPRASION %prec UMINUS {$$=mknode("NUM_EXPRASION",mkleaf("-"),$2);$$->var=freshLabel();
-	asprintf(&($$->code),"%s = %s\n",$$->var,$2->var); printf("%s",$$->code); }
+	|'(' EXPRASION ')'  {
+		$$=mknode("PRIORATY",NULL,$2);}
+	|ID {
+		$$=mknode("ID_EXPRASION",mkleaf($1),NULL);
+		}
+	|'-' EXPRASION %prec UMINUS {
+		$$=mknode("UMINUS_EXPRASION",mkleaf("-"),$2);
+		}
 	|'!' EXPRASION {$$=mknode("NOT_EXPRASION",$2,NULL);}
 	|ID '[' EXPRASION ']' {$$=mknode("ADDR_ASS",mknode("block",mkleaf($1),$3),NULL);}
-	|EXPRASION NE_OP EXPRASION  {$$=mknode("BOOL_EXPRASION",mknode("!=",$1,$3),NULL);}
-	|EXPRASION AND_OP EXPRASION   {$$=mknode("BOOL_EXPRASION",mknode("&&",$1,$3),NULL);}
-	|EXPRASION OR_OP EXPRASION  {$$=mknode("BOOL_EXPRASION",mknode("||",$1,$3),NULL);}
-	|EXPRASION '+' EXPRASION  {$$=mknode("NUM_EXPRASION",mknode("+",$1,$3),NULL);}
-	|EXPRASION '-' EXPRASION  {$$=mknode("NUM_EXPRASION",mknode("-",$1,$3),NULL);}
-	|EXPRASION '/' EXPRASION  {$$=mknode("NUM_EXPRASION",mknode("/",$1,$3),NULL);}
-	|EXPRASION '*' EXPRASION  {$$=mknode("NUM_EXPRASION",mknode("*",$1,$3),NULL);
-	$$->var=freshLabel();
-	asprintf(&($$->code),"%s %s = %s\n",$$->var,$2->var)}
-	|EXPRASION EQL_OP EXPRASION  {$$=mknode("BOOL_EXPRASION",mknode("==",$1,$3),NULL);}
-	|EXPRASION GE_OP EXPRASION  {$$=mknode("BOOL_EXPRASION",mknode(">=",$1,$3),NULL);}
-	|EXPRASION SE_OP EXPRASION  {$$=mknode("BOOL_EXPRASION",mknode("<=",$1,$3),NULL);}
-	|EXPRASION '>' EXPRASION  {$$=mknode("BOOL_EXPRASION",mknode(">",$1,$3),NULL);}
-	|EXPRASION '<' EXPRASION  {$$=mknode("BOOL_EXPRASION",mknode("<",$1,$3),NULL);}
+	|EXPRASION NE_OP EXPRASION  {
+		$$=mknode("BOOL_EXPRASION",mknode("!=",$1,$3),NULL);
+		}
+	|EXPRASION AND_OP EXPRASION   {
+		$$=mknode("BOOL_EXPRASION",mknode("&&",$1,$3),NULL);
+		}
+	|EXPRASION OR_OP EXPRASION  {
+		$$=mknode("BOOL_EXPRASION",mknode("||",$1,$3),NULL);
+		}
+	|EXPRASION '+' EXPRASION  {
+		$$=mknode("NUM_EXPRASION",mknode("+",$1,$3),NULL);
+		}
+	|EXPRASION '-' EXPRASION  {
+		$$=mknode("NUM_EXPRASION",mknode("-",$1,$3),NULL);
+		}
+	|EXPRASION '/' EXPRASION  {
+		$$=mknode("NUM_EXPRASION",mknode("/",$1,$3),NULL);
+		}
+	|EXPRASION '*' EXPRASION  {
+		$$=mknode("NUM_EXPRASION",mknode("*",$1,$3),NULL);
+		}
+	|EXPRASION EQL_OP EXPRASION  {
+		$$=mknode("BOOL_EXPRASION",mknode("==",$1,$3),NULL);
+		}
+	|EXPRASION GE_OP EXPRASION  {
+		$$=mknode("BOOL_EXPRASION",mknode(">=",$1,$3),NULL);
+		}
+	|EXPRASION SE_OP EXPRASION  {
+		$$=mknode("BOOL_EXPRASION",mknode("<=",$1,$3),NULL);
+		}
+	|EXPRASION '>' EXPRASION  {
+		$$=mknode("BOOL_EXPRASION",mknode(">",$1,$3),NULL);
+		}
+	|EXPRASION '<' EXPRASION  {
+		$$=mknode("BOOL_EXPRASION",mknode("<",$1,$3),NULL);
+		}
 	|FUNC_ACTIVE 
 	| '|' EXPRASION '|' {$$=mknode("ABS_EXPRASION",$2,NULL);}
 	|'^' EXPRASION {$$=mknode("ADDR_EXPRASION",mkleaf("^"),$2);}
@@ -272,10 +301,13 @@ IF_STASTMENT:
 		mknode("EXPRASION_IF",NULL,$3),
 		mknode("BODY_IF",mknode("ELSE",NULL,$7),$5)
 		);
+		$$->falselabel=freshlabel();
+		$$->next=freshlabel();
 		}		
 																										
 	|IF '(' EXPRASION ')'  STASTMENT %prec IFX {  
         $$=mknode("IF",mknode("EXPRASION_IF",NULL,$3),mknode("BODY_IF",NULL,$5));
+		$$->falselabel=freshlabel();
 }
 	;
 
@@ -284,7 +316,11 @@ STASTMENT:
 	|EXPRASION ';' 
 	|IF_STASTMENT
 	|LOOP_STATMENT
-	|ID '=' EXPRASION ';' {$$=mknode("=",mkleaf($1),$3);}
+	|ID '=' EXPRASION ';' {
+		$$=mknode("=",mkleaf($1),$3);
+		$$->var=freshvar();
+		$$->code=strcat($3->code,gen($1,$3->var,"",""));
+		}
 	|ID '[' EXPRASION ']' '=' EXPRASION ';' {$$=mknode("ADDR_ASS",mknode("block",mkleaf($1),$3),$6);}
 	|'&' ID '=' EXPRASION ';' {$$=mknode("ADDR_ASS_EQ",mknode("&",mkleaf($2),NULL),$4);}
 	|'^' ID '=' EXPRASION ';' {$$=mknode("ADDR_ASS_EQ",mknode("^",mkleaf($2),NULL),$4);}
@@ -295,6 +331,8 @@ STASTMENT:
 LOOP_STATMENT:
 	WHILE '(' EXPRASION ')' STASTMENT {
 		$$=mknode("WHILE",mknode("EXPRESSION",NULL,$3),mknode("BODY",NULL,$5));
+		$$->label=freshlabel();
+		$$->falselabel=freshlabel();
 		}
 	|FOR '(' EXPRASION ';' EXPRASION ';' EXPRASION ')' STASTMENT
 		
@@ -336,12 +374,12 @@ VFDEC:
 
 CONST:
 	INT_NUM {$$=mknode("int",mkleaf($1),NULL);$$->var=$1;}
-	|R_NUM {$$=mknode("real",mkleaf($1),NULL);}
-	|HEX_NUM {$$=mknode("hex",mkleaf($1),NULL);}
-	|NULLA {$$=mknode("null_value",mkleaf("null"),NULL);}
-	|CHAR_VALUE {$$=mknode("char",mkleaf($1),NULL);}
-	|STRING_VALUE {$$=mknode("string",mkleaf($1),NULL);}
-	|BOOL_VAL {$$=mknode("bool",mkleaf($1),NULL);}
+	|R_NUM {$$=mknode("real",mkleaf($1),NULL);$$->var=$1;}
+	|HEX_NUM {$$=mknode("hex",mkleaf($1),NULL);$$->var=$1;}
+	|NULLA {$$=mknode("null_value",mkleaf("null"),NULL);$$->var=$1;}
+	|CHAR_VALUE {$$=mknode("char",mkleaf($1),NULL);$$->var=$1;}
+	|STRING_VALUE {$$=mknode("string",mkleaf($1),NULL);$$->var=$1;}
+	|BOOL_VAL {$$=mknode("bool",mkleaf($1),NULL);$$->var=$1;}
 	;
 
 TYPE:	
@@ -841,7 +879,6 @@ int CrearhSymbalFrame(node * root){
 	}
 	if( !strcmp (root->token ,"=")){
 
-
 		type=root->left->token[0];
 
 		temp=get_symbal_from_hash(root->left->token);
@@ -860,6 +897,7 @@ int CrearhSymbalFrame(node * root){
 			temp=temp2;
 
 		}
+
 
 
 
@@ -914,8 +952,8 @@ int startSemantic(node * root){
 	CrearhSymbalFrame(root->left);
 
 	//start to clear data
-	free(hashTableSymbel->symbals);
-	free(hashTableSymbel);
+	//free(hashTableSymbel->symbals);
+	//free(hashTableSymbel);
 	return 0;
 	
 	
@@ -1115,7 +1153,9 @@ struct deciptopn * type_chack2(struct node * root){
 	int t1;
 	char * name;
 
-	
+	if(!strcmp("UMINUS_EXPRASION",root->token)){
+		return type_chack2(root->right);
+		}
 
 	if(!strcmp("FUNC_PROC_ACTIVE",root->token)){
 		temp1=get_symbal_from_hash(root->left->right->token);
@@ -1291,8 +1331,130 @@ struct deciptopn * type_chack2(struct node * root){
 
 }
 
-char* freshLabel(){
+char* freshvar(){
+	char * x;
+	asprintf(&x,"t%d",v++);
+	return x;
+}
+char* freshlabel(){
 	char * x;
 	asprintf(&x,"L%d",l++);
 	return x;
+}
+char * gen(char * a,char * b,char * c,char * d){
+	char * x;
+	asprintf(&x,"%s = %s %s %s\n",a,b,c,d);
+	return x;
+}
+
+void AC3code(struct node * root){
+	char * temp1;
+	char * temp2;
+
+
+	if(!strcmp (root->token ,"FUNC")){
+		asprintf(&code3AC,"%s%s:\n\tBeginFunc\n",code3AC,root->label);
+		AC3code(root->right);
+		asprintf(&code3AC,"%s\tEndFunc\n\n\n",code3AC);
+				
+		return;
+	}
+	if(!strcmp (root->token ,"PROC")){
+		asprintf(&code3AC,"%s%s:\n\tBeginFunc\n",code3AC,root->label);
+		
+		AC3code(root->right);
+
+		asprintf(&code3AC,"%s\tEndFunc\n\n\n",code3AC);
+
+		printf("%s\n",code3AC);
+		return;
+	}
+	
+	if(!strcmp (root->token ,"WHILE")){
+		
+		asprintf(&code3AC,"%s%s:\n",code3AC,root->label);
+		AC3code(root->left->right);
+		asprintf(&code3AC,"%s\tifZ %s Goto %s :\n",code3AC,
+		root->left->right->var,root->falselabel);
+		AC3code(root->right->right);
+		asprintf(&code3AC,"%s\tGoto %s\n",code3AC,root->label);
+		asprintf(&code3AC,"%s%s:\n",code3AC,root->falselabel);
+		return;
+
+	}
+	if(!strcmp (root->token ,"=")){
+
+		AC3code(root->right);
+		asprintf(&code3AC,"%s\t%s = %s\n",code3AC,root->left->token,root->right->var);
+		return;
+	}
+		if(!strcmp (root->token ,"NUM_EXPRASION") || !strcmp (root->token ,"BOOL_EXPRASION")){
+		
+				AC3code(root->left->left);
+				temp1=freshvar();
+				asprintf(&code3AC,"%s\t%s = %s\n",code3AC,temp1,root->left->left->var);
+
+				AC3code(root->left->right);
+				temp2=freshvar();
+				asprintf(&code3AC,"%s\t%s = %s\n",code3AC,temp2,root->left->right->var);
+
+				root->var=freshvar();
+				asprintf(&code3AC,"%s\t%s = %s %s %s\n",code3AC,root->var,temp1,
+				root->left->token,temp2);
+				
+			return;
+		}
+	if(!strcmp (root->token ,"FUNC_PROC_ACTIVE")){
+				AC3code(root->right);
+				root->var=freshvar();
+				asprintf(&code3AC,"%s\t%s = LCall %s \n",code3AC,root->var,root->left->right->token);
+				asprintf(&code3AC,"%s\tPopParams %d \n",code3AC,root->right->sum);
+				return;
+
+	}
+	if(!strcmp (root->token ,"FUNC_ARG")){
+		int i=0;
+		node * T=root;
+		while(root->right){
+			i++;
+			temp1=freshvar();
+			asprintf(&code3AC,"%s\t%s = %s \n",code3AC,temp1,root->left->left->token);
+			asprintf(&code3AC,"%s\tPushParam %s \n",code3AC,temp1);
+			root=root->right;
+		}
+		T->sum=i;
+	}
+	if(!strcmp (root->token ,"ID_EXPRASION")){
+		root->var=root->left->token;
+	}
+	if(!strcmp (root->token ,"IF")){
+
+
+		AC3code(root->left->right);
+		asprintf(&code3AC,"%s\tifZ %s Goto %s :\n",code3AC,
+		root->left->right->var,root->falselabel);
+		AC3code(root->right->right);
+		if(root->right->left!=NULL){
+			asprintf(&code3AC,"%s\tGoto %s :\n",code3AC,root->next);
+			asprintf(&code3AC,"%s%s:\n",code3AC,root->falselabel);
+			AC3code(root->right->left);	
+			asprintf(&code3AC,"%s%s:\n",code3AC,root->next);
+		}
+		else
+			asprintf(&code3AC,"%s%s:\n",code3AC,root->falselabel);
+		return;
+	}
+	if(!strcmp (root->token ,"RETURN STATMENT")){
+			AC3code(root->left);
+			asprintf(&code3AC,"%s\tReturn %s:\n",code3AC,root->left->var);
+			return;
+	}
+
+
+
+
+	if(root->left)
+		AC3code(root->left);
+	if(root->right)
+		AC3code(root->right);
 }
