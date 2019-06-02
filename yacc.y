@@ -790,7 +790,7 @@ int CrearhSymbalFrame(node * root){
 	}
 	if( !strcmp (root->token ,"=")){
 
-		printf("%s\n",root->left->token);
+
 		type=root->left->token[0];
 
 		temp=get_symbal_from_hash(root->left->token);
@@ -811,7 +811,7 @@ int CrearhSymbalFrame(node * root){
 		}
 
 
-		printf("%s type\n",temp->type);
+
 		temp2=type_chack2(root->right);
 
 		if(!strcmp(temp->type,temp2->type)){
@@ -1064,6 +1064,7 @@ struct deciptopn * type_chack2(struct node * root){
 	int t1;
 	char * name;
 	printtree(root,0);
+	
 
 	if(!strcmp("FUNC_PROC_ACTIVE",root->token)){
 		temp1=get_symbal_from_hash(root->left->right->token);
@@ -1089,12 +1090,19 @@ struct deciptopn * type_chack2(struct node * root){
 		return temp3;
 	}
 	else if(!strcmp("ADDR_ASS",root->token)){
+		
+		
+
 		temp1=get_symbal_from_hash(root->left->left->token);
+		printf("got hare %s \n",root->left->right->token);
+
 		if(strcmp(temp1->type,"string")){
 			printf("string must have string and not %s\n",temp1->type);
 			exit(1);
 		}
-		temp2=get_symbal_from_hash(root->left->right->left->token);
+		temp2=type_chack2(root->left->right);
+		
+
 		if(strcmp(temp2->type,"int")){
 			printf("string must have int index and not %s\n",temp1->type);
 			exit(1);

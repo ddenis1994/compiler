@@ -109,7 +109,7 @@ func foo4() return int
 		var y : string[10];
 		var z : char;
 		y = "foobar";
-		/% x = &y[8];    last to fix %/     
+		 x = &y[8];  /%  last to fix %/     
 		z = ^(x - 5);       
 		y = "barfoo"; 
    		{
