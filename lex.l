@@ -62,7 +62,7 @@ char * cut_first (char * string);
 (0|[1-9][0-9]*)         {yylval.String=strdup(yytext); return(INT_NUM); }
 0[xX][a-fA-F0-9]+       {yylval.String=strdup(yytext); return (HEX_NUM); }
 [0-9]*"."([Ee]?[+-]?[0-9]+)? {yylval.String=strdup(yytext); return (R_NUM); }
-[\^\&]?[a-zA-Z][a-zA-Z0-9_]*   {yylval.String=strdup(yytext); return(ID);}
+[a-zA-Z][a-zA-Z0-9_]*   {yylval.String=strdup(yytext); return(ID);}
 
 [ \t\v\n\f]             { ; }
 %%

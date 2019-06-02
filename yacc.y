@@ -100,9 +100,8 @@ extern int yylex();
 %token <String> CHAR REAL INT BOOL STRING CHAR_POINTER REAL_POINTER INT_POINTER NULLA
 %token ELSE IF
 %token FOR WHILE
-%token TRUE FALSE 
 %token RETURN
-%token <String> VAR FUNC PROC ADDR_ID
+%token <String> VAR FUNC PROC
 %token AND_OP GE_OP SE_OP NE_OP OR_OP EQL_OP
 %token <String> CHAR_VALUE STRING_VALUE INT_NUM R_NUM HEX_NUM
 %token <String> ID BOOL_VAL
@@ -110,20 +109,31 @@ extern int yylex();
 %type <Node> INNER_ARGS
 %type <Node> CONST 
 %type <Node> OUT_ARGES ARGES FUNC_DEF FUNC_BLOCK INNER_COMPUND_STATMENT EXPRASION 
-%type <Node> FUNC_ACTIVE  COMPUND_STATMENT
+%type <Node> FUNC_ACTIVE  
 %type <Node> STASTMENT_LIST DEC_INNER_BLOCK
 %type<Node> STASTMENT IF_STASTMENT LOOP_STATMENT
 %type<Node> VF FUNC_PROC_DEC DEF_A VFDEC
 %type<Node> PROC_DEF NEW_DECLARE
-%type<Node> S RETURN_STATMENT VALUE
+%type<Node> S  
 %type<Node> COMPUND_STATMENT_PROC FUNC_ACTIVE_INNER_ARGES
 %nonassoc IFX
 %nonassoc ELSE
-%nonassoc OR_OP AND_OP '>' '<' GE_OP SE_OP EQL_OP
+
+
+
+
+
+
+
+
+
+
 %right RETURN  
 %right ';'
-%right '!' '^' '&' 
-%right UMINUS
+%left AND_OP OR_OP
+%left  SE_OP GE_OP '>' '<' EQL_OP NE_OP 
+%left UMINUS
+%left '!' '^' '&' 
 %left '+' '-'
 %left '*' '/' 
 
@@ -189,44 +199,29 @@ EXPRASION:
 	CONST
 	|'(' EXPRASION ')'  {$$=mknode("PRIORATY",NULL,$2);}
 	|ID {$$=mknode("ID_EXPRASION",mkleaf($1),NULL);}
-	|'^' VALUE {$$=mknode("ADDR_EXPRASION",mkleaf("^"),$2);}
-	| '&' VALUE {$$=mknode("ADDR_EXPRASION",mkleaf("&"),$2);}
-	|'-' VALUE %prec UMINUS {$$=mknode("NUM_EXPRASION",mkleaf("-"),$2);}
-	|'!' VALUE {$$=mknode("NOT_EXPRASION",$2,NULL);}
-	|ID '[' EXPRASION ']' '=' VALUE {$$=mknode("ADDR_ASS",mknode("block",mkleaf($1),$3),$6);
-}
+	|'-' EXPRASION %prec UMINUS {$$=mknode("NUM_EXPRASION",mkleaf("-"),$2);}
+	|'!' EXPRASION {$$=mknode("NOT_EXPRASION",$2,NULL);}
 	|ID '[' EXPRASION ']' {$$=mknode("ADDR_ASS",mknode("block",mkleaf($1),$3),NULL);}
-	|ID '=' EXPRASION {$$=mknode("=",mkleaf($1),$3);}
-	|EXPRASION NE_OP VALUE  {$$=mknode("BOOL_EXPRASION",mknode("!=",$1,$3),NULL);}
-	|EXPRASION AND_OP VALUE  {$$=mknode("BOOL_EXPRASION",mknode("&&",$1,$3),NULL);}
-	|EXPRASION OR_OP VALUE  {$$=mknode("BOOL_EXPRASION",mknode("||",$1,$3),NULL);}
-	|EXPRASION '+' VALUE  {$$=mknode("NUM_EXPRASION",mknode("+",$1,$3),NULL);}
-	|EXPRASION '-' VALUE  {$$=mknode("NUM_EXPRASION",mknode("-",$1,$3),NULL);}
-	|EXPRASION '/' VALUE  {$$=mknode("NUM_EXPRASION",mknode("/",$1,$3),NULL);}
-	|EXPRASION '*' VALUE  {$$=mknode("NUM_EXPRASION",mknode("*",$1,$3),NULL);}
-	|EXPRASION EQL_OP VALUE  {$$=mknode("BOOL_EXPRASION",mknode("==",$1,$3),NULL);}
-	|EXPRASION GE_OP VALUE  {$$=mknode("BOOL_EXPRASION",mknode(">=",$1,$3),NULL);}
-	|EXPRASION SE_OP VALUE  {$$=mknode("BOOL_EXPRASION",mknode("<=",$1,$3),NULL);}
-	|EXPRASION '>' VALUE  {$$=mknode("BOOL_EXPRASION",mknode(">",$1,$3),NULL);}
-	|EXPRASION '<' VALUE  {$$=mknode("BOOL_EXPRASION",mknode("<",$1,$3),NULL);}
+	|EXPRASION NE_OP EXPRASION  {$$=mknode("BOOL_EXPRASION",mknode("!=",$1,$3),NULL);}
+	|EXPRASION AND_OP EXPRASION   {$$=mknode("BOOL_EXPRASION",mknode("&&",$1,$3),NULL);}
+	|EXPRASION OR_OP EXPRASION  {$$=mknode("BOOL_EXPRASION",mknode("||",$1,$3),NULL);}
+	|EXPRASION '+' EXPRASION  {$$=mknode("NUM_EXPRASION",mknode("+",$1,$3),NULL);}
+	|EXPRASION '-' EXPRASION  {$$=mknode("NUM_EXPRASION",mknode("-",$1,$3),NULL);}
+	|EXPRASION '/' EXPRASION  {$$=mknode("NUM_EXPRASION",mknode("/",$1,$3),NULL);}
+	|EXPRASION '*' EXPRASION  {$$=mknode("NUM_EXPRASION",mknode("*",$1,$3),NULL);}
+	|EXPRASION EQL_OP EXPRASION  {$$=mknode("BOOL_EXPRASION",mknode("==",$1,$3),NULL);}
+	|EXPRASION GE_OP EXPRASION  {$$=mknode("BOOL_EXPRASION",mknode(">=",$1,$3),NULL);}
+	|EXPRASION SE_OP EXPRASION  {$$=mknode("BOOL_EXPRASION",mknode("<=",$1,$3),NULL);}
+	|EXPRASION '>' EXPRASION  {$$=mknode("BOOL_EXPRASION",mknode(">",$1,$3),NULL);}
+	|EXPRASION '<' EXPRASION  {$$=mknode("BOOL_EXPRASION",mknode("<",$1,$3),NULL);}
 	|FUNC_ACTIVE 
 	| '|' EXPRASION '|' {$$=mknode("ABS_EXPRASION",$2,NULL);}
+	
+	|'^' EXPRASION {$$=mknode("ADDR_EXPRASION",mkleaf("^"),$2);}
+	| '&' EXPRASION {$$=mknode("ADDR_EXPRASION",mkleaf("&"),$2);}
 	;
 
-VALUE:
-	ID '[' EXPRASION ']' {$$=mknode("ADDR_ASS",mknode("block",mkleaf($1),$3),NULL);}
-	|CONST 
-	|'(' EXPRASION ')'  {$$=mknode("PRIORATY",NULL,$2);}
-	|TRUE {$$=mknode("BOOL_EXPRASION",mkleaf("true"),NULL);}
-	|FALSE {$$=mknode("BOOL_EXPRASION",mkleaf("false"),NULL);}
-	|ID {$$=mknode("ID_EXPRASION",mkleaf($1),NULL);}
-	|FUNC_ACTIVE 
-	| '|' VALUE '|' {$$=mknode("ABS_EXPRASION",$2,NULL);}
-	|'^' VALUE {$$=mknode("ADDR_EXPRASION",mkleaf("^"),$2);}
-	|'&' VALUE {$$=mknode("ADDR_EXPRASION",mkleaf("&"),$2);}
-	|'-' VALUE %prec UMINUS {$$=mknode("NUM_EXPRASION",mkleaf("-"),$2);}
-	|'!' VALUE {$$=mknode("NOT_EXPRASION",$2,NULL);}
-	;
+
 
 FUNC_ACTIVE:
 	ID '(' ')' {$$=mknode("FUNC_PROC_ACTIVE",mknode("ID",NULL,mkleaf($1)),mkleaf("Arges")); }
@@ -265,13 +260,13 @@ STASTMENT:
 	|EXPRASION ';' 
 	|IF_STASTMENT
 	|LOOP_STATMENT
+	|ID '=' EXPRASION ';' {$$=mknode("=",mkleaf($1),$3);}
+	|ID '[' EXPRASION ']' '=' EXPRASION ';' {$$=mknode("ADDR_ASS",mknode("block",mkleaf($1),$3),$6);}
+	|'&' ID '=' EXPRASION ';' {$$=mknode("ADDR_ASS",mknode("&",mkleaf($2),NULL),$4);}
+	|'^' ID '=' EXPRASION ';' {$$=mknode("ADDR_ASS",mknode("^",mkleaf($2),NULL),$4);}
     
 	;
-RETURN_STATMENT:
-    RETURN EXPRASION ';' {
-        $$=mknode("RETURN STATMENT",$2,NULL);
-        }
-    ;
+
 
 LOOP_STATMENT:
 	WHILE '(' EXPRASION ')' STASTMENT {
@@ -284,10 +279,7 @@ LOOP_STATMENT:
 		}
 	;
 
-COMPUND_STATMENT:
-	'{' INNER_COMPUND_STATMENT RETURN_STATMENT '}' { $$=mknode("BLOCK",$3,$2); }
-    |'{'  RETURN_STATMENT '}' { $$=mknode("BLOCK",$2,NULL); }
-	;
+
 
 COMPUND_STATMENT_PROC:
 	'{' '}' {$$=mknode("BLOCK",NULL,NULL);}
@@ -1063,7 +1055,7 @@ struct deciptopn * type_chack2(struct node * root){
 	struct deciptopn * temp3;
 	int t1;
 	char * name;
-	printtree(root,0);
+
 	
 
 	if(!strcmp("FUNC_PROC_ACTIVE",root->token)){
@@ -1094,7 +1086,6 @@ struct deciptopn * type_chack2(struct node * root){
 		
 
 		temp1=get_symbal_from_hash(root->left->left->token);
-		printf("got hare %s \n",root->left->right->token);
 
 		if(strcmp(temp1->type,"string")){
 			printf("string must have string and not %s\n",temp1->type);
@@ -1116,20 +1107,7 @@ struct deciptopn * type_chack2(struct node * root){
 	else if(!strcmp("ID_EXPRASION",root->token)){
 		name=strdup(root->left->token);
 		t1=name[0];
-		temp3=(deciptopn *)malloc(sizeof(deciptopn));
-		temp3->id=strdup("string");
-		if( t1 == '^' ){
-			memmove(name, name+1, strlen(name));
-			temp1=get_symbal_from_hash(name);
-			temp3->type=cut_char(strdup(temp1->type));;
-		}
-		else if( t1 == '&' ){
-			memmove(name, name+1, strlen(name));
-			temp1=get_symbal_from_hash(name);
-			temp3->type=strcat(strdup(temp1->type),"*");;
-		}
-		else
-			temp3=get_symbal_from_hash(root->left->token);
+		temp3=get_symbal_from_hash(root->left->token);
 		return temp3;
 	}
 
