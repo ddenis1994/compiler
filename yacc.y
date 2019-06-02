@@ -1,10 +1,12 @@
 %{
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
 #include <math.h>
 #include <fenv.h>
+
 #define SYMBALTABLESIZE 100000
 
 typedef struct node
@@ -12,6 +14,14 @@ typedef struct node
 char *token;
 struct node *left;
 struct node *right;
+char *code;
+char *var;
+char *label;
+char *truelabel;
+char *falselabel;
+int sum;
+
+
 } node;
 
 typedef struct deciptopn{
@@ -87,6 +97,10 @@ char * type_return(struct node * root);
 char * cut_char(char * string);
 struct deciptopn * type_chack2(struct node * root);
 
+//part3
+char* freshLabel();
+static int l=0;
+
 
 void printtree(node *tree,int space);
 void yyerror(char *);
@@ -140,8 +154,7 @@ extern int yylex();
 %%
 S: 
 	FUNC_PROC_DEC MAIN_DEF {
-        $$=mknode("BLOCK",$1, NULL);
-		$$=mknode("",$$, $2);
+        $$=mknode("BLOCK",$1, $2);
 		startSemantic($$);
         
         }
@@ -205,10 +218,11 @@ FUNC_BLOCK:
 	;
 
 EXPRASION:
-	CONST
+	CONST 
 	|'(' EXPRASION ')'  {$$=mknode("PRIORATY",NULL,$2);}
-	|ID {$$=mknode("ID_EXPRASION",mkleaf($1),NULL);}
-	|'-' EXPRASION %prec UMINUS {$$=mknode("NUM_EXPRASION",mkleaf("-"),$2);}
+	|ID {$$=mknode("ID_EXPRASION",mkleaf($1),NULL);$$->var=$1;}
+	|'-' EXPRASION %prec UMINUS {$$=mknode("NUM_EXPRASION",mkleaf("-"),$2);$$->var=freshLabel();
+	asprintf(&($$->code),"%s = %s\n",$$->var,$2->var); printf("%s",$$->code); }
 	|'!' EXPRASION {$$=mknode("NOT_EXPRASION",$2,NULL);}
 	|ID '[' EXPRASION ']' {$$=mknode("ADDR_ASS",mknode("block",mkleaf($1),$3),NULL);}
 	|EXPRASION NE_OP EXPRASION  {$$=mknode("BOOL_EXPRASION",mknode("!=",$1,$3),NULL);}
@@ -217,7 +231,9 @@ EXPRASION:
 	|EXPRASION '+' EXPRASION  {$$=mknode("NUM_EXPRASION",mknode("+",$1,$3),NULL);}
 	|EXPRASION '-' EXPRASION  {$$=mknode("NUM_EXPRASION",mknode("-",$1,$3),NULL);}
 	|EXPRASION '/' EXPRASION  {$$=mknode("NUM_EXPRASION",mknode("/",$1,$3),NULL);}
-	|EXPRASION '*' EXPRASION  {$$=mknode("NUM_EXPRASION",mknode("*",$1,$3),NULL);}
+	|EXPRASION '*' EXPRASION  {$$=mknode("NUM_EXPRASION",mknode("*",$1,$3),NULL);
+	$$->var=freshLabel();
+	asprintf(&($$->code),"%s %s = %s\n",$$->var,$2->var)}
 	|EXPRASION EQL_OP EXPRASION  {$$=mknode("BOOL_EXPRASION",mknode("==",$1,$3),NULL);}
 	|EXPRASION GE_OP EXPRASION  {$$=mknode("BOOL_EXPRASION",mknode(">=",$1,$3),NULL);}
 	|EXPRASION SE_OP EXPRASION  {$$=mknode("BOOL_EXPRASION",mknode("<=",$1,$3),NULL);}
@@ -319,7 +335,7 @@ VFDEC:
 	;
 
 CONST:
-	INT_NUM {$$=mknode("int",mkleaf($1),NULL);}
+	INT_NUM {$$=mknode("int",mkleaf($1),NULL);$$->var=$1;}
 	|R_NUM {$$=mknode("real",mkleaf($1),NULL);}
 	|HEX_NUM {$$=mknode("hex",mkleaf($1),NULL);}
 	|NULLA {$$=mknode("null_value",mkleaf("null"),NULL);}
@@ -390,9 +406,17 @@ node *mknode(char *token, node *left, node *right){
 	node * newnode=(node*)malloc(sizeof(node));
 	char *newstr=(char*)malloc(sizeof(token) + 1);
 	strcpy(newstr,token);
+
 	newnode->left=left;
 	newnode->right=right;
 	newnode->token=newstr;
+	newnode->code=strdup("");
+	newnode->var=strdup("");
+	newnode->label=strdup("");
+	newnode->truelabel=strdup("");
+	newnode->falselabel=strdup("");
+	newnode->sum=0;
+
 	return 	newnode;
 }
 node *mkleaf(char *token){
@@ -1265,4 +1289,10 @@ struct deciptopn * type_chack2(struct node * root){
 
 	return NULL;
 
+}
+
+char* freshLabel(){
+	char * x;
+	asprintf(&x,"L%d",l++);
+	return x;
 }

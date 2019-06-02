@@ -9,9 +9,11 @@ func foo1(a, b, y : int; c: char) return bool
 	{
 		var x, b : char;
 		var y: int;
-
+		y=-6;
+		y=-y;
+		y=-y;
 		b = '&';
-		/% a = x; %/ 
+		/% a = x;  %/
 		/% b = 8; %/
 		a = (y * 7)/a-y;
 		/% a = (y * 7)/b-y; %/
