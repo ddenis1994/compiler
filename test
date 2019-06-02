@@ -4,6 +4,7 @@ comment %/
 
 func foo1(a, b, y : int; c: char) return bool
 {
+	
 	var res : bool;
 	{
 		var x, b : char;
@@ -75,6 +76,7 @@ func foo3(i, j, k : int) return int
 
 func foo2() return int
 {
+	
     var s1, s2: string[100];
     var i, j, cnt: int;
     i=0;
@@ -95,6 +97,7 @@ func foo2() return int
 
 func foo4() return int
 {
+	
     {   
 	var x : int;
 	var y : int*;
@@ -133,3 +136,4 @@ proc Main()
     var a : int;
     a = foo2();
 }
+

@@ -101,13 +101,13 @@ extern int yylex();
 %token ELSE IF
 %token FOR WHILE
 %token RETURN
-%token <String> VAR FUNC PROC
+%token <String> VAR FUNC PROC MAIN
 %token AND_OP GE_OP SE_OP NE_OP OR_OP EQL_OP
 %token <String> CHAR_VALUE STRING_VALUE INT_NUM R_NUM HEX_NUM
 %token <String> ID BOOL_VAL
 %type <String> TYPE 
 %type <Node> INNER_ARGS
-%type <Node> CONST 
+%type <Node> CONST MAIN_DEF
 %type <Node> OUT_ARGES ARGES FUNC_DEF FUNC_BLOCK INNER_COMPUND_STATMENT EXPRASION 
 %type <Node> FUNC_ACTIVE  
 %type <Node> STASTMENT_LIST DEC_INNER_BLOCK
@@ -139,12 +139,11 @@ extern int yylex();
 
 %%
 S: 
-	FUNC_PROC_DEC  {
+	FUNC_PROC_DEC MAIN_DEF {
         $$=mknode("BLOCK",$1, NULL);
-
+		$$=mknode("",$$, $2);
 		startSemantic($$);
-
-        printf("ok\n");
+        
         }
 	;
 
@@ -164,6 +163,16 @@ PROC_DEF:
 		$$=mknode("ARGS",NULL,$3);
 		$$=mknode("ID",$$,mkleaf($2));
 		$$=mknode("PROC",$$,$4);
+
+		}
+	;
+
+MAIN_DEF:
+	PROC MAIN '(' ')' COMPUND_STATMENT_PROC  {
+				
+		$$=mknode("ARGS",NULL,NULL);
+		$$=mknode("ID",$$,mkleaf("Main"));
+		$$=mknode("PROC",$$,$5);
 
 		}
 	;
@@ -337,8 +346,9 @@ void yyerror(char * msg){
 }
 
 int main(){
-	return yyparse();
-    return 0;
+	int x = yyparse();
+	printf("ok\n");
+    return x;
 }
 void printtree(node * tree,int space){
     int i;
