@@ -158,6 +158,7 @@ S:
 		$$=mknode("BLOCK",mknode("",$1, $2), NULL);
 		startSemantic($$);
         AC3code($$);
+		printf("%s\n",code3AC);
         }
 	;
 
@@ -1356,7 +1357,36 @@ char * gen(char * a,char * b,char * c,char * d){
 void AC3code(struct node * root){
 	char * temp1;
 	char * temp2;
+	if(!strcmp (root->token ,"ADDR_EXPRASION")){
 
+			if(!strcmp (root->left->token ,"&")){
+				temp1=freshlabel();
+				AC3code(root->right);
+				asprintf(&code3AC,"%s\t%s = %s\n",code3AC,temp1,strcat(strdup("*"),strdup(root->right->var)));
+				root->var=temp1;
+			}
+
+
+		return;
+	}
+	if(!strcmp (root->token ,"ADDR_ASS")){
+		temp1=freshlabel();
+		asprintf(&code3AC,"%s\t%s = %s\n",code3AC,temp1,strcat(strdup("&"),strdup(root->left->left->token)));
+		temp2=freshlabel();
+		asprintf(&code3AC,"%s\t%s = %s + %s\n",code3AC,temp2,temp1,root->left->right->left->token);
+
+		root->var=temp2;
+		return;
+	}
+
+	if(!strcmp (root->token ,"ADDR_ASS_EQ")){
+			temp1=freshvar();
+			asprintf(&code3AC,"%s\t%s = %s\n",code3AC,temp1,strcat(strdup("*"),strdup(root->left->left->token)));
+			AC3code(root->right);
+			asprintf(&code3AC,"%s\t%s = %s\n",code3AC,temp1,root->right->var);
+				
+		return;
+	}
 
 	if(!strcmp (root->token ,"FUNC")){
 		v=0;
@@ -1374,7 +1404,7 @@ void AC3code(struct node * root){
 
 		asprintf(&code3AC,"%s\tEndFunc\n\n\n",code3AC);
 
-		printf("%s\n",code3AC);
+
 		return;
 	}
 	
@@ -1389,6 +1419,11 @@ void AC3code(struct node * root){
 		asprintf(&code3AC,"%s%s:\n",code3AC,root->falselabel);
 		return;
 
+	}
+	if(!strcmp (root->token ,"PRIORATY")){
+		AC3code(root->right);
+		root->var=root->right->var;
+		return;
 	}
 	if(!strcmp (root->token ,"=")){
 
@@ -1409,6 +1444,7 @@ void AC3code(struct node * root){
 				root->var=freshvar();
 				asprintf(&code3AC,"%s\t%s = %s %s %s\n",code3AC,root->var,temp1,
 				root->left->token,temp2);
+				
 				
 			return;
 		}
