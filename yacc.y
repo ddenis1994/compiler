@@ -35,6 +35,7 @@ typedef struct deciptopn{
 	char * return_value;
 	int frameBelong;
 	struct deciptopn * next;
+	int size_string;
 } deciptopn;
 
 typedef struct frame{
@@ -75,7 +76,7 @@ int createStack() ;
 int creath_hs();
 long long compute_hash(char *  s);
 int insert_to_ht(deciptopn * symbel);
-int insert_symbel(char * id,int is_func_proc,char * type,char * data, char * return_value,int frameBelong,node * arges);
+int insert_symbel(char * id,int is_func_proc,char * type,char * data, char * return_value,int frameBelong,node * arges,int );
 int CrearhSymbalFrame(node * root);
 struct frame * creathFrame();
 int startSemantic(node * root);
@@ -83,7 +84,7 @@ node *mknode(char *token, node *left, node *right);
 node *mkleaf(char *token);
 node * creathFuncDec(char * id,node * args,char * typeOfReturn,node * block);
 int insert_to_stack(deciptopn * symbel);
-void find_var_names(char * type,node * root);
+void find_var_names(char * type,node * root,int);
 deciptopn * get_symbal_from_hash(char * name);
 node * makeArgsReq(node * root);
 node * getInnerArges(node * root ,char * type);
@@ -128,7 +129,7 @@ extern int yylex();
 %token <String> CHAR_VALUE STRING_VALUE INT_NUM R_NUM HEX_NUM
 %token <String> ID BOOL_VAL
 %type <String> TYPE 
-%type <Node> INNER_ARGS
+%type <Node> INNER_ARGS IF_EXPRASION
 %type <Node> CONST MAIN_DEF
 %type <Node> OUT_ARGES ARGES FUNC_DEF FUNC_BLOCK INNER_COMPUND_STATMENT EXPRASION 
 %type <Node> FUNC_ACTIVE  
@@ -154,7 +155,7 @@ extern int yylex();
 %%
 S: 
 	FUNC_PROC_DEC MAIN_DEF {
-        $$=mknode("BLOCK",$1, $2);
+		$$=mknode("BLOCK",mknode("",$1, $2), NULL);
 		startSemantic($$);
         AC3code($$);
         }
@@ -183,7 +184,7 @@ PROC_DEF:
 
 MAIN_DEF:
 	PROC MAIN '(' ')' COMPUND_STATMENT_PROC  {		
-		$$=mknode("ARGS",NULL,NULL);
+		$$=mknode("ARGS",NULL,mkleaf("NULL_ARGS"));
 		$$=mknode("ID",$$,mkleaf("Main"));
 		$$=mknode("PROC",$$,$5);
 		$$->label=strdup("Main");
@@ -334,13 +335,21 @@ LOOP_STATMENT:
 		$$->label=freshlabel();
 		$$->falselabel=freshlabel();
 		}
-	|FOR '(' EXPRASION ';' EXPRASION ';' EXPRASION ')' STASTMENT
+	|FOR '(' IF_EXPRASION ';' EXPRASION ';' IF_EXPRASION ')' STASTMENT
 		
 	{	$$=mknode("FOR",mknode("INIT",$3,mknode("EXPRESSION_FOR",$5,
 	mknode("UPDATE",$7,NULL))),mknode("BODY",NULL,$9));
+	$$->label=freshlabel();
+	$$->falselabel=freshlabel();
 		}
 	;
-
+IF_EXPRASION:
+	ID '=' EXPRASION  {
+		$$=mknode("=",mkleaf($1),$3);
+		$$->var=freshvar();
+		$$->code=strcat($3->code,gen($1,$3->var,"",""));
+		}
+	;
 
 
 COMPUND_STATMENT_PROC:
@@ -370,10 +379,12 @@ VF:
 
 VFDEC:
 	INNER_ARGS ':' TYPE ';'  {$$=mknode($3,$1,NULL);}
+	|INNER_ARGS ':' STRING '[' INT_NUM ']'  ';'  {$$=mknode($3,$1,mkleaf($5));}
 	;
 
 CONST:
-	INT_NUM {$$=mknode("int",mkleaf($1),NULL);$$->var=$1;}
+	INT_NUM {
+		$$=mknode("int",mkleaf($1),NULL);$$->var=$1;}
 	|R_NUM {$$=mknode("real",mkleaf($1),NULL);$$->var=$1;}
 	|HEX_NUM {$$=mknode("hex",mkleaf($1),NULL);$$->var=$1;}
 	|NULLA {$$=mknode("null_value",mkleaf("null"),NULL);$$->var=$1;}
@@ -383,8 +394,8 @@ CONST:
 	;
 
 TYPE:	
-	STRING '[' INT_NUM ']' 
-	|BOOL 
+
+	BOOL 
 	|INT 
 	|REAL 
 	|CHAR 
@@ -622,6 +633,7 @@ int CrearhSymbalFrame(node * root){
 	static char * current;
 	int type;
 
+
 	if( !strcmp (root->token ,"BLOCK")){
 
 		push(creathFrame());
@@ -645,14 +657,15 @@ int CrearhSymbalFrame(node * root){
 						NULL,
 						root->left->left->left->right->token,
 						deep,
-						root->left->left->right->left);
+						root->left->left->right->left
+						,0);
 
 		current=root->left->right->token;
 						
 		push(creathFrame());
 
 		if(strcmp(root->left->left->right->token,"NULL_ARGS"))
-			find_var_names("",root->left->left->right->left);
+			find_var_names("",root->left->left->right->left,0);
 		
 
 		if(root->right)
@@ -678,20 +691,21 @@ int CrearhSymbalFrame(node * root){
 				exit(1);
 			}
 		}
+
 		insert_symbel(
 						root->left->right->token,
-						1,
+						0,
 						"proc_declare",
 						NULL,
 						NULL,
 						deep,
-						root->left->left->right->left);
+						root->left->left->right->left,0);
 
 		current=root->left->right->token;
 
 		push(creathFrame());
 		if(root->left->left->right->left)
-			find_var_names("",root->left->left->right->left);
+			find_var_names("",root->left->left->right->left,0);
 
 
 		if(root->right)
@@ -769,7 +783,7 @@ int CrearhSymbalFrame(node * root){
 		return 0;
 	}
 	if( !strcmp (root->token ,"VAR_DECLARE")){
-		find_var_names("",root->left);
+		find_var_names("",root->left,0);
 
 		
 	}
@@ -829,54 +843,16 @@ int CrearhSymbalFrame(node * root){
 	if( !strcmp (root->token ,"RETURN STATMENT")){
 		
 		temp2=get_symbal_from_hash(current);
-
-		
-		
-		if(!strcmp(root->left->token, "FUNC_PROC_ACTIVE")){
-
-			temp=get_symbal_from_hash(root->left->left->right->token);
-
-			if(temp==NULL){
-			printf("%s was used before declared\n",root->left->left->token);
-			exit(1);
-		}
-
-		if(strcmp(temp->return_value,temp2->return_value)){
+		temp=type_chack2(root->left);
+		if(strcmp(temp->type,temp2->return_value)){
 
 			printf("wrong return type in func %s \n",temp2->id);
 			exit(1);
 		}
 
-		}
-
-		else if(!strcmp(root->left->token, "ID_EXPRASION")){
-
-			temp=get_symbal_from_hash(root->left->left->token);
-
-
-
-			if(strcmp(temp->type,temp2->return_value)){
-				printf("test %s\n",temp->type);
-				printf("wrong return type in func %s \n",temp2->id);
-				exit(1);
-			}
-
-		}
-		else{
-			temp=(struct deciptopn *)malloc(sizeof(deciptopn));
-			temp->id=root->left->token;
-			temp->type=root->left->token;
-			temp->data=root->left->token;
-
-			
-
-			if(strcmp(temp->type,temp2->return_value)){
-				printf("wrong return type in func %s \n",temp2->id);
-				exit(1);
-			}
-		}
 
 	}
+
 	if( !strcmp (root->token ,"=")){
 
 		type=root->left->token[0];
@@ -949,17 +925,18 @@ int startSemantic(node * root){
 	}
 
 	push(creathFrame());
+
 	CrearhSymbalFrame(root->left);
 
 	//start to clear data
-	//free(hashTableSymbel->symbals);
-	//free(hashTableSymbel);
+	free(hashTableSymbel->symbals);
+	free(hashTableSymbel);
 	return 0;
 	
 	
 }
 
-int insert_symbel(char * id,int is_func_proc,char * type,char * data, char * return_value,int frameBelong , node * arges){
+int insert_symbel(char * id,int is_func_proc,char * type,char * data, char * return_value,int frameBelong , node * arges,int sizeofstring){
 	struct deciptopn * temp=(struct deciptopn *)malloc(sizeof(deciptopn));
 	temp->id=id;
 	temp->isProc_func=is_func_proc;
@@ -976,6 +953,9 @@ int insert_symbel(char * id,int is_func_proc,char * type,char * data, char * ret
 	temp->data=data;
 	temp->frameBelong=frameBelong;
 	temp->next=NULL;
+	if(!strcmp(temp->type,"string")){
+			temp->size_string=sizeofstring;
+		}
 	insert_to_ht(temp);
 	insert_to_stack(temp);
 }
@@ -1010,20 +990,30 @@ int insert_to_stack(deciptopn * symbel){
 	return 0;
 }
 
-void find_var_names(char * type,node * root){
+void find_var_names(char * type,node * root,int size_string){
+
+
 	if(root->right)
-		find_var_names("",root->right);
+		find_var_names("",root->right,0);
 	
 	if(strcmp(root->token,"ID")){
-		if(root->left)
-			find_var_names(root->token,root->left);
+		if(root->left){
+			if(strcmp("string",root->token))
+				find_var_names(root->token,root->left,0);
+			else
+				find_var_names(root->token,root->left,atoi(root->right->token));
+		}
 	}
 	
 	else if(!strcmp(root->token,"ID")){
 
 		while(root){
-			insert_symbel(root->right->token ,0,type,NULL,NULL,deep,NULL);
-			root = root->left;
+			if(strcmp("string",type))
+				insert_symbel(root->right->token ,0,type,NULL,NULL,deep,NULL,0);
+			else
+				insert_symbel(root->right->token ,0,type,NULL,NULL,deep,NULL,size_string);
+						root = root->left;
+
 		}
 	}
 }
@@ -1098,13 +1088,26 @@ int checkFunc(node * originalArges,node * newArges){
 	node * temp2;
 	int temp1;
 
+
+
 	while(originalArges){	
-		
 		if(!newArges)
 			return 1;
 		
 		if(newArges->right){	
 			k = type_chack2(newArges->right->left);
+
+			if(!strcmp(k->type,"string"))
+				newArges->right->left->sum=k->size_string;
+			else if(!strcmp(k->type,"int"))
+				newArges->right->left->sum=4;
+			else if(!strcmp(k->type,"char"))
+				newArges->right->left->sum=1;
+			else if(!strcmp(k->type,"real"))
+				newArges->right->left->sum=8;
+
+
+
 			if(strcmp(k->type,originalArges->token)){
 				return 3;
 			}
@@ -1153,12 +1156,14 @@ struct deciptopn * type_chack2(struct node * root){
 	int t1;
 	char * name;
 
+
 	if(!strcmp("UMINUS_EXPRASION",root->token)){
 		return type_chack2(root->right);
 		}
 
 	if(!strcmp("FUNC_PROC_ACTIVE",root->token)){
 		temp1=get_symbal_from_hash(root->left->right->token);
+		printf("%d\n",temp1->isProc_func);
 		if(!temp1->isProc_func){
 
 			printf("cannot use proc %s in assiment\n",temp1->id);
@@ -1207,6 +1212,7 @@ struct deciptopn * type_chack2(struct node * root){
 		name=strdup(root->left->token);
 		t1=name[0];
 		temp3=get_symbal_from_hash(root->left->token);
+		
 		return temp3;
 	}
 
@@ -1353,6 +1359,7 @@ void AC3code(struct node * root){
 
 
 	if(!strcmp (root->token ,"FUNC")){
+		v=0;
 		asprintf(&code3AC,"%s%s:\n\tBeginFunc\n",code3AC,root->label);
 		AC3code(root->right);
 		asprintf(&code3AC,"%s\tEndFunc\n\n\n",code3AC);
@@ -1360,6 +1367,7 @@ void AC3code(struct node * root){
 		return;
 	}
 	if(!strcmp (root->token ,"PROC")){
+		v=0;
 		asprintf(&code3AC,"%s%s:\n\tBeginFunc\n",code3AC,root->label);
 		
 		AC3code(root->right);
@@ -1405,24 +1413,28 @@ void AC3code(struct node * root){
 			return;
 		}
 	if(!strcmp (root->token ,"FUNC_PROC_ACTIVE")){
+
 				AC3code(root->right);
 				root->var=freshvar();
 				asprintf(&code3AC,"%s\t%s = LCall %s \n",code3AC,root->var,root->left->right->token);
-				asprintf(&code3AC,"%s\tPopParams %d \n",code3AC,root->right->sum);
+				asprintf(&code3AC,"%s\tPopParams %d \n",code3AC,root->right->right->sum);
+
 				return;
 
 	}
 	if(!strcmp (root->token ,"FUNC_ARG")){
-		int i=0;
-		node * T=root;
-		while(root->right){
-			i++;
+		node * T = root;
+		
+
+		while(T){
+			root->sum += T->left->sum;
 			temp1=freshvar();
-			asprintf(&code3AC,"%s\t%s = %s \n",code3AC,temp1,root->left->left->token);
+			asprintf(&code3AC,"%s\t%s = %s \n",code3AC,temp1,T->left->left->token);
 			asprintf(&code3AC,"%s\tPushParam %s \n",code3AC,temp1);
-			root=root->right;
+			T=T->right;
 		}
-		T->sum=i;
+
+		return;
 	}
 	if(!strcmp (root->token ,"ID_EXPRASION")){
 		root->var=root->left->token;
@@ -1447,6 +1459,19 @@ void AC3code(struct node * root){
 	if(!strcmp (root->token ,"RETURN STATMENT")){
 			AC3code(root->left);
 			asprintf(&code3AC,"%s\tReturn %s:\n",code3AC,root->left->var);
+			return;
+	}
+	if(!strcmp (root->token ,"FOR")){
+
+		AC3code(root->left->left);
+		asprintf(&code3AC,"%s%s:\n",code3AC,root->label);
+		AC3code(root->left->right->left);
+		asprintf(&code3AC,"%s\tifZ %s Goto %s :\n",code3AC,
+		root->left->right->left->var,root->falselabel);
+		AC3code(root->left->right->right->left);
+		AC3code(root->right);
+		asprintf(&code3AC,"%s\tGoto %s :\n",code3AC,root->label);
+		asprintf(&code3AC,"%s%s:\n",code3AC,root->falselabel);
 			return;
 	}
 
