@@ -1164,7 +1164,6 @@ struct deciptopn * type_chack2(struct node * root){
 
 	if(!strcmp("FUNC_PROC_ACTIVE",root->token)){
 		temp1=get_symbal_from_hash(root->left->right->token);
-		printf("%d\n",temp1->isProc_func);
 		if(!temp1->isProc_func){
 
 			printf("cannot use proc %s in assiment\n",temp1->id);
@@ -1176,10 +1175,14 @@ struct deciptopn * type_chack2(struct node * root){
 		return temp2;
 	}
 	else if(!strcmp("ABS_EXPRASION",root->token)){
+		
+
 		temp3=(deciptopn *)malloc(sizeof(deciptopn));
 		temp3->id=strdup("const");
 		temp3->type=strdup("int");
 		temp1=type_chack2(root->left);
+		root->sum=temp1->size_string;
+
 		if(strcmp(temp1->type,"string")){
 			printf("size of string must have string and not %s\n",temp1->type);
 			exit(1);
@@ -1358,9 +1361,15 @@ void AC3code(struct node * root){
 	char * temp1;
 	char * temp2;
 	if(!strcmp (root->token ,"ADDR_EXPRASION")){
-
 			if(!strcmp (root->left->token ,"&")){
-				temp1=freshlabel();
+				temp1=freshvar();
+				AC3code(root->right);
+				asprintf(&code3AC,"%s\t%s = %s\n",code3AC,temp1,strcat(strdup("&"),strdup(root->right->var)));
+				root->var=temp1;
+			}
+	
+			else if(!strcmp (root->left->token ,"^")){
+				temp1=freshvar();
 				AC3code(root->right);
 				asprintf(&code3AC,"%s\t%s = %s\n",code3AC,temp1,strcat(strdup("*"),strdup(root->right->var)));
 				root->var=temp1;
@@ -1369,17 +1378,19 @@ void AC3code(struct node * root){
 
 		return;
 	}
-	if(!strcmp (root->token ,"ADDR_ASS")){
-		temp1=freshlabel();
+	else if(!strcmp (root->token ,"ADDR_ASS")){
+		temp1=freshvar();
 		asprintf(&code3AC,"%s\t%s = %s\n",code3AC,temp1,strcat(strdup("&"),strdup(root->left->left->token)));
-		temp2=freshlabel();
+		temp2=freshvar();
 		asprintf(&code3AC,"%s\t%s = %s + %s\n",code3AC,temp2,temp1,root->left->right->left->token);
+		temp1=freshvar();
+		asprintf(&code3AC,"%s\t%s = *%s \n",code3AC,temp1,temp2);
 
-		root->var=temp2;
+		root->var=temp1;
 		return;
 	}
 
-	if(!strcmp (root->token ,"ADDR_ASS_EQ")){
+	else if(!strcmp (root->token ,"ADDR_ASS_EQ")){
 			temp1=freshvar();
 			asprintf(&code3AC,"%s\t%s = %s\n",code3AC,temp1,strcat(strdup("*"),strdup(root->left->left->token)));
 			AC3code(root->right);
@@ -1388,7 +1399,7 @@ void AC3code(struct node * root){
 		return;
 	}
 
-	if(!strcmp (root->token ,"FUNC")){
+	else if(!strcmp (root->token ,"FUNC")){
 		v=0;
 		asprintf(&code3AC,"%s%s:\n\tBeginFunc\n",code3AC,root->label);
 		AC3code(root->right);
@@ -1396,7 +1407,7 @@ void AC3code(struct node * root){
 				
 		return;
 	}
-	if(!strcmp (root->token ,"PROC")){
+	else if(!strcmp (root->token ,"PROC")){
 		v=0;
 		asprintf(&code3AC,"%s%s:\n\tBeginFunc\n",code3AC,root->label);
 		
@@ -1408,7 +1419,7 @@ void AC3code(struct node * root){
 		return;
 	}
 	
-	if(!strcmp (root->token ,"WHILE")){
+	else if(!strcmp (root->token ,"WHILE")){
 		
 		asprintf(&code3AC,"%s%s:\n",code3AC,root->label);
 		AC3code(root->left->right);
@@ -1420,18 +1431,28 @@ void AC3code(struct node * root){
 		return;
 
 	}
-	if(!strcmp (root->token ,"PRIORATY")){
+	else if(!strcmp (root->token ,"ABS_EXPRASION")){
+		temp1=freshvar();
+		asprintf(&code3AC,"%s\t%s = |%s|\n",code3AC,temp1,root->left->left->token);
+		asprintf(&code3AC,"%s\t%s = %d\n",code3AC,temp1,root->sum);
+		temp2=freshvar();
+		asprintf(&code3AC,"%s\t%s = %s\n",code3AC,temp2,temp1);
+		root->var=temp2;
+		return;
+
+	}
+	else if(!strcmp (root->token ,"PRIORATY")){
 		AC3code(root->right);
 		root->var=root->right->var;
 		return;
 	}
-	if(!strcmp (root->token ,"=")){
+	else if(!strcmp (root->token ,"=")){
 
 		AC3code(root->right);
 		asprintf(&code3AC,"%s\t%s = %s\n",code3AC,root->left->token,root->right->var);
 		return;
 	}
-		if(!strcmp (root->token ,"NUM_EXPRASION") || !strcmp (root->token ,"BOOL_EXPRASION")){
+	else if(!strcmp (root->token ,"NUM_EXPRASION") || !strcmp (root->token ,"BOOL_EXPRASION")){
 		
 				AC3code(root->left->left);
 				temp1=freshvar();
@@ -1442,42 +1463,52 @@ void AC3code(struct node * root){
 				asprintf(&code3AC,"%s\t%s = %s\n",code3AC,temp2,root->left->right->var);
 
 				root->var=freshvar();
-				asprintf(&code3AC,"%s\t%s = %s %s %s\n",code3AC,root->var,temp1,
-				root->left->token,temp2);
+				asprintf(&code3AC,"%s\t%s = %s %s %s\n",code3AC,root->var,temp1,root->left->token,temp2);
 				
 				
 			return;
 		}
-	if(!strcmp (root->token ,"FUNC_PROC_ACTIVE")){
-
-				AC3code(root->right);
-				root->var=freshvar();
-				asprintf(&code3AC,"%s\t%s = LCall %s \n",code3AC,root->var,root->left->right->token);
-				asprintf(&code3AC,"%s\tPopParams %d \n",code3AC,root->right->right->sum);
-
-				return;
-
-	}
-	if(!strcmp (root->token ,"FUNC_ARG")){
-		node * T = root;
-		
-
-		while(T){
-			root->sum += T->left->sum;
-			temp1=freshvar();
-			asprintf(&code3AC,"%s\t%s = %s \n",code3AC,temp1,T->left->left->token);
-			asprintf(&code3AC,"%s\tPushParam %s \n",code3AC,temp1);
-			T=T->right;
-		}
+	else if (!strcmp (root->token ,"UMINUS_EXPRASION")){
+		AC3code(root->right);
+		temp1=freshvar();
+		asprintf(&code3AC,"%s\t%s = -%s\n",code3AC,temp1,root->right->var);
+		root->var=temp1;
 
 		return;
 	}
-	if(!strcmp (root->token ,"ID_EXPRASION")){
-		root->var=root->left->token;
+	if(!strcmp (root->token ,"FUNC_PROC_ACTIVE")){
+			root->var=freshvar();
+			asprintf(&code3AC,"%s\t%s = LCall %s \n",code3AC,root->var,root->left->right->token);
+			if(root->right->right){
+				AC3code(root->right);
+				asprintf(&code3AC,"%s\tPopParams %d \n",code3AC,root->right->right->sum);
+			}
+			
+			return;
+
 	}
-	if(!strcmp (root->token ,"IF")){
+	if(!strcmp (root->token ,"FUNC_ARG")){
+		AC3code(root->left);
+		temp1=freshvar();
+		asprintf(&code3AC,"%s\t%s = %s \n",code3AC,temp1,root->left->var);
+		asprintf(&code3AC,"%s\tPushParam %s \n",code3AC,temp1);
+		
+		
+		if(root->right){
+			AC3code(root->right);
+			root->sum += root->left->sum+root->right->sum;
+		}
+		else
+			root->sum += root->left->sum;
+		return;
+		
+	}
+	else if(!strcmp (root->token ,"ID_EXPRASION")){
+		root->var=root->left->token;
+		return;
+	}
 
-
+	else if(!strcmp (root->token ,"IF")){
 		AC3code(root->left->right);
 		asprintf(&code3AC,"%s\tifZ %s Goto %s :\n",code3AC,
 		root->left->right->var,root->falselabel);
@@ -1494,7 +1525,7 @@ void AC3code(struct node * root){
 	}
 	if(!strcmp (root->token ,"RETURN STATMENT")){
 			AC3code(root->left);
-			asprintf(&code3AC,"%s\tReturn %s:\n",code3AC,root->left->var);
+			asprintf(&code3AC,"%s\tReturn %s\n",code3AC,root->left->var);
 			return;
 	}
 	if(!strcmp (root->token ,"FOR")){
