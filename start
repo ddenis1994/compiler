@@ -3,5 +3,6 @@ rm y.tab* lex.yy.c a.xout 1>/dev/null 2>&1
 yacc *.y -d -v      #1>/dev/null 2>&1
 lex *.l
 cc y.tab.c lex.yy.c  -ll -Ly
-./a.out <test
-
+./a.out <test > temp.txt
+python sort.py temp.txt
+cat temp.txt

@@ -1,0 +1,112 @@
+foo:
+	BeginFunc
+	a = 23
+	t0 = a
+	t1 = 23
+	t2 = t0 == t1
+	ifZ t2 Goto L0 :
+	a = 10
+	Goto L1 :
+L0:
+	a = 19
+L1:
+	Return a
+	EndFunc
+
+
+fee:
+	BeginFunc
+	sum1 = 0
+	sum2 = 0
+L2:
+	t0 = a
+	t1 = b
+	t2 = t0 < t1
+	ifZ t2 Goto L5 :
+	t3 = a
+	t4 = 2
+	t5 = t3 / t4
+	t6 = t5
+	t7 = 0
+	t8 = t6 == t7
+	t9 = t8
+	t10 = a
+	t11 = b
+	t12 = t10 * t11
+	t13 = t12
+	t14 = 100
+	t15 = t13 < t14
+	t16 = t15
+	t17 = sum1
+	t18 = sum2
+	t19 = a
+	t20 = t18 - t19
+	t21 = t20
+	t22 = b
+	t23 = t21 + t22
+	t24 = t23
+	t25 = t17 >= t24
+	t26 = t25
+	t27 = t16 || t26
+	t28 = t27
+	t29 = t9 && t28
+	ifZ t29 Goto L3 :
+	t30 = sum1
+	t31 = a
+	t32 = t30 + t31
+	sum1 = t32
+	Goto L4 :
+L3:
+	t33 = sum2
+	t34 = 1
+	t35 = t33 + t34
+	sum2 = t35
+L4:
+	t36 = a
+	t37 = 1
+	t38 = t36 + t37
+	a = t38
+	Goto L2
+L5:
+	t39 = sum1
+	t40 = sum2
+	t41 = t39 + t40
+	Return t41
+	EndFunc
+
+
+Main:
+	BeginFunc
+	a = 0
+L6:
+	t0 = a
+	t1 = 10
+	t2 = t0 < t1
+	ifZ t2 Goto L7 :
+	t3 = a
+	t4 = 2
+	t5 = t3 * t4
+	a = t5
+	t6 = LCall foo 
+	b = t6
+	t7 = a
+	t8 = b
+	t9 = t7 + t8
+	a = t9
+	t10 = a
+	t11 = LCall fee 
+	t12 = a 
+	PushParam t12 
+	t13 = b 
+	PushParam t13 
+	PopParams 8 
+	t14 = t11
+	t15 = t10 + t14
+	a = t15
+	Goto L6 :
+L7:
+	EndFunc
+
+
+
+ok
