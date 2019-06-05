@@ -16,7 +16,7 @@ func fee(a, b : int) return int
 	sum1 = 0;
 	sum2 = 0;
 	while (a < b){
-		if (sum1>sum1 && sum1>sum1)
+		if (a / 2 == 0 && (a * b < 100 || sum1 >= sum2 - a + b))
 			sum1 = sum1 + a;
 		else
 			sum2 = sum2 + 1;

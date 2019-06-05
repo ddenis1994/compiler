@@ -257,6 +257,7 @@ EXPRASION:
 		}
 	|EXPRASION EQL_OP EXPRASION  {
 		$$=mknode("BOOL_EXPRASION",mknode("==",$1,$3),NULL);
+		
 		}
 	|EXPRASION GE_OP EXPRASION  {
 		$$=mknode("BOOL_EXPRASION",mknode(">=",$1,$3),NULL);
